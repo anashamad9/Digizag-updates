@@ -59,7 +59,7 @@ output_df = pd.DataFrame({
 })
 
 # Save to CSV in the output data folder
-output_file = os.path.join(output_dir, 'processed_magrabi_offer_1291.csv')
+output_file = os.path.join(output_dir, 'magrabi.csv')
 output_df.to_csv(output_file, index=False)
 
 print(f"Number of records processed: {len(output_df)}")

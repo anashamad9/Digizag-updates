@@ -2,7 +2,7 @@ import pandas as pd
 from datetime import datetime, timedelta
 import os
 
-# Parameters
+# Parametersss
 days_back = 7
 end_date = datetime.now().date()
 start_date = end_date - timedelta(days=days_back)
@@ -53,9 +53,9 @@ output_df = pd.DataFrame({
     'offer': 1291,
     'date': df_filtered['date'].dt.strftime('%m-%d-%Y'),
     'coupon_code': df_filtered['Coupon Code'],
-    'geo': df_filtered['country'],
     'revenue': df_filtered['revenue'],
-    'sale_amount': df_filtered['sale_amount']
+    'sale_amount': df_filtered['sale_amount'],
+    'geo': df_filtered['country']
 })
 
 # Save to CSV in the output data folder

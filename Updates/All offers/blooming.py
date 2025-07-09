@@ -37,7 +37,7 @@ df_filtered['geo'] = df_filtered['country'].map(country_to_geo)
 
 # Process data
 output_df = pd.DataFrame({
-    'offer': 1324,
+    'offer': 1106,
     'date': df_filtered['created_date'].dt.strftime('%m-%d-%Y'),
     'coupon_code': df_filtered['Coupon'],
     'geo': df_filtered['geo'],

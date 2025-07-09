@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 import os
 
 # Parameters
-days_back = 10
+days_back = 40
 end_date = datetime.now().date()
 start_date = end_date - timedelta(days=days_back)
 
@@ -18,7 +18,7 @@ output_dir = os.path.join(script_dir, '..', 'output data')
 os.makedirs(output_dir, exist_ok=True)
 
 # Load the CSV data from the input data folder
-input_file = os.path.join(input_dir, 'DigiZag__Baytonia_ Orders Tracking Report_DigiZag_Table.csv')
+input_file = os.path.join(input_dir, 'DigiZag__Baytonia_ Orders Tracking Report_DigiZag_Table (1).csv')
 df = pd.read_csv(input_file)
 
 # Convert 'Date' to datetime, keeping track of original values

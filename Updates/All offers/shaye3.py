@@ -43,10 +43,10 @@ df_filtered = df_filtered[df_filtered['Affiliate Cost'] != 0]
 output_df = pd.DataFrame({
     'offer': df_filtered['offer'],
     'date': df_filtered['Date'].dt.strftime('%m-%d-%Y'),
-    'coupon_code': df_filtered['Coupon Code'],
-    'geo': df_filtered['Market'],
     'revenue': df_filtered['Affiliate Cost'],
-    'sale_amount': df_filtered['Affiliate Revenue']  # Assuming Affiliate Orders represents sale amount contextually
+    'sale_amount': df_filtered['Affiliate Revenue'],
+    'coupon_code': df_filtered['Coupon Code'],
+    'geo': df_filtered['Market'] # Assuming Affiliate Orders represents sale amount contextually
 })
 
 # Save to CSV in the output data folder

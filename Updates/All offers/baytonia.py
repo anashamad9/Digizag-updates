@@ -18,7 +18,7 @@ output_dir = os.path.join(script_dir, '..', 'output data')
 os.makedirs(output_dir, exist_ok=True)
 
 # Load the CSV data from the input data folder
-input_file = os.path.join(input_dir, 'DigiZag__Baytonia_ Orders Tracking Report_DigiZag_Table (1).csv')
+input_file = os.path.join(input_dir, 'DigiZag__Baytonia_ Orders Tracking Report_DigiZag_Table.csv')
 df = pd.read_csv(input_file)
 
 # Convert 'Date' to datetime, keeping track of original values

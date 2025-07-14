@@ -19,7 +19,7 @@ output_dir = os.path.join(script_dir, '..', 'output data')
 os.makedirs(output_dir, exist_ok=True)
 
 # Read the CSV file from the input data folder
-input_file = os.path.join(input_dir, 'sales-DigiZag-2025-07-12__2025-07-13.csv')
+input_file = os.path.join(input_dir, 'sales-DigiZag-2025-07-13__2025-07-14.csv')
 df = pd.read_csv(input_file)
 
 # Parse Puchase Date to datetime
@@ -60,7 +60,7 @@ output_df = pd.DataFrame({
 })
 
 # Save to CSV in the output data folder
-output_file = os.path.join(output_dir, 'Rivaaaaaaa.csv')
+output_file = os.path.join(output_dir, 'RivaFashion.csv')
 output_df.to_csv(output_file, index=False)
 
 print(f"Processed {len(output_df)} rows for date range {start_date} to {today}")

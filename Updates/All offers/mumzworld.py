@@ -19,7 +19,7 @@ output_dir = os.path.join(script_dir, '..', 'output data')
 os.makedirs(output_dir, exist_ok=True)
 
 # Read the CSV file from the input data folder
-input_file = os.path.join(input_dir, 'DigiZag Dashboard_Commission Dashboard_Table.csv')
+input_file = os.path.join(input_dir, 'DigiZag Dashboard_Commission Dashboard_Table (1).csv')
 df = pd.read_csv(input_file)
 
 # Ensure Date_ordered is in datetime format

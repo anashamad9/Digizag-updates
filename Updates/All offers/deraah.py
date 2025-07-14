@@ -42,10 +42,10 @@ df_filtered['revenue'] = df_filtered['sale_amount'] * 0.05
 output_df = pd.DataFrame({
     'offer': 1185,
     'date': df_filtered['Order Date'].dt.strftime('%m-%d-%Y'),
-    'coupon_code': df_filtered['Code'],
-    'geo': 'ksa',
     'revenue': df_filtered['revenue'],
-    'sale_amount': df_filtered['sale_amount']
+    'sale_amount': df_filtered['sale_amount'],
+    'coupon_code': df_filtered['Code'],
+    'geo': 'ksa'
 })
 
 # Save to CSV in the output data folder

@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 import os
 
 # Parameters
-days_back = 9
+days_back = 16
 end_date = datetime.now().date()
 start_date = end_date - timedelta(days=days_back)
 today = datetime.now().date()
@@ -19,7 +19,7 @@ output_dir = os.path.join(script_dir, '..', 'output data')
 os.makedirs(output_dir, exist_ok=True)
 
 # Read the CSV file from the input data folder
-input_file = os.path.join(input_dir, 'ConversionsExport_2025-07-09_2025-07-09.csv')
+input_file = os.path.join(input_dir, 'ConversionsExport_2025-07-01_2025-07-14.csv')
 df = pd.read_csv(input_file)
 
 # Convert 'date' to datetime, keeping track of original values and exclude the current day
@@ -44,11 +44,11 @@ def calculate_revenue(row):
     sale_amount = float(row['sale_amount']) if pd.notnull(row['sale_amount']) else 0.0
     adv1 = str(row['adv1']).strip() if pd.notnull(row['adv1']) else ''
     if adv1 == '3P':
-        return sale_amount * 0.20
+        return sale_amount * 0.05
     elif adv1 == 'HB Frames':
         return sale_amount * 0.15
     elif adv1 == 'HB Lense':
-        return sale_amount * 0.20
+        return sale_amount * 0.10
     return 0.0
 
 df_filtered['revenue'] = df_filtered.apply(calculate_revenue, axis=1)

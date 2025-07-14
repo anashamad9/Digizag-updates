@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 import os
 
 # Parameters
-days_back = 1
+days_back = 2
 end_date = datetime.now().date() + timedelta(days=1)  # 2025-07-14 to include 2025-07-13
 start_date = end_date - timedelta(days=days_back + 1)  # 2025-07-09 for days_back = 3
 today = datetime.now().date()  # 2025-07-13

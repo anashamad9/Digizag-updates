@@ -39,10 +39,10 @@ df_filtered['geo'] = df_filtered['country'].map(country_to_geo)
 output_df = pd.DataFrame({
     'offer': 1106,
     'date': df_filtered['created_date'].dt.strftime('%m-%d-%Y'),
-    'coupon_code': df_filtered['Coupon'],
-    'geo': df_filtered['geo'],
     'revenue': (df_filtered['AED_net_amount'] / 3.67) * 0.06,
-    'sale_amount': df_filtered['AED_net_amount'] / 3.67
+    'sale_amount': df_filtered['AED_net_amount'] / 3.67,
+    'coupon_code': df_filtered['Coupon'],
+    'geo': df_filtered['geo']
 })
 
 # Save to CSV in the output data folder

@@ -1,0 +1,7 @@
+﻿Order Date (Full date),Order Date (Month),Coupon,Coupon Description,Order id,Country,Currency,Subtotal,Order Discount,Order Return,Status Of Order,Order Return Value,Payment Method
+"13 Jul, 2025 09:12:34",July,ZM22,Imported from file Digizag.xlsx,AXK611784,Kuwait,KD,15.9,1.59,0,Processing,0,"Credit, Debit, Knet"
+"13 Jul, 2025 06:56:00",July,RR22,Imported from file Digizag.xlsx,JTB265455,UAE,,204.95,20.49,0,Processing,0,"Credit, Debit , Apple Pay"
+"12 Jul, 2025 19:21:17",July,ZM22,Imported from file Digizag.xlsx,AVA889593,UAE,,119,11.9,0,Processing,0,"Credit, Debit , Apple Pay"
+"12 Jul, 2025 13:59:46",July,RR22,Imported from file Digizag.xlsx,EML699831,UAE,,252,25.2,0,Processing,0,"Credit, Debit , Apple Pay"
+"12 Jul, 2025 09:28:07",July,ZM22,Imported from file Digizag.xlsx,AKS717209,UAE,,98.9,9.89,0,Processing,0,"Credit, Debit , Apple Pay"
+"12 Jul, 2025 02:16:24",July,ZM22,Imported from file Digizag.xlsx,ZML445357,UAE,,184.09,18.4,0,Delivered,0,Cash

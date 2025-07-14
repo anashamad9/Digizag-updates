@@ -1,0 +1,75 @@
+Order Id,Order Status,Item ID,Item ID,Order Date,Geo,Customer Type,Coupon Code,Quanity,Unit Price,Sale Amount,category_id,category_name,commission_rate,Payout,Currency
+3546749,Processing,10687829,Police Men's Watch PEWJH2228004,2025-07-13T22:20:54,UAE,OLD,H97,1,379,379,55006,Men Wrist Watch,3.0,11.37,AED
+3546726,Pending,10653056,Dell Latitude 7420 14 Inch FHD 11th Gen Intel Core,2025-07-13T21:25:21,KSA,NEW,H1,1,1380,1380,16012,Laptops,3.0,41.4,SAR
+3546717,Packed,10740716,MAC Cremesheen Lipstick #213 Modesty,2025-07-13T21:02:29,UAE,OLD,H80,1,79,79,22007,Make-up,4.5,3.56,AED
+3546717,Packed,10676539,Clinique Dramatically Different Moisturizing Gel 1,2025-07-13T21:02:29,UAE,OLD,H80,1,125,125,22012,Skin Care,4.5,5.62,AED
+3546717,Packed,8794951,Layla Micro Eyeliner Intracigliare Pink Diamond 00,2025-07-13T21:02:29,UAE,OLD,H80,1,23,23,22007,Make-up,4.5,1.03,AED
+3546717,Packed,10554361,Essence Lash Princess Sculpted Volume Mascara Blac,2025-07-13T21:02:29,UAE,OLD,H80,1,14,14,22007,Make-up,4.5,0.63,AED
+3546645,Pending,10743432,مكواة بخار للملابس تيفاال DT7130G0 يمكن الوصول إلي,2025-07-13T18:46:31,UAE,OLD,H97,1,129,129,45013,Ironing,3.0,3.87,AED
+3546645,Pending,10731642,فرشاة تصفيف الشعر من باناسونيك EH-KA11,2025-07-13T18:46:31,UAE,OLD,H97,1,39,39,25001,Hair Care Appliances,3.0,1.17,AED
+3546609,Pending,10622310,Apple iPhone 14 Pro Max 128GB - Deep Purple,2025-07-13T17:26:05,KSA,OLD,ZZ3,1,2189,2189,17004,Mobiles,2.0,43.78,SAR
+3546407,Pending,10770085,Louis Vuitton Neverfull MM Tote + Zipper Pouch_Bro,2025-07-13T11:34:33,UAE,OLD,H97,1,410,410,53001,Bags,4.5,18.45,AED
+3546406,Pending,10742570,RUNJU-ZP Unbreakable Cereal Bowls - 24 OZ Wheat St,2025-07-13T11:34:33,UAE,OLD,H97,1,19,19,45022,Serving Trays & Platters,3.0,0.57,AED
+3546406,Pending,10614548,"Decopor Ceramic Stoneware Mugs- Set 6-Pieces, 360 ",2025-07-13T11:34:33,UAE,OLD,H97,1,19,19,45020,Glassware & Drinkware,3.0,0.57,AED
+3546406,Pending,10217989,"RoyalFord Glass Pitcher with Plastic Lid, 1000ml W",2025-07-13T11:34:33,UAE,OLD,H97,1,9,9,45020,Glassware & Drinkware,3.0,0.27,AED
+3546357,Pending,10767938,A78 5G Dual SIM Glowing Black 8GB RAM 256GB,2025-07-13T10:26:19,UAE,NEW,H4,1,229.99,229.99,17004,Mobiles,2.0,4.6,AED
+3546286,Packed,10743185,LENOVO Latest 2020 ThinkPad T14 Business Laptop 10,2025-07-13T08:57:32,UAE,NEW,ZZ5,1,713,713,16012,Laptops,3.0,21.39,AED
+3546019,Processing,6330255,Apple Watch Series 5 (GPS + Cellular، 40mm) - هيكل,2025-07-13T01:39:45,KSA,NEW,H14,1,534.56,534.56,12019,Smartwatches,2.0,10.69,SAR
+3545890,Processing,10621339,HP EliteBook 840 G6 Business Laptop 14.1 inch - in,2025-07-12T21:01:32,UAE,NEW,H97,1,698,698,16012,Laptops,3.0,20.94,AED
+3545800,Pending,10771429,Apple MacBook PRO A2141 - 9th Gen i9 2.4 Core - 64,2025-07-12T18:17:48,UAE,OLD,H100,1,1899,1899,16012,Laptops,3.0,56.97,AED
+3545694,Pending,10691162,Apple iPhone XS 256GB- Space Gray,2025-07-12T15:18:39,UAE,NEW,ZZ72,1,590,590,17004,Mobiles,2.0,11.8,AED
+3545408,Shipped,10772240,HP EliteBook 850 G4 i7-7th 16GB 512GB فضي,2025-07-12T08:38:20,UAE,NEW,H50,1,849,849,16012,Laptops,3.0,25.47,AED
+3545161,Packed,10588501,"Siemens Iq300, Free-Standing Electric Cooker, Stai",2025-07-11T20:21:30,UAE,NEW,H97,1,1399,1399,47002,Cooker,3.5,48.96,AED
+3545083,Packed,10687302,Samsung Galaxy Buds 3 Pro Wireless Earphone (SM-R6,2025-07-11T18:12:07,UAE,NEW,H97,1,275,275,12007,Headphones & wireless audio,2.5,6.88,AED
+3545079,Shipped,380781,أبل آيفون 13 برو 256 جيجابايت - أزرق,2025-07-11T18:10:45,KSA,OLD,ZZ3,1,1881.32,1881.32,17004,Mobiles,2.0,37.63,SAR
+3545061,Delivered,10488357,Kiehls Centella Sensitive Facial Cleanser - 250 ml,2025-07-11T17:21:54,UAE,OLD,H4,1,59,59,22007,Make-up,4.5,2.66,AED
+3545061,Delivered,10756059,La Roche-posay Mela B3 Anti-Dark Spots Concentrate,2025-07-11T17:21:54,UAE,OLD,H4,1,89,89,22012,Skin Care,4.5,4.0,AED
+3545061,Delivered,10676434,Sephora Outrageous Oversized Lashes Mascara - Blac,2025-07-11T17:21:54,UAE,OLD,H4,1,59,59,22007,Make-up,4.5,2.66,AED
+3545060,Shipped,10693015,Intelligent Nutrients REN Ready Steady Glow Daily ,2025-07-11T17:21:54,UAE,OLD,H4,1,30,30,22012,Skin Care,4.5,1.35,AED
+3545044,Packed,10771388,Apple Macbook Pro 9.2 (A1278 13 Inch MID 2012) i7 ,2025-07-11T16:58:11,UAE,NEW,H67,1,479,479,16012,Laptops,3.0,14.37,AED
+3544830,Packed,10688364,Samsung Galaxy A16 5G Dual-SIM 128GB 4GB RAM - UAE,2025-07-11T11:35:04,UAE,OLD,H97,1,559,559,17004,Mobiles,2.0,11.18,AED
+3544830,Packed,10753682,Samsung Galaxy A16 LTE - 6GB 128GB - Light Gray + ,2025-07-11T11:35:04,UAE,OLD,H97,1,549,549,17004,Mobiles,2.0,10.98,AED
+3544657,Delivered,10654326,Beats Solo Buds True Wireless Earphone (MUW03LL/A),2025-07-11T07:09:41,UAE,NEW,H100,1,239,239,12007,Headphones & wireless audio,2.5,5.98,AED
+3544040,Delivered,10696202,"Microsoft Surface Laptop Studio With 14"" Pixelsens",2025-07-10T12:05:47,UAE,NEW,ZZ21,1,2390,2390,16012,Laptops,3.0,71.7,AED
+3544038,Delivered,10636367,Apple iPhone SE 3rd Generation 64 GB - Midnight,2025-07-10T12:04:49,UAE,NEW,ZZ4,1,649,649,17004,Mobiles,2.0,12.98,AED
+3544017,Delivered,10735163,مجموعة سيروم مزدوج للوجه والعين من كلارنس، قطعتين ,2025-07-10T11:50:07,UAE,NEW,ZZ3,1,311,311,22012,Skin Care,4.5,14.0,AED
+3543969,Pending,10730075,Apple iPhone 12 Pro Max 128GB - Gold,2025-07-10T10:49:00,UAE,NEW,ZZ4,1,1299,1299,17004,Mobiles,2.0,25.98,AED
+3543937,Processing,10719603,CHRISTIAN DIOR SAUVAGE PARFUM 100ML,2025-07-10T10:04:00,UAE,OLD,ZZ72,1,170,170,27002,Men Fragrance,2.5,4.25,AED
+3543576,Delivered,10580463,Streaming Media Player Fire Tv Stick 4k Max (2nd G,2025-07-09T19:29:56,UAE,OLD,ZZ98,1,179,179,12013,Streaming Media Players,2.5,4.47,AED
+3543572,Delivered,10683845,"Coach GRAND Women's Watch, Analog 14502975",2025-07-09T19:28:04,UAE,NEW,ZZ10,1,193,193,55008,Women Wrist Watch,3.0,5.79,AED
+3543533,Delivered,10637265,Samsung Galaxy Tab S6 Lite 2024 - 64GB SM-P620 - O,2025-07-09T18:32:53,UAE,OLD,ZZ4,1,749,749,17005,Tablets,2.0,14.98,AED
+3543532,Delivered,10769804,Apple iPhone 15 Pro Max 256GB- White Titanium,2025-07-09T18:32:52,UAE,OLD,ZZ4,1,2799,2799,17004,Mobiles,2.0,55.98,AED
+3543500,Delivered,10637712,Mini Frost Fan Portable Air Conditioner AC Cooler ,2025-07-09T18:07:09,UAE,OLD,H35,1,45,45,44010,"Heaters, Cooling & Fans",4.5,2.02,AED
+3543499,Delivered,10752671,"Microsoft Surface Pro 5, Core i5-7th Gen, 8GB 256G",2025-07-09T18:07:09,UAE,OLD,H35,1,744,744,16012,Laptops,3.0,22.32,AED
+3542989,Shipped,10754214,Razer Universal Quick Charging Stand - for Playsta,2025-07-08T22:50:35,UAE,OLD,ZZ100,1,66,66,12007,Headphones & wireless audio,2.5,1.65,AED
+3542988,Processing,10775507,Eau De Lacoste L.12.12 White EDT 100ml,2025-07-08T22:50:35,UAE,OLD,ZZ100,1,150,150,27002,Men Fragrance,2.5,3.75,AED
+3542984,Pending,10592856,ابل ايفون 13 برو ماكس 512 جيجابايت - جرافيت,2025-07-08T22:40:33,KSA,OLD,H40,1,2199,2199,17004,Mobiles,2.0,43.98,SAR
+3542924,Shipped,10704839,"Bosch Series 4, Free-Standing Washing Machine 9 kg",2025-07-08T20:57:23,UAE,OLD,H97,1,1499,1499,47004,Washer & Dryer,3.5,52.46,AED
+3542804,Shipped,10772232,"2021 Dell Latitude 5420 2021 Laptop 14"" - Intel Co",2025-07-08T18:33:41,UAE,OLD,ZZ98,1,949,949,16012,Laptops,3.0,28.47,AED
+3542765,Delivered,10673080,Lenovo Thinkpad  X1 Yoga Gen 6 - 14 Inch WUXGA FHD,2025-07-08T17:43:55,UAE,OLD,H18,1,1999,1999,16012,Laptops,3.0,59.97,AED
+3542580,Pending,10752548,Sparnod Fitness (4 HP Peak) 2 in 1 Foldable Treadm,2025-07-08T13:19:58,UAE,OLD,H4,1,555,555,47533,Gym Equipments,4.5,24.98,AED
+3542493,Shipped,10610781,Apple iPhone 14 Pro Max 256 GB - Deep Purple,2025-07-08T10:07:05,KSA,OLD,H90,1,2616.81,2616.81,17004,Mobiles,2.0,52.34,SAR
+3542364,Delivered,10704442,Police Men's Analogue Quartz Watch with Leather St,2025-07-08T03:53:49,UAE,NEW,H35,1,249,249,55006,Men Wrist Watch,3.0,7.47,AED
+3542137,Delivered,10762254,"Huawei P30 Pro 4G, Dual Sim 128GB 8GB Ram Black",2025-07-07T17:56:56,UAE,OLD,ZZ72,1,410,410,17004,Mobiles,2.0,8.2,AED
+3542136,Delivered,10653776,Samsung Glaxy A13 5G 4GB RAM 128 GB Memory Single ,2025-07-07T17:56:56,UAE,OLD,ZZ72,1,349,349,17004,Mobiles,2.0,6.98,AED
+3542135,Delivered,10690310,Apple iPad mini 1 (2012) 7.9 inches WIFI 32 GB  - ,2025-07-07T17:56:56,UAE,OLD,ZZ72,1,196,196,17005,Tablets,2.0,3.92,AED
+3542103,Delivered,10702190,Lenovo ThinkPad E14 Gen 2 14” (11th Gen) Intel Cor,2025-07-07T17:12:25,UAE,OLD,ZZ72,1,1291,1291,16012,Laptops,3.0,38.73,AED
+3542034,Delivered,10598049,Deerma VC20 Pro Cordless Stick Handheld Vacuum Cle,2025-07-07T14:59:48,UAE,NEW,H97,1,299,299,45025,Vacuum and Cleaning Appliances,3.0,8.97,AED
+3541958,Delivered,10702159,"Dell Latitude 3150 Education Series Laptop 11"" Dis",2025-07-07T13:12:52,UAE,OLD,ZZ72,1,199,199,16012,Laptops,3.0,5.97,AED
+3541483,Delivered,10321011,Bose Sound bar Sound System Speaker Solo 5 Tv Univ,2025-07-06T20:23:05,UAE,OLD,ZZ72,1,675,675,12003,Audio Speakers & Portable Media Players,2.5,16.88,AED
+3541453,Delivered,10732237,Dell Latitude 3190 2-in-1 Laptop - 8GB RAM - 128GB,2025-07-06T19:15:38,UAE,OLD,H35,1,270,270,16012,Laptops,3.0,8.1,AED
+3541392,Delivered,10651304,Samsung Galaxy Note20 Ultra Single SIM 256GB 12GB ,2025-07-06T17:15:13,UAE,OLD,ZZ48,1,1099,1099,17004,Mobiles,2.0,21.98,AED
+3541365,Delivered,10651562,Tom Ford Ombre Leather Parfum- 100Ml,2025-07-06T16:04:50,UAE,OLD,ZZ77,1,420,420,27001,Unisex Fragrance,2.5,10.5,AED
+3541364,Delivered,10735163,Clarins Double Serum Face & Eye Set 2pcs Double Se,2025-07-06T16:04:50,UAE,OLD,ZZ77,1,311,311,22012,Skin Care,4.5,14.0,AED
+3541364,Delivered,10735098,CLARINS Double Serum Complete Age Control Concentr,2025-07-06T16:04:50,UAE,OLD,ZZ77,1,249,249,22012,Skin Care,4.5,11.2,AED
+3541363,Delivered,10740638,English Pear & Freesia Cologne Jo Malone London 10,2025-07-06T16:04:50,UAE,OLD,ZZ77,1,270,270,27003,Women Fragrance,2.5,6.75,AED
+3540806,Delivered,10606744,ابل ايفون 13 برو ماكس (256 جيجابايت) - أزرق سييرا,2025-07-05T21:02:54,UAE,OLD,H50,1,1695,1695,17004,Mobiles,2.0,33.9,AED
+3540431,Delivered,10462093,Gopro Hero 11 Mini Wi-Fi & Bluetooth Connectivity ,2025-07-05T11:55:04,UAE,OLD,H35,1,615,615,11006,Professional and digital cameras,3.0,18.45,AED
+3540288,Delivered,10758217,Samsung Galaxy S22 Ultra Single SIM 5G 8GB RAM 128,2025-07-05T06:51:32,KSA,NEW,H60,1,1549,1549,17004,Mobiles,2.0,30.98,SAR
+3540184,Delivered,10622602,سامسونج جالاكسي S21 بلس 128 جيجابايت 8 جيجابايت را,2025-07-04T23:47:17,KSA,NEW,ZZ49,1,899,899,17004,Mobiles,2.0,17.98,SAR
+3540131,Delivered,10732964,Apple iPhone 14 Pro Max 256GB - Silver,2025-07-04T21:55:58,KSA,NEW,ZZ3,1,2798,2798,17004,Mobiles,2.0,55.96,SAR
+3540046,Delivered,10407784,"Samsung Galaxy Note 10 Plus Dual SIM 256GB, 12GB R",2025-07-04T19:46:24,UAE,OLD,ZZ48,1,1019,1019,17004,Mobiles,2.0,20.38,AED
+3540045,Delivered,10753676,"Samsung Galaxy A06 LTE, Android Smartphone, Dual S",2025-07-04T19:46:24,UAE,OLD,ZZ48,1,314,314,17004,Mobiles,2.0,6.28,AED
+3539945,Delivered,10755117,"Lenovo P1 Gen4 i7-11th,16GB RAM,512GB SSD,4GB NVID",2025-07-04T17:20:18,UAE,OLD,ZZ3,1,1599,1599,16012,Laptops,3.0,47.97,AED
+3539618,Delivered,334426,ساعة ابل السلسلة 7 (نظام تحديد المواقع ،45 ملم) - ,2025-07-04T08:20:33,KSA,NEW,H5,1,790.28,790.28,12019,Smartwatches,2.0,15.81,SAR
+3539571,Returned,10610782,Apple iPhone 14 Pro Max 256GB - Silver,2025-07-04T06:04:26,UAE,NEW,H97,1,2149,2149,17004,Mobiles,2.0,42.98,AED

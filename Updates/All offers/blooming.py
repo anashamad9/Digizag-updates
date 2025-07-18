@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 import os
 
 # Parameters
-days_back = 7
+days_back = 3
 end_date = datetime.now().date()
 start_date = end_date - timedelta(days=days_back)
 
@@ -32,7 +32,7 @@ df_filtered = df[(df['created_date'].dt.date >= start_date) &
 print(f"Rows after filtering date range: {len(df_filtered)}")
 
 # Map country codes to geo
-country_to_geo = {'AE': 'uae', 'KW': 'kuwait'}
+country_to_geo = {'AE': 'uae', 'KW': 'kwt'}
 df_filtered['geo'] = df_filtered['country'].map(country_to_geo)
 
 # Process data

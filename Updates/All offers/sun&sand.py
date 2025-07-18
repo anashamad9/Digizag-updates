@@ -4,7 +4,7 @@ import os
 
 # Parameters
 end_date = datetime.now().date()  # 01:26 PM +03, July 13, 2025
-start_date = end_date - timedelta(days=30)
+start_date = end_date - timedelta(days=1)
 
 print(f"Current date: {end_date}, Start date (30 days back): {start_date}")
 

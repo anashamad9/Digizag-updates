@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 import os
 
 # Read the CSV file from the input data folder
-input_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'input data', 'jor-digizag-report-2025-07-12.csv')
+input_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'input data', 'jor-digizag-report-2025-07-16.csv')
 df = pd.read_csv(input_file)
 
 # Convert Date to MM-DD-YYYY format and exclude the current day

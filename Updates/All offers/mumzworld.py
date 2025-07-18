@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 import os
 
 # Parameters
-days_back = 2
+days_back = 1
 end_date = datetime.now().date()
 start_date = end_date - timedelta(days=days_back)
 today = datetime.now().date()
@@ -19,7 +19,7 @@ output_dir = os.path.join(script_dir, '..', 'output data')
 os.makedirs(output_dir, exist_ok=True)
 
 # Read the CSV file from the input data folder
-input_file = os.path.join(input_dir, 'DigiZag Dashboard_Commission Dashboard_Table (1).csv')
+input_file = os.path.join(input_dir, 'DigiZag Dashboard_Commission Dashboard_Table.csv')
 df = pd.read_csv(input_file)
 
 # Ensure Date_ordered is in datetime format

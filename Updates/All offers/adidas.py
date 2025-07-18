@@ -58,8 +58,8 @@ output_df = pd.DataFrame({
     'date': df_split['Transaction Date'].dt.strftime('%m-%d-%Y'),
     'revenue': df_split['revenue'].round(2),
     'sale_amount': df_split['sale_amount'].round(2),
+    'coupon_code': df_split['Order ID'],
     'geo': 'ksa',
-    'coupon_code': df_split['Order ID']
 })
 
 # Save to CSV in the output data folder

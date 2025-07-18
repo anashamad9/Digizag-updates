@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 import os
 
 # Parameters
-days_back = 17
+days_back = 7
 end_date = datetime.now().date()
 start_date = end_date - timedelta(days=days_back)
 
@@ -48,10 +48,10 @@ df_filtered['revenue'] = df_filtered['sale_amount'] * 0.15
 output_df = pd.DataFrame({
     'offer': 1182,
     'date': df_filtered['Purchase Date (Date)'].dt.strftime('%m-%d-%Y'),
+    'revenue': df_filtered['revenue'],
+    'sale_amount': df_filtered['sale_amount'],
     'coupon_code': df_filtered['Coupon Code'],
     'geo': df_filtered['geo'],
-    'revenue': df_filtered['revenue'],
-    'sale_amount': df_filtered['sale_amount']
 })
 
 # Save to CSV in the output data folder

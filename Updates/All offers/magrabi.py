@@ -52,9 +52,9 @@ df_filtered['revenue'] = 26.66
 output_df = pd.DataFrame({
     'offer': 1291,
     'date': df_filtered['date'].dt.strftime('%m-%d-%Y'),
-    'coupon_code': df_filtered['Coupon Code'],
     'revenue': df_filtered['revenue'],
     'sale_amount': df_filtered['sale_amount'],
+    'coupon_code': df_filtered['Coupon Code'],
     'geo': df_filtered['country']
 })
 

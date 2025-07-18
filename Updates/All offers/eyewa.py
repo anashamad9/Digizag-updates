@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 import os
 
 # Parameters
-days_back = 16
+days_back = 2
 end_date = datetime.now().date()
 start_date = end_date - timedelta(days=days_back)
 today = datetime.now().date()
@@ -19,7 +19,7 @@ output_dir = os.path.join(script_dir, '..', 'output data')
 os.makedirs(output_dir, exist_ok=True)
 
 # Read the CSV file from the input data folder
-input_file = os.path.join(input_dir, 'ConversionsExport_2025-07-01_2025-07-14.csv')
+input_file = os.path.join(input_dir, 'ConversionsExport_2025-07-15_2025-07-17.csv')
 df = pd.read_csv(input_file)
 
 # Convert 'date' to datetime, keeping track of original values and exclude the current day

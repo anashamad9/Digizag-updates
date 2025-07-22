@@ -2,7 +2,7 @@ import pandas as pd
 from datetime import datetime, timedelta
 
 # Parameters (adjust days_back as needed, e.g., 3 for previous 3 days)
-days_back = 2
+days_back = 3
 end_date = datetime.now().date()
 start_date = end_date - timedelta(days=days_back)
 today = datetime.now().date()

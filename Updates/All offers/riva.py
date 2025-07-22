@@ -19,7 +19,7 @@ output_dir = os.path.join(script_dir, '..', 'output data')
 os.makedirs(output_dir, exist_ok=True)
 
 # Read the CSV file from the input data folder
-input_file = os.path.join(input_dir, 'sales-DigiZag-2025-07-17__2025-07-18.csv')
+input_file = os.path.join(input_dir, 'sales-DigiZag-2025-07-20__2025-07-21.csv')
 df = pd.read_csv(input_file)
 
 # Parse Puchase Date to datetime

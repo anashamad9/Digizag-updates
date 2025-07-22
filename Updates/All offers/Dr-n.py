@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 import os
 
 # Parameters
-days_back = 1
+days_back = 2
 end_date = datetime.now().date()
 start_date = end_date - timedelta(days=days_back)
 
@@ -18,7 +18,7 @@ output_dir = os.path.join(script_dir, '..', 'output data')
 os.makedirs(output_dir, exist_ok=True)
 
 # Load the Excel data from the input data folder
-input_file = os.path.join(input_dir, 'Dr.Nutrition_DigiZag_Report_2025_07_18_13_14_24.xlsx')
+input_file = os.path.join(input_dir, 'Dr.Nutrition_DigiZag_Report_2025_07_21_11_56_10.xlsx')
 df = pd.read_excel(input_file, sheet_name='Worksheet')
 
 # Convert 'Created Date' to datetime, keeping track of original values

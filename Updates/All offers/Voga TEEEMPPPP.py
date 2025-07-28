@@ -2,7 +2,7 @@ import pandas as pd
 from datetime import datetime, timedelta
 
 # Parameters (adjust days_back as needed, e.g., 3 for previous 3 days)
-days_back = 3
+days_back = 4
 end_date = datetime.now().date()
 start_date = end_date - timedelta(days=days_back)
 today = datetime.now().date()
@@ -31,10 +31,10 @@ df_rtu_expanded['revenue'] = df_rtu_expanded.apply(
     axis=1
 )
 
-# Create output dataframes with required columns, ensuring date is in 'month day year' format
+# Create output dataframes with required columns, ensuring date is in 'mm-dd-yyyy' format
 output_ftu = pd.DataFrame({
     'offer': 910,
-    'date': df_ftu_expanded['Period'].dt.strftime('%B %d, %Y'),
+    'date': df_ftu_expanded['Period'].dt.strftime('%m-%d-%Y'),
     'revenue': df_ftu_expanded['revenue'].round(2),
     'sale_amount': df_ftu_expanded['sale_amount'].round(2),
     'coupon_code': df_ftu_expanded['Coupon Code'],
@@ -43,7 +43,7 @@ output_ftu = pd.DataFrame({
 
 output_rtu = pd.DataFrame({
     'offer': 910,
-    'date': df_rtu_expanded['Period'].dt.strftime('%B %d, %Y'),
+    'date': df_rtu_expanded['Period'].dt.strftime('%m-%d-%Y'),
     'revenue': df_rtu_expanded['revenue'].round(2),
     'sale_amount': df_rtu_expanded['sale_amount'].round(2),
     'coupon_code': df_rtu_expanded['Coupon Code'],
@@ -53,5 +53,5 @@ output_rtu = pd.DataFrame({
 # Combine FTU and RTU data
 output_df = pd.concat([output_ftu, output_rtu], ignore_index=True)
 
-# Save to CSV
-output_df.to_csv('voga.csv', index=False)
+# Save to CSV in the Output Data folder
+output_df.to_csv('Updates/Output Data/voga.csv', index=False)

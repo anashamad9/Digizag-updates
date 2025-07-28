@@ -1,6 +1,7 @@
 import pandas as pd
 from datetime import datetime, timedelta
 import os
+import re
 
 # Parameters
 days_back = 2
@@ -17,8 +18,23 @@ output_dir = os.path.join(script_dir, '..', 'output data')
 # Ensure output directory exists
 os.makedirs(output_dir, exist_ok=True)
 
+# Find the latest Dr.Nutrition_DigiZag_Report_ file in the input directory
+dr_nutrition_files = [f for f in os.listdir(input_dir) if f.startswith('Dr.Nutrition_DigiZag_Report_') and f.endswith('.xlsx')]
+if not dr_nutrition_files:
+    raise FileNotFoundError("No files starting with 'Dr.Nutrition_DigiZag_Report_' found in the input directory.")
+
+# Extract and sort by timestamp using regex
+def extract_timestamp(filename):
+    match = re.search(r'Dr\.Nutrition_DigiZag_Report_\d{4}_\d{2}_\d{2}_\d{2}_\d{2}_\d{2}', filename)
+    if match:
+        return datetime.strptime(match.group(0).replace('Dr.Nutrition_DigiZag_Report_', '').replace('_', '-'), '%Y-%m-%d-%H-%M-%S')
+    return datetime.min  # Default to min date if no match
+
+latest_file = max(dr_nutrition_files, key=extract_timestamp)
+input_file = os.path.join(input_dir, latest_file)
+print(f"Using input file: {latest_file}")
+
 # Load the Excel data from the input data folder
-input_file = os.path.join(input_dir, 'Dr.Nutrition_DigiZag_Report_2025_07_21_11_56_10.xlsx')
 df = pd.read_excel(input_file, sheet_name='Worksheet')
 
 # Convert 'Created Date' to datetime, keeping track of original values
@@ -39,7 +55,7 @@ df_filtered = df_filtered[(df_filtered['Created Date'].dt.date >= start_date) &
                          (df_filtered['Created Date'].dt.date < end_date)]
 print(f"Rows after date filter (July 03, 2025): {len(df_filtered)}")
 
-# Apply geo mapping
+# Apply geo mapping and exclude Jordan
 def map_geo(geo):
     geo = str(geo).strip() if pd.notnull(geo) else ''
     if geo == 'Saudi Arabia':
@@ -49,7 +65,7 @@ def map_geo(geo):
     elif geo == 'Qatar':
         return 'qtr'
     elif geo == 'Jordan':
-        return 'jor'
+        return None  # Exclude Jordan
     elif geo == 'UAE':
         return 'uae'
     return geo  # Default to original if unmatched
@@ -58,14 +74,17 @@ def map_geo(geo):
 output_df = pd.DataFrame({
     'offer': 1334,
     'date': df_filtered['Created Date'].dt.strftime('%m-%d-%Y'),
-    'revenue': df_filtered['Commission'],
-    'sale_amount': df_filtered['Selling Price'],
+    'revenue': df_filtered['commission'] / 3.67,
+    'sale_amount': df_filtered['Selling Price'] / 3.67,
     'coupon_code': df_filtered['Code'],
     'geo': df_filtered['country'].apply(map_geo)
 })
 
+# Remove rows where geo is None (Jordan)
+output_df = output_df.dropna(subset=['geo'])
+
 # Save to CSV in the output data folder
-output_file = os.path.join(output_dir, 'Dr N.csv')
+output_file = os.path.join(output_dir, 'Dr Nu.csv')
 output_df.to_csv(output_file, index=False)
 
 print(f"Number of records processed: {len(output_df)}")

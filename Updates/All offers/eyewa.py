@@ -1,6 +1,7 @@
 import pandas as pd
 from datetime import datetime, timedelta
 import os
+import re
 
 # Parameters
 days_back = 2
@@ -18,8 +19,23 @@ output_dir = os.path.join(script_dir, '..', 'output data')
 # Ensure output directory exists
 os.makedirs(output_dir, exist_ok=True)
 
+# Find the latest ConversionsExport_ file in the input directory
+conversions_files = [f for f in os.listdir(input_dir) if f.startswith('ConversionsExport_') and f.endswith('.csv')]
+if not conversions_files:
+    raise FileNotFoundError("No files starting with 'ConversionsExport_' found in the input directory.")
+
+# Extract and sort by start date using regex
+def extract_start_date(filename):
+    match = re.search(r'ConversionsExport_(\d{4}-\d{2}-\d{2})_\d{4}-\d{2}-\d{2}.csv', filename)
+    if match:
+        return datetime.strptime(match.group(1), '%Y-%m-%d')
+    return datetime.min  # Default to min date if no match
+
+latest_file = max(conversions_files, key=extract_start_date)
+input_file = os.path.join(input_dir, latest_file)
+print(f"Using input file: {latest_file}")
+
 # Read the CSV file from the input data folder
-input_file = os.path.join(input_dir, 'ConversionsExport_2025-07-16_2025-07-19.csv')
 df = pd.read_csv(input_file)
 
 # Convert 'date' to datetime, keeping track of original values and exclude the current day

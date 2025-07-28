@@ -23,7 +23,8 @@ input_file = os.path.join(input_dir, 'DigiZag Dashboard_Commission Dashboard_Tab
 df = pd.read_csv(input_file)
 
 # Ensure Date_ordered is in datetime format
-df['Date_ordered'] = pd.to_datetime(df['Date_ordered'], format='%b %d, %Y')
+df['Date_ordered'] = pd.to_datetime(df['Date_ordered'], format='%b %d, %Y', errors='coerce')
+df.dropna(subset=['Date_ordered'], inplace=True)
 
 # Filter for sales from the last 'days_back' days, excluding the current day
 df_filtered = df[df['Date_ordered'].dt.date < today]
@@ -37,9 +38,10 @@ for _, row in df_filtered.iterrows():
     # Process new customer orders
     if new_orders > 0 and pd.notnull(row['New Cust Revenue']):
         sale_amount_per_new_order = row['New Cust Revenue'] / new_orders
+        order_date = row['Date_ordered']  # Ensure datetime is preserved
         for _ in range(new_orders):
             expanded_rows.append({
-                'order_date': row['Date_ordered'],
+                'order_date': order_date,
                 'country': row['Country'],
                 'user_type': 'New',
                 'sale_amount': sale_amount_per_new_order,
@@ -50,9 +52,10 @@ for _, row in df_filtered.iterrows():
     # Process repeat customer orders
     if repeat_orders > 0 and pd.notnull(row['Repeat Cust Revenue']):
         sale_amount_per_repeat_order = row['Repeat Cust Revenue'] / repeat_orders
+        order_date = row['Date_ordered']  # Ensure datetime is preserved
         for _ in range(repeat_orders):
             expanded_rows.append({
-                'order_date': row['Date_ordered'],
+                'order_date': order_date,
                 'country': row['Country'],
                 'user_type': 'Repeat',
                 'sale_amount': sale_amount_per_repeat_order,
@@ -62,6 +65,7 @@ for _, row in df_filtered.iterrows():
 
 # Create new dataframe from expanded rows
 df_expanded = pd.DataFrame(expanded_rows)
+df_expanded['order_date'] = pd.to_datetime(df_expanded['order_date'])  # Ensure datetime type
 
 # Sort by user_type (New before Repeat)
 df_expanded['user_type_rank'] = df_expanded['user_type'].map({'New': 0, 'Repeat': 1})

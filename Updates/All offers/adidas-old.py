@@ -19,17 +19,17 @@ output_dir = os.path.join(script_dir, '..', 'output data')
 os.makedirs(output_dir, exist_ok=True)
 
 # Read the CSV file from the input data folder, skipping initial report header rows
-input_file = os.path.join(input_dir, 'Individual-Item-Report (3).csv')
+input_file = os.path.join(input_dir, 'Individual-Item-Report (1).csv')
 df = pd.read_csv(input_file, skiprows=range(4))
 
 # Convert 'Transaction Date' to datetime, coercing errors and dropping NaT values
-df['Process Date'] = pd.to_datetime(df['Process Date'], format='%m/%d/%y', errors='coerce')
-df.dropna(subset=['Process Date'], inplace=True)
+df['Transaction Date'] = pd.to_datetime(df['Transaction Date'], format='%m/%d/%y', errors='coerce')
+df.dropna(subset=['Transaction Date'], inplace=True)
 
 # Filter for Adidas KSA data and date range, excluding the current day
 df_filtered = df[(df['Advertiser Name'] == 'Adidas KSA') &
-                 (df['Process Date'].dt.date >= start_date) &
-                 (df['Process Date'].dt.date < today)]  # Exclude current day
+                 (df['Transaction Date'].dt.date >= start_date) &
+                 (df['Transaction Date'].dt.date < today)]  # Exclude current day
 
 # Split rows with # of Items > 1
 split_rows = []
@@ -39,7 +39,7 @@ for index, row in df_filtered.iterrows():
     for _ in range(items):
         split_rows.append({
             'Order Coupon Code(s)': row['Order Coupon Code(s)'],
-            'Process Date': row['Process Date'],
+            'Transaction Date': row['Transaction Date'],
             'Sales': sales_per_item,
             '# of Items': 1
         })
@@ -55,7 +55,7 @@ df_split['revenue'] = df_split['sale_amount'] * 0.07
 # Create output dataframe with required columns
 output_df = pd.DataFrame({
     'offer': 1283,
-    'date': df_split['Process Date'].dt.strftime('%m-%d-%Y'),
+    'date': df_split['Transaction Date'].dt.strftime('%m-%d-%Y'),
     'revenue': df_split['revenue'].round(2),
     'sale_amount': df_split['sale_amount'].round(2),
     'coupon_code': df_split['Order Coupon Code(s)'],

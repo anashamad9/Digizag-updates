@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 import os
 
 # Parameters
-days_back = 4
+days_back = 3
 end_date = datetime.now().date()
 start_date = end_date - timedelta(days=days_back)
 

@@ -1,12 +1,13 @@
 import pandas as pd
 from datetime import datetime, timedelta
 import os
+import re
 
 # Parameters (adjust days_back as needed, e.g., 2 for previous 2 days including today)
 days_back = 2
-end_date = datetime.now().date() + timedelta(days=1)  # 2025-07-14 to include 2025-07-13
-start_date = end_date - timedelta(days=days_back)     # 2025-05-15 for days_back = 60
-today = datetime.now().date()                         # 2025-07-13
+end_date = datetime.now().date() + timedelta(days=1)  # 2025-07-25 to include 2025-07-24
+start_date = end_date - timedelta(days=days_back)     # 2025-07-23 for days_back = 2
+today = datetime.now().date()                         # 2025-07-24
 
 print(f"Current date: {today}, Start date (days_back={days_back}): {start_date}")
 
@@ -18,8 +19,23 @@ output_dir = os.path.join(script_dir, '..', 'output data')
 # Ensure output directory exists
 os.makedirs(output_dir, exist_ok=True)
 
+# Find the latest sales-DigiZag- file in the input directory
+sales_digizag_files = [f for f in os.listdir(input_dir) if f.startswith('sales-DigiZag-') and f.endswith('.csv')]
+if not sales_digizag_files:
+    raise FileNotFoundError("No files starting with 'sales-DigiZag-' found in the input directory.")
+
+# Extract and sort by start date using regex
+def extract_start_date(filename):
+    match = re.search(r'sales-DigiZag-(\d{4}-\d{2}-\d{2})__\d{4}-\d{2}-\d{2}.csv', filename)
+    if match:
+        return datetime.strptime(match.group(1), '%Y-%m-%d')
+    return datetime.min  # Default to min date if no match
+
+latest_file = max(sales_digizag_files, key=extract_start_date)
+input_file = os.path.join(input_dir, latest_file)
+print(f"Using input file: {latest_file}")
+
 # Read the CSV file from the input data folder
-input_file = os.path.join(input_dir, 'sales-DigiZag-2025-07-20__2025-07-21.csv')
 df = pd.read_csv(input_file)
 
 # Parse Puchase Date to datetime

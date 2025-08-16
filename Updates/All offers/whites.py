@@ -12,7 +12,7 @@ output_dir = os.path.join(script_dir, '..', 'output data')
 os.makedirs(output_dir, exist_ok=True)
 
 # Load the JSON data from the provided link
-json_url = "https://www.whites.net/entity/track_coupons_digizag?get_coupon_data=1&start_date=2025-07-01&end_date=2025-07-31"
+json_url = "https://www.whites.net/entity/track_coupons_digizag?get_coupon_data=1&start_date=2025-08-01&end_date=2025-08-31"
 response = requests.get(json_url)
 if response.status_code != 200:
     raise Exception(f"Failed to fetch data from {json_url}, status code: {response.status_code}")
@@ -47,7 +47,7 @@ output_df = pd.DataFrame({
 })
 
 # Save to CSV in the output data folder
-output_file = os.path.join(output_dir, 'whites.csv')
+output_file = os.path.join(output_dir, 'whites2.csv')
 output_df.to_csv(output_file, index=False)
 
 print(f"Number of records processed: {len(output_df)}")

@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 import os
 
 # Parameters (adjust days_back as needed, e.g., 3 for previous 3 days)
-days_back = 1
+days_back = 2
 end_date = datetime.now().date()
 start_date = end_date - timedelta(days=days_back)
 today = datetime.now().date()
@@ -19,7 +19,7 @@ output_dir = os.path.join(script_dir, '..', 'output data')
 os.makedirs(output_dir, exist_ok=True)
 
 # Read the CSV file from the input data folder
-input_file = os.path.join(input_dir, 'DigiZag x Level Shoes_All Orders_Table.csv')
+input_file = os.path.join(input_dir, 'DigiZag x Level Shoes_All Orders_Table (4).csv')
 df = pd.read_csv(input_file)
 
 # Parse Order Date to datetime

@@ -4,7 +4,7 @@ import os
 import re
 
 # Parameters
-days_back = 2
+days_back = 8
 end_date = datetime.now().date()
 start_date = end_date - timedelta(days=days_back)
 

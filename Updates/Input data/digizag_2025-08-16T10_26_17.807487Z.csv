@@ -1,0 +1,115 @@
+Order Id,Order Status,Item ID,Item ID,Order Date,Geo,Customer Type,Coupon Code,Quanity,Unit Price,Sale Amount,category_id,category_name,commission_rate,Payout,Currency
+3312486,Delivered,10651424,HP Elitebook G7 830 Intel core i7 10th Gen 1.80Ghz,2024-09-19T15:50:22,KSA,NEW,H35,1,1499,1499,16012,Laptops,3.0,44.97,SAR
+3311876,Returned,10650989,"HP ProBook 640 G5 Core i5, 8GB RAM 256GB SSD Win10",2024-09-19T02:42:53,KSA,NEW,H49,1,699,699,16012,Laptops,3.0,20.97,SAR
+3311838,Delivered,10608154,جي تايد/اكستريم سماعات اذن ستيريو لاسلكية - أسود,2024-09-19T00:39:05,KSA,OLD,H81,1,75,75,12007,Headphones & wireless audio,2.5,1.88,SAR
+3311837,Delivered,10624428,لينوفو لاب توب ثينك باد T440 ، معالج انتل كور i5 م,2024-09-19T00:39:05,KSA,OLD,H81,1,499,499,16012,Laptops,3.0,14.97,SAR
+3311581,RTO-RTN,10622586,سامسونج جالكسي S10 بلس بشريحة واحدة - 128 جيجا ، ر,2024-09-18T18:41:22,KSA,OLD,H50,1,883,883,17004,Mobiles,2.0,17.66,SAR
+3311250,Delivered,10636310,أبل آيفون 13 برو 256 جيجابايت - فضي,2024-09-18T13:04:57,KSA,NEW,H100,1,2360,2360,17004,Mobiles,2.0,47.2,SAR
+3311125,Delivered,10622185,Oteeto Tablet 12 Pro 10.1 Inch 512GB 8GB RAM  - Si,2024-09-18T10:42:34,UAE,OLD,H62,1,245,245,17005,Tablets,2.0,4.9,AED
+3310984,Returned,10653042,Honor 90 Lite Dual-SIM 256GB ROM + 8GB RAM 5G - Cy,2024-09-18T07:21:11,KSA,OLD,H95,1,577,577,17004,Mobiles,2.0,11.54,SAR
+3310968,RTO-RTN,10623814,ديل لاتيتيود 11 - 5179 إنتل إم 5 الجيل السادس - 8 ,2024-09-18T07:03:50,KSA,NEW,H50,1,499,499,16012,Laptops,3.0,14.97,SAR
+3310968,RTO-RTN,10652577,ديل لاتيتيود 11- 5179 شاشة تعمل باللمس مقاس 10.8 ب,2024-09-18T07:03:50,KSA,NEW,H50,1,475,475,16012,Laptops,3.0,14.25,SAR
+3310694,Returned,10642444,"Emporio Armani Womens Quartz Watch, 32mm, Analog D",2024-09-17T18:58:10,UAE,OLD,H76,1,349,349,55008,Women Wrist Watch,3.0,10.47,AED
+3310011,Delivered,10645055,"Cosori Air Fryer Oven With Rapid Air Circulation, ",2024-09-17T05:22:14,UAE,OLD,H1,1,250,250,45004,Electric Cookware & Oven,3.0,7.5,AED
+3309772,Delivered,10653049,هواوي نوفا 5T ثنائي الشريحة 128 جيجابايت - أسود,2024-09-16T19:45:59,KSA,OLD,H50,1,549,549,17004,Mobiles,2.0,10.98,SAR
+3309581,Delivered,10553118,Lenovo ThinkPad X280 Laptop / Intel Core i5-8th Ge,2024-09-16T15:51:19,UAE,NEW,H97,1,665,665,16012,Laptops,3.0,19.95,AED
+3309570,Delivered,10648701,Apple iPhone 14 Pro (1 TB) - Gold,2024-09-16T15:24:25,UAE,OLD,H95,1,3199,3199,17004,Mobiles,2.0,63.98,AED
+3309497,Delivered,10651816,"LEVOIT Air Purifiers for Bedroom Home, 3-in-1 Filt",2024-09-16T13:44:58,UAE,NEW,H69,1,130,130,43021,Humidifiers,4.5,5.85,AED
+3309497,Delivered,10645819,ASUS MB169B+ Portable USB Monitor - 16 inch - 15.6,2024-09-16T13:44:58,UAE,NEW,H69,1,385,385,16002,Computer Monitors,3.0,11.55,AED
+3309495,Delivered,10600776,Lenovo ThinkPad T470s - 14 Inch - 2017 - Black - I,2024-09-16T13:42:16,KSA,NEW,H76,1,750,750,16012,Laptops,3.0,22.5,SAR
+3309461,Delivered,10582241,"Galaxy A42, Single SIM, Black, 4GB, 128GB, 5G",2024-09-16T13:07:30,UAE,OLD,H26,1,420,420,17004,Mobiles,2.0,8.4,AED
+3309402,Delivered,10644045,Apple MacBook Air 2020 13-inch Apple M1 chip 512GB,2024-09-16T12:12:05,UAE,NEW,H35,1,2799,2799,16012,Laptops,3.0,83.97,AED
+3309090,Delivered,10380027,Beats by Dr. Dre Studio Buds Noise-Canceling True ,2024-09-16T08:00:13,UAE,OLD,H61,1,315,315,12007,Headphones & wireless audio,2.5,7.88,AED
+3308882,Returned,10648720,لاب توب ديل لاتيتيود E6540 شاشة 15.6 بوصة معالج ان,2024-09-15T22:36:15,KSA,NEW,H72,1,599,599,16012,Laptops,3.0,17.97,SAR
+3308488,RTO-RTN,168312,أبل آيفون 8 بلس 256 جيجابايت- فضي,2024-09-15T14:48:13,UAE,NEW,H14,1,599,599,17004,Mobiles,2.0,11.98,AED
+3308407,Delivered,10562501,Philips Bottom Loading Water Dispenser With Micro ,2024-09-15T13:00:52,UAE,OLD,H96,1,499,499,47008,Water Dispenser,3.5,17.46,AED
+3308333,Delivered,10653042,هاتف هونر 90 لايت ثنائي الشريحة وذاكرة داخلية سعة ,2024-09-15T12:02:59,KSA,OLD,H35,1,577,577,17004,Mobiles,2.0,11.54,SAR
+3307736,Delivered,10653884,Fossil Georgia Analog White Dial Brown Leather Wat,2024-09-14T18:59:31,UAE,OLD,H25,1,195,195,55008,Women Wrist Watch,3.0,5.85,AED
+3307735,Delivered,10588365,Police Watch for Women - PL.15570LSG/06 - Gold,2024-09-14T18:59:31,UAE,OLD,H25,1,169,169,55008,Women Wrist Watch,3.0,5.07,AED
+3307734,Delivered,10642474,Emporio Armani Analog Black Dial Men's Watch-AR112,2024-09-14T18:59:31,UAE,OLD,H25,1,389,389,55006,Men Wrist Watch,3.0,11.67,AED
+3307714,Delivered,10653100,"أبل ماك بوك برو 2015 11,4 ,A1398 شاشة 15 بوصة، كور",2024-09-14T18:42:31,KSA,NEW,H15,1,1199,1199,16012,Laptops,3.0,35.97,SAR
+3307594,Delivered,10623321,Dell Latitude 7490 Intel Core i7-8650U 14Inch GHD ,2024-09-14T15:08:33,KSA,NEW,H49,1,999,999,16012,Laptops,3.0,29.97,SAR
+3307575,Delivered,10641169,Samsung Galaxy S24 5G Dual SIM 128GB 8GB RAM - Jad,2024-09-14T14:47:13,UAE,OLD,H35,1,1749,1749,17004,Mobiles,2.0,34.98,AED
+3307531,Delivered,10651307,Samsung Galaxy S21 5G G9910 256GB 8GB RAM - Phanto,2024-09-14T13:53:42,UAE,NEW,H61,1,850,850,17004,Mobiles,2.0,17.0,AED
+3306964,Delivered,10642258,هاتف ون بلس نورد سي 3 لايت 8 128 جيجابايت ثنائي ال,2024-09-14T01:15:28,KSA,OLD,H15,1,709,709,17004,Mobiles,2.0,14.18,SAR
+3306894,Delivered,10592553,ابل ايفون 11 برو ماكس- 256 جيجا- فضي,2024-09-13T22:51:14,KSA,NEW,H27,1,1615,1615,17004,Mobiles,2.0,32.3,SAR
+3306847,Returned,10654873,ديل لاتيتيود 5580، انتل كور i7-7600U، رام 20 جيجاب,2024-09-13T21:16:46,KSA,OLD,H35,1,999,999,16012,Laptops,3.0,29.97,SAR
+3306728,Delivered,10647366,Samsung Galaxy S21 Ultra 5G SM-G998B 512GB 16GB RA,2024-09-13T18:02:42,UAE,NEW,H95,1,1389,1389,17004,Mobiles,2.0,27.78,AED
+3306630,Returned,10653100,"أبل ماك بوك برو 2015 11,4 ,A1398 شاشة 15 بوصة، كور",2024-09-13T15:51:38,KSA,NEW,H14,1,1199,1199,16012,Laptops,3.0,35.97,SAR
+3306598,RTO-RTN,10644165,Dell Latitude 7490 Laptop 14 - Intel Core I7 8Th G,2024-09-13T15:19:44,UAE,NEW,H62,1,999,999,16012,Laptops,3.0,29.97,AED
+3306588,Delivered,10653796,ابل ماك بوك برو 2019 - A2141 مقاس 16 بوصة، شريط لم,2024-09-13T14:58:23,KSA,NEW,H40,1,2449,2449,16012,Laptops,3.0,73.47,SAR
+3306585,Delivered,10592854,Apple iPhone 13 Pro Max 512GB - Alpine Green,2024-09-13T14:45:09,KSA,NEW,H27,1,3169,3169,17004,Mobiles,2.0,63.38,SAR
+3306123,Returned,10637179,Apple iPhone 14 Plus (256 GB) - Starlight,2024-09-13T07:07:27,UAE,NEW,H50,1,2199,2199,17004,Mobiles,2.0,43.98,AED
+3306049,Delivered,10642690,ديل لاتيتيود 7280 12.5 بوصة بدون شاشة تعمل باللمس ,2024-09-13T05:33:59,KSA,OLD,H14,1,699,699,16012,Laptops,3.0,20.97,SAR
+3305203,Delivered,10641157,Oteeto Tab 12 Pro 10.1 Inch Display 1.6Ghz Octa Co,2024-09-12T11:18:32,UAE,NEW,H69,1,245,245,17005,Tablets,2.0,4.9,AED
+3305114,Delivered,10622864,اتش بي بروبوك 640 G3 - 14 بوصة كور آي 5 - 7200U - ,2024-09-12T10:28:39,KSA,OLD,H49,1,599,599,16012,Laptops,3.0,17.97,SAR
+3305103,Delivered,10648720,لاب توب ديل لاتيتيود E6540 شاشة 15.6 بوصة معالج ان,2024-09-12T10:18:33,KSA,OLD,H40,1,599,599,16012,Laptops,3.0,17.97,SAR
+3305022,Delivered,10651084,Samsung Galaxy A12 Single SIM 32GB 3GB RAM 4G LTE ,2024-09-12T08:36:54,UAE,OLD,H61,1,299,299,17004,Mobiles,2.0,5.98,AED
+3304985,Returned,10643093,"Lenovo ThinkPad T450s 14"" i5- 5th generation, 12GB",2024-09-12T07:48:51,UAE,OLD,H76,1,387,387,16012,Laptops,3.0,11.61,AED
+3304950,Delivered,10650750,JBL Soundgear Frames Square - Slim stylish sunglas,2024-09-12T06:58:16,UAE,OLD,H61,1,529,529,12007,Headphones & wireless audio,2.5,13.22,AED
+3304575,RTO-RTN,10363639,Apple MacBook Pro 9.2 A1278 2012 - Core I5 2.5GHz ,2024-09-11T19:33:12,KSA,OLD,H14,1,595.45,595.45,16012,Laptops,3.0,17.86,SAR
+3304089,Delivered,10622643,"The Ordinary Niacinamide 10% + Zinc 1% - 30 ml, 76",2024-09-11T10:02:55,UAE,OLD,H61,1,37,37,22012,Skin Care,4.5,1.66,AED
+3304088,Delivered,10509971,The Ordinary Salicylic Acid 2% Serum with Vitamin ,2024-09-11T10:02:55,UAE,OLD,H61,1,35,35,22012,Skin Care,4.5,1.58,AED
+3304088,Delivered,10560435,The Ordinary Retinol Facial Serum 1% Squalane - Ag,2024-09-11T10:02:55,UAE,OLD,H61,1,39,39,22012,Skin Care,4.5,1.76,AED
+3304088,Delivered,10555745,The Ordinary Hyaluronic Acid 2% +Vitamin B5 - 30 m,2024-09-11T10:02:55,UAE,OLD,H61,1,35,35,22012,Skin Care,4.5,1.58,AED
+3304059,Returned,10592833,Apple iPhone 13 Pro Max 128GB - Sierra Blue,2024-09-11T09:44:11,KSA,OLD,H4,1,2389,2389,17004,Mobiles,2.0,47.78,SAR
+3304015,Delivered,10650499,"Thinkpad T480 Laptop With 14-Inch Display,Intel Co",2024-09-11T09:22:35,UAE,OLD,H95,1,649,649,16012,Laptops,3.0,19.47,AED
+3303674,Delivered,10642444,"Emporio Armani Womens Quartz Watch, 32mm, Analog D",2024-09-10T23:02:37,UAE,OLD,H69,1,349,349,55008,Women Wrist Watch,3.0,10.47,AED
+3303539,Delivered,10592578,أبل آيفون 12 بسعة 128 جيجابايت رامات 4 جيجابايت - ,2024-09-10T20:21:12,KSA,NEW,H35,1,1260,1260,17004,Mobiles,2.0,25.2,SAR
+3303522,Returned,10654554,Samsung Galaxy A31 Dual SIM 128GB 4GB RAM -  Black,2024-09-10T19:58:33,UAE,OLD,H97,1,349,349,17004,Mobiles,2.0,6.98,AED
+3303361,Delivered,10490247,"La Roche Posay Retinol B3 Serum, Hyalu B5 Serum an",2024-09-10T17:08:38,UAE,NEW,H4,1,295,295,22012,Skin Care,4.5,13.28,AED
+3303097,Delivered,10641518,X9 Handheld Game Console 1500mAh 5.5-inch IPS HD s,2024-09-10T11:17:22,UAE,OLD,H69,1,180,180,33002,Accessories,3.0,5.4,AED
+3303096,Delivered,10325188,Dreamgear Essentials Bundle For Nintendo Switch – ,2024-09-10T11:17:22,UAE,OLD,H69,1,9.99,9.99,33002,Accessories,3.0,0.3,AED
+3303096,Delivered,4427088,Snakebyte Carry Bag (SBU010992) for Nintendo Switc,2024-09-10T11:17:22,UAE,OLD,H69,1,7.99,7.99,33002,Accessories,3.0,0.24,AED
+3302863,Delivered,10642444,"Emporio Armani Womens Quartz Watch, 32mm, Analog D",2024-09-10T06:48:31,UAE,NEW,H62,1,349,349,55008,Women Wrist Watch,3.0,10.47,AED
+3302683,Delivered,10601680,قلم أبل الرقمي من الجيل الأول (MK0C2AM/A) أبيض,2024-09-10T03:02:59,KSA,OLD,H14,1,179,179,17002,Tablets Accessories,2.0,3.58,SAR
+3302559,Returned,10645033,لاب توب لينوفو ثينك باد T410 للأعمال، معالج انتل ك,2024-09-09T22:08:26,KSA,NEW,H49,1,369,369,16012,Laptops,3.0,11.07,SAR
+3302173,RTO-RTN,10616833,Perfume inspired by Arabian Oud Madawi - 100ml,2024-09-09T14:14:46,KSA,NEW,H35,1,99,99,27003,Women Fragrance,2.5,2.48,SAR
+3302173,RTO-RTN,10614066,Perfume inspired by stronger with you Emporio Arma,2024-09-09T14:14:46,KSA,NEW,H35,1,99,99,27002,Men Fragrance,2.5,2.48,SAR
+3302172,RTO-RTN,10625636,"Almajed for Oud Rasmi Night Perfume, 50ml",2024-09-09T14:14:45,KSA,NEW,H35,1,105,105,27002,Men Fragrance,2.5,2.62,SAR
+3301922,Delivered,10632134,Honor 90 Lite Dual-SIM 256GB ROM + 8GB RAM 5G - Cy,2024-09-09T10:15:48,UAE,NEW,H69,1,499,499,17004,Mobiles,2.0,9.98,AED
+3301903,Delivered,10621697,Samsung Odyssey G9 G95SC 49 Inch Oled Gaming Monit,2024-09-09T10:00:21,UAE,OLD,H35,1,3100,3100,16002,Computer Monitors,3.0,93.0,AED
+3301894,Delivered,10580297,Apple AirPods (3rd generation) with MagSafe Chargi,2024-09-09T09:56:21,KSA,OLD,H35,1,499,499,12007,Headphones & wireless audio,2.5,12.48,SAR
+3301869,Delivered,10651918,Google Pixelbook Go Chromebook Ultra Slim and  lig,2024-09-09T09:43:38,UAE,NEW,H69,1,1099,1099,16012,Laptops,3.0,32.97,AED
+3301862,Delivered,59544,Huawei-HUW-FREEBUDS3-WHT FreeBuds 3 Wireless Earph,2024-09-09T09:36:38,KSA,NEW,H35,1,364.09,364.09,12007,Headphones & wireless audio,2.5,9.1,SAR
+3301829,Delivered,10500166,SHARP 22L 2400W HEAVY DUTY DRUM/BARREL 100% COPPER,2024-09-09T09:10:08,UAE,NEW,H76,1,299,299,45025,Vacuum and Cleaning Appliances,3.0,8.97,AED
+3301403,Delivered,10645611,Apple iPhone SE (128GB) - Black,2024-09-08T21:10:26,KSA,OLD,H14,1,599,599,17004,Mobiles,2.0,11.98,SAR
+3301346,Delivered,10649630,HP Probook 430 G2 13.3-Inch (33.78 cms) 1280 X 800,2024-09-08T20:10:03,KSA,NEW,H95,1,399,399,16012,Laptops,3.0,11.97,SAR
+3301315,Delivered,10638067,"Portable Juicer Cup, Cordless Mini Fruit Juice mix",2024-09-08T19:34:38,UAE,OLD,H69,1,39,39,45018,Small appliances,3.0,1.17,AED
+3301314,Delivered,10641689,Popcorn Machine Hot air Pop Popper Maker Small Tab,2024-09-08T19:34:38,UAE,OLD,H69,1,31,31,45018,Small appliances,3.0,0.93,AED
+3301313,Returned,10642033,"12V Mini Car Fridge, 7.5L Portable Car Fridge, Qui",2024-09-08T19:34:38,UAE,OLD,H69,1,85,85,45018,Small appliances,3.0,2.55,AED
+3301118,Returned,10638744,HUAWEI Watch GT 2 46mm Matte Black,2024-09-08T17:11:25,UAE,OLD,H59,1,399,399,12019,Smartwatches,2.0,7.98,AED
+3301117,Delivered,10551471,DAVIDOFF COOL WATER (M) EDT 125ML TESTER,2024-09-08T17:11:25,UAE,NEW,H59,1,79,79,27002,Men Fragrance,2.5,1.98,AED
+3301087,Delivered,10637708,مفرمة لحوم وخضروات وفواكه كهربائية من سيلفر كريست ,2024-09-08T16:44:08,UAE,OLD,H14,1,89,89,45018,Small appliances,3.0,2.67,AED
+3301086,Delivered,10584463,فيليبس بيرفيكت كير GC3920/26 باور لايف مكواة بخار،,2024-09-08T16:44:08,UAE,OLD,H14,1,135,135,45013,Ironing,3.0,4.05,AED
+3300792,Delivered,10536419,قلم أبل MU8F2AMA (الجيل الثاني) - أبيض,2024-09-08T12:31:32,KSA,NEW,H40,1,189,189,17002,Tablets Accessories,2.0,3.78,SAR
+3300721,Delivered,10653860,"BENQ GV11  Portable Projector,200ANSI LMS,HDMI *2 ",2024-09-08T11:47:14,UAE,OLD,H97,1,560,560,13002,Home Theater Projectors,4.5,25.2,AED
+3300425,Delivered,10612118,Kenneth Cole Gents Wrist Watch 10027198A- Silver,2024-09-08T05:42:14,UAE,OLD,H40,1,379,379,55006,Men Wrist Watch,3.0,11.37,AED
+3299817,Delivered,10488366,Apple iPhone 12 Pro Max 256GB - Pacific Blue,2024-09-07T14:56:32,UAE,OLD,H40,1,1849,1849,17004,Mobiles,2.0,36.98,AED
+3299769,Delivered,10645047,GoPro HERO 10 Action Camera BLACK/Single/Black,2024-09-07T14:05:01,UAE,OLD,H1,1,820,820,11006,Professional and digital cameras,3.0,24.6,AED
+3299747,Returned,10648661,ابل ماك بوك برو، 13 بوصة 2020، شريحة ابل M1، لوحة ,2024-09-07T13:42:50,KSA,NEW,H74,1,2899,2899,16012,Laptops,3.0,86.97,SAR
+3299622,Delivered,10545768,Jovan White Musk by Jovan for Men - Eau de Cologne,2024-09-07T10:56:25,UAE,OLD,H61,1,25,25,27002,Men Fragrance,2.5,0.62,AED
+3299621,Delivered,10419321,KIKO Milano Unlimited Double Touch Lipstick 103 Na,2024-09-07T10:56:25,UAE,OLD,H61,1,37,37,22007,Make-up,4.5,1.66,AED
+3299620,Delivered,10648453,Yves Saint Laurent Libre Intense Eau De Parfum For,2024-09-07T10:56:25,UAE,OLD,H61,1,190,190,27003,Women Fragrance,2.5,4.75,AED
+3299457,Delivered,10648526,De'Longhi Magnifica Evo Fully Automatic Bean To Cu,2024-09-07T08:22:23,UAE,OLD,H95,1,1530,1530,45011,Hot Beverage Makers,3.0,45.9,AED
+3299360,Delivered,10452325,"Jack Black Beard Oil, 30ml",2024-09-07T07:08:35,UAE,OLD,H40,3,79,237,22012,Skin Care,4.5,10.66,AED
+3299270,Delivered,10499700,"Dell Latitude 5490,  Intel Core i5-8th Gen 8GB RAM",2024-09-07T05:55:12,KSA,NEW,H95,1,656.33,656.33,16012,Laptops,3.0,19.69,SAR
+3299240,Delivered,10579787,Whirlpool 4 Hotplate Electric Cooker ACMK6030WH - ,2024-09-07T04:32:03,UAE,NEW,H40,1,799,799,47002,Cooker,3.5,27.96,AED
+3298944,Delivered,7270734,"SKY TOUCH Bath Mat 2 Pack, Memory Foam Bath Mat No",2024-09-06T21:27:29,KSA,OLD,H95,1,25,25,43003,Bath,4.5,1.12,SAR
+3298944,Delivered,10647464,Xbox Series X|S Controller White,2024-09-06T21:27:29,KSA,OLD,H95,1,75,75,33004,Controllers,3.0,2.25,SAR
+3298944,Delivered,6042427,"Black+Decker Steam Mop Replacement Pads, Pack of 2",2024-09-06T21:27:29,KSA,OLD,H95,2,20,40,43008,Home Care & Cleaning,4.5,1.8,SAR
+3298944,Delivered,1503830,Xbox Series X Controller Black:,2024-09-06T21:27:29,KSA,OLD,H95,1,75,75,33004,Controllers,3.0,2.25,SAR
+3298558,Returned,67874,"Lenovo ThinkPad x240 Core i5 4th Gen, 4GB RAM, 500",2024-09-06T15:07:34,UAE,OLD,H24,1,329,329,16012,Laptops,3.0,9.87,AED
+3298365,Delivered,10565138,عطر بربري - بربري مستر بربري - عطر للرجال - 100 تي,2024-09-06T12:33:39,KSA,NEW,H96,1,145,145,27002,Men Fragrance,2.5,3.62,SAR
+3298365,Delivered,8625722,كيبل شبكة ايثرنت سلكية عالي الجودة بطول 3 متر بصنف,2024-09-06T12:33:39,KSA,NEW,H96,1,6,6,16003,Computer Accessories,3.0,0.18,SAR
+3298345,Delivered,10642460,"Emporio Armani AR5983 - Wristwatch Men's, Stainles",2024-09-06T12:10:16,UAE,OLD,H35,1,389,389,55006,Men Wrist Watch,3.0,11.67,AED
+3298243,Delivered,10646863,جوال ابل ايفون 13 برو ماكس (256 جيجا) - رصاصي داكن,2024-09-06T10:52:48,KSA,OLD,H40,1,2848,2848,17004,Mobiles,2.0,56.96,SAR
+3297931,Delivered,10645259,Dell Latitude E6540 15.6 Inch Laptop  Core i5 4th ,2024-09-06T04:47:00,KSA,NEW,H25,1,474,474,16012,Laptops,3.0,14.22,SAR
+3297848,Delivered,1503740,وحدة تحكم اجهزة Xbox السلسلة X باللون الاسود,2024-09-06T00:21:48,KSA,NEW,H50,2,75,150,33004,Controllers,3.0,4.5,SAR
+3297771,Delivered,10650938,أبل ايفون 14 برو ماكس 128 جيجابايت - أرجواني غامق,2024-09-05T21:52:12,KSA,NEW,H40,1,3699,3699,17004,Mobiles,2.0,73.98,SAR
+3297296,Returned,10638114,"M5 TV Video Games for Kids ,M5 Video Game Console ",2024-09-05T14:44:13,UAE,OLD,H6,1,218,218,33001,Consoles,3.0,6.54,AED
+3297113,Delivered,10502968,Jovan Musk EDC 88ML For Men,2024-09-05T12:19:41,UAE,OLD,H61,1,30,30,27002,Men Fragrance,2.5,0.75,AED
+3297106,Delivered,10619124,هاتف ريدمي 12 ثنائي الشريحة بذاكرة رام سعة 8 جيجاب,2024-09-05T12:12:15,KSA,OLD,H49,1,499,499,17004,Mobiles,2.0,9.98,SAR
+3297033,Delivered,10642437,EMPORIO ARMANI - Men's Watches - ARMANI CERAMICO -,2024-09-05T10:35:50,UAE,OLD,H62,1,399,399,55006,Men Wrist Watch,3.0,11.97,AED
+3296598,P-RTN,10623326,Apple Ipad Air 2 9.7 Inch Wi-Fi +Cellular 16GB 2GB,2024-09-05T01:27:56,UAE,NEW,H95,1,259,259,17005,Tablets,2.0,5.18,AED
+3296598,P-RTN,10638223,Apple ipad Air 1 2013 9.7 Inch 1st Generation Wi-F,2024-09-05T01:27:56,UAE,NEW,H95,1,199,199,17005,Tablets,2.0,3.98,AED

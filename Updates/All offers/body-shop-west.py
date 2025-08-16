@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 import os
 
 # Parameters
-days_back = 5
+days_back = 50
 end_date = datetime.now().date()
 start_date = end_date - timedelta(days=days_back)
 
@@ -18,8 +18,8 @@ output_dir = os.path.join(script_dir, '..', 'output data')
 os.makedirs(output_dir, exist_ok=True)
 
 # Load data from both files
-ksa_df = pd.read_csv(os.path.join(input_dir, 'ksa.csv'))
-uae_df = pd.read_csv(os.path.join(input_dir, 'uae.csv'))
+ksa_df = pd.read_csv(os.path.join(input_dir, 'KSA.csv'))
+uae_df = pd.read_csv(os.path.join(input_dir, 'UAE.csv'))
 
 # Combine dataframes
 df = pd.concat([ksa_df, uae_df], ignore_index=True)

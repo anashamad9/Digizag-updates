@@ -19,7 +19,7 @@ output_dir = os.path.join(script_dir, '..', 'output data')
 os.makedirs(output_dir, exist_ok=True)
 
 # Read the CSV file from the input data folder, skipping initial report header rows
-input_file = os.path.join(input_dir, 'Individual-Item-Report (1).csv')
+input_file = os.path.join(input_dir, 'Individual-Item-Report (3).csv')
 df = pd.read_csv(input_file, skiprows=range(4))
 
 # Convert 'Transaction Date' to datetime, coercing errors and dropping NaT values
@@ -63,5 +63,5 @@ output_df = pd.DataFrame({
 })
 
 # Save to CSV in the output data folder
-output_file = os.path.join(output_dir, 'adidas.csv')
+output_file = os.path.join(output_dir, 'adidasssss.csv')
 output_df.to_csv(output_file, index=False)

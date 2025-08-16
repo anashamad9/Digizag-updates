@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 import os
 
 # Parametersss
-days_back = 4
+days_back = 140
 end_date = datetime.now().date()
 start_date = end_date - timedelta(days=days_back)
 
@@ -18,7 +18,7 @@ output_dir = os.path.join(script_dir, '..', 'output data')
 os.makedirs(output_dir, exist_ok=True)
 
 # Load the Excel data from the input data folder
-input_file = os.path.join(input_dir, 'DigiZag_MAGRABi_Report.xlsx')
+input_file = os.path.join(input_dir, 'DigiZag_MAGRABi_Report (2).xlsx')
 df = pd.read_excel(input_file, sheet_name='Sheet1')
 
 # Convert 'date' column to datetime, handling mixed formats

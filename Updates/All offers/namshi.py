@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 import os
 
 # Parameters
-days_back = 3
+days_back = 1
 end_date = datetime.now().date() + timedelta(days=1)  # 2025-07-14 to include 2025-07-13
 start_date = end_date - timedelta(days=days_back + 1)  # 2025-07-10 for days_back = 3
 today = datetime.now().date()  # 2025-07-13
@@ -19,7 +19,7 @@ output_dir = os.path.join(script_dir, '..', 'output data')
 os.makedirs(output_dir, exist_ok=True)
 
 # Read the Excel file from the input data folder
-input_file = os.path.join(input_dir, 'sales (5).xlsx')
+input_file = os.path.join(input_dir, 'sales (6).xlsx')
 df = pd.read_excel(input_file)
 
 # Filter for Namshi data

@@ -1,9 +1,0 @@
-"Puchase Date","Order Number",Status,"Coupon Code",Country,"Grand Total incl Tax","Shipping Amount",Tax,"Cash on Delivery Charges","Store Credit Used","Total Refunded",FINAL_TOTAL,TOTAL_ORDERED_QTY,TOTAL_RETURN_QTY,Type,Commission,Category,COMPANY,"COUPON CODE",Customer_Type
-"2025-08-20 00:32:54",PO-AE-250820-10902,outfordelivery,W114,"United Arab Emirates",41.09,2.51,1.84,0.00,0.00,0.00,36.74,2.0000,0.0000,CPS,0.1,Affliate,DigiZag,W114,New
-"2025-08-20 02:24:45",PO-KW-250820-10952,complete,ALC4,Kuwait,59.17,1.75,0.00,0.00,0.00,0.00,57.42,3.0000,0.0000,CPS,.1,Affliate,DigiZag,ALC4,Existing
-"2025-08-20 12:56:15",PO-AE-250820-11066,outfordelivery,BL3,"United Arab Emirates",14.59,2.51,0.57,0.00,0.00,0.00,11.50,1.0000,0.0000,CPS,.1,Affliate,DigiZag,BL3,Existing
-"2025-08-20 14:30:56",PO-SA-250820-11098,complete,ALC4,"Saudi Arabia",89.41,2.46,11.66,0.00,2.46,0.00,77.75,5.0000,0.0000,CPS,.1,Affliate,DigiZag,ALC4,Existing
-"2025-08-20 17:17:49",PO-KW-250820-11164,processing,Ck22,Kuwait,50.98,1.75,0.00,0.00,0.00,0.00,49.23,4.0000,0.0000,CPS,.1,Affliate,DigiZag,Ck22,Existing
-"2025-08-20 18:42:04",PO-AE-250820-11190,complete,W114,"United Arab Emirates",21.61,2.51,0.91,0.00,0.00,0.00,18.18,3.0000,0.0000,CPS,0.1,Affliate,DigiZag,W114,New
-"2025-08-21 00:54:47",PO-KW-250821-11360,processing,WAF,Kuwait,83.20,1.75,0.00,0.00,0.00,0.00,81.45,6.0000,0.0000,CPS,.1,Affliate,DigiZag,WAF,Existing
-"2025-08-21 02:58:08",PO-SA-250821-11392,processing,Waf,"Saudi Arabia",66.38,2.46,8.34,0.00,0.00,0.00,55.58,4.0000,0.0000,CPS,.1,Affliate,DigiZag,Waf,Existing

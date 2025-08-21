@@ -18,7 +18,7 @@ output_dir = os.path.join(script_dir, '..', 'output data')
 os.makedirs(output_dir, exist_ok=True)
 
 # Load the CSV data from the input data folder
-input_file = os.path.join(input_dir, 'Social Affiliate - digizag_Untitled Page_Pivot table.csv')
+input_file = os.path.join(input_dir, 'Social Affiliate - digizag_Untitled Page_Pivot table (1).csv')
 df = pd.read_csv(input_file)
 
 # Convert 'Date' column to datetime

@@ -1,0 +1,34 @@
+Order Id,Order Status,Item ID,Item ID,Order Date,Geo,Customer Type,Coupon Code,Quanity,Unit Price,Sale Amount,category_id,category_name,commission_rate,Payout,Currency
+3572850,Processing,10244096,Lenovo ThinkPad T440 Laptop Intel Core i5-4th Gene,2025-08-19T13:09:25,UAE,NEW,H100,1,244.95,244.95,16012,Laptops,3.0,7.35,AED
+3572695,Packed,10801200,Samsung Galaxy S22 Ultra Single SIM 5G 8GB RAM 256,2025-08-19T07:28:28,KSA,NEW,ZZ99,1,1899,1899,17004,Mobiles,2.0,37.98,SAR
+3572663,Processing,5533334,Apple iPhone 12 Pro 128GB - Gold,2025-08-19T06:47:46,UAE,OLD,H35,1,1079,1079,17004,Mobiles,2.0,21.58,AED
+3572615,Processing,210761,Apple iPhone 12  64GB -Black,2025-08-19T05:28:07,UAE,OLD,H3,1,685,685,17004,Mobiles,2.0,13.7,AED
+3572609,Shipped,10742235,Asics GEL-KAYANO 29 mens RUNNING SHOES -41.5 EU - ,2025-08-19T04:32:03,UAE,OLD,H35,1,299,299,54016,Sport Shoes-Men,4.5,13.46,AED
+3572467,Packed,10686574,Fenty Beauty by Rihanna Pro Filt'R Instant Retouch,2025-08-18T20:03:32,UAE,NEW,ZZ57,1,69,69,22007,Make-up,4.5,3.1,AED
+3572467,Packed,10684405,ves Saint Laurent Couture Palette - 01 Tuxedo,2025-08-18T20:03:32,UAE,NEW,ZZ57,1,105,105,22007,Make-up,4.5,4.72,AED
+3572466,Packed,10771362,Creed Queen of Silk Eau de Parfum 75ml,2025-08-18T20:03:32,UAE,NEW,ZZ57,1,495,495,27001,Unisex Fragrance,2.5,12.38,AED
+3572460,Shipped,10774630,كمبيوتر ديل لاتيتيود 7400 للأعمال | معالج كور i7 م,2025-08-18T19:36:35,UAE,NEW,H100,1,649,649,16012,Laptops,3.0,19.47,AED
+3572441,Shipped,10642393,Deerma CM990-WHITE CM990 Dust Mite Vacuum Cleaner ,2025-08-18T18:50:34,UAE,NEW,ZZ21,1,189,189,45025,Vacuum and Cleaning Appliances,3.0,5.67,AED
+3572440,Shipped,10800491,"Dreame X40 Ultra Complete Robot Vacuum Cleaner, 12",2025-08-18T18:50:34,UAE,NEW,ZZ21,1,2199,2199,45025,Vacuum and Cleaning Appliances,3.0,65.97,AED
+3572379,Shipped,174247,Apple iPhone XS Max 256GB - Space Grey,2025-08-18T16:24:34,UAE,NEW,H45,1,665,665,17004,Mobiles,2.0,13.3,AED
+3572233,Delivered,347118,"Apple Watch Series 6 (44mm, GPS) Graphite Stainles",2025-08-18T11:08:05,UAE,NEW,ZZ3,1,545,545,12019,Smartwatches,2.0,10.9,AED
+3572111,Delivered,10762507,Acer Aspire 3 Spin 14 Convertible NB 13th Gen Inte,2025-08-18T08:36:57,UAE,OLD,H35,1,999,999,16012,Laptops,3.0,29.97,AED
+3572046,Processing,10767938,A78 5G Dual SIM Glowing Black 8GB RAM 256GB,2025-08-18T06:32:37,UAE,OLD,H100,1,229.99,229.99,17004,Mobiles,2.0,4.6,AED
+3572045,Packed,10350577,Xiaomi Mi TV Stick 2K HDR HDMI Quad-core DDR4 Blue,2025-08-18T06:32:37,UAE,OLD,H100,1,70,70,18002,TV Parts & Accessories,2.0,1.4,AED
+3571995,Delivered,10761008,"iTouchless 3-Pack Deodorizers Absorbs, Natural Act",2025-08-18T04:04:47,UAE,OLD,H100,1,20,20,43013,Kitchen Storage & Organization,4.5,0.9,AED
+3571994,Packed,10700429,Lenovo Thinkplus Xt61G Wireless Bone Conduction He,2025-08-18T04:04:47,UAE,OLD,H100,1,39,39,12007,Headphones & wireless audio,2.5,0.98,AED
+3571993,Packed,10794530,Mini Wireless Smart Portable Espresso Coffee Machi,2025-08-18T04:04:45,UAE,OLD,H100,1,100,100,45011,Hot Beverage Makers,3.0,3.0,AED
+3571981,Processing,10750251,لاب توب ديل لاتيتيود 7480 ، كور i5 - الجيل السادس ,2025-08-18T02:48:43,KSA,OLD,ZZ9,1,719,719,16012,Laptops,3.0,21.57,SAR
+3571822,Processing,10658631,DELL Latitude E6430 14 inches Laptop 3rd Generatio,2025-08-17T19:56:03,UAE,NEW,H45,1,243,243,16012,Laptops,3.0,7.29,AED
+3571725,Delivered,10617082,Apple Earphone Airpods Pro (2nd Gen) With Magsafe ,2025-08-17T16:44:16,UAE,NEW,H5,1,599,599,12007,Headphones & wireless audio,2.5,14.98,AED
+3571586,Processing,10768091,Nova 3i Dual SIM Black 4GB RAM 128GB 4G LTE,2025-08-17T13:44:51,UAE,OLD,H45,1,180,180,17004,Mobiles,2.0,3.6,AED
+3571531,Shipped,10796004,Dell Latitude 3190 2-in-1 Laptop - 8GB RAM - 128GB,2025-08-17T11:45:21,UAE,NEW,ZZ4,1,270,270,16012,Laptops,3.0,8.1,AED
+3571503,Processing,10588000,أبل آيفون 14 برو ماكس 256 جيجابايت - ذهبي,2025-08-17T11:04:18,UAE,OLD,H35,1,2135,2135,17004,Mobiles,2.0,42.7,AED
+3571485,Delivered,10775181,Emporio Armani Men's 'Fashion Watch' Quartz Stainl,2025-08-17T10:46:16,UAE,NEW,H33,1,292,292,55006,Men Wrist Watch,3.0,8.76,AED
+3571163,Delivered,10793628,"MOTOROLA Edge 40 neo, 12 GB+256GB, IP68 Waterproof",2025-08-16T20:39:05,UAE,OLD,ZZ48,1,625,625,17004,Mobiles,2.0,12.5,AED
+3571111,Delivered,335656,"Apple Watch Series 6+ Nike (44mm, GPS) Space Grey ",2025-08-16T19:23:36,UAE,OLD,H100,1,579,579,12019,Smartwatches,2.0,11.58,AED
+3571110,Delivered,10601483,Philips Lumea Advanced Ipl Hair Removal Device Wit,2025-08-16T19:21:33,UAE,OLD,H35,1,749,749,25008,Shaving & Hair Removal Appliances,3.0,22.47,AED
+3571083,Delivered,10617966,"Dell Inspiron 15-3593 , 15.6'' FHD Touch Display ,",2025-08-16T18:50:08,UAE,NEW,ZZ46,1,1200,1200,16012,Laptops,3.0,36.0,AED
+3571078,Delivered,10697069,Apple iPhone 15 Pro Max 256GB Physical SIM Card Du,2025-08-16T18:40:26,UAE,NEW,H97,1,2819,2819,17004,Mobiles,2.0,56.38,AED
+3571058,Processing,177197,Apple iPhone 12 Pro 512GB - Graphite,2025-08-16T18:13:03,UAE,NEW,ZZ57,1,1199,1199,17004,Mobiles,2.0,23.98,AED
+3570976,Processing,210285,Apple iPhone 12 128GB - Purple,2025-08-16T16:28:05,UAE,OLD,H100,1,879,879,17004,Mobiles,2.0,17.58,AED

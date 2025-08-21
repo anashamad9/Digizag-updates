@@ -19,7 +19,7 @@ output_dir = os.path.join(script_dir, '..', 'output data')
 os.makedirs(output_dir, exist_ok=True)
 
 # Read the Excel file from the input data folder
-input_file = os.path.join(input_dir, 'sales.xlsx')
+input_file = os.path.join(input_dir, 'sales (5).xlsx')
 df = pd.read_excel(input_file)
 
 # Filter for Namshi data

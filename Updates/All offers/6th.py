@@ -18,7 +18,7 @@ output_dir = os.path.join(script_dir, '..', 'output data')
 os.makedirs(output_dir, exist_ok=True)
 
 # Load the Excel data from the input data folder
-input_file = os.path.join(input_dir, 'DigiZag X 6thStreet Performance Tracker.xlsx')
+input_file = os.path.join(input_dir, 'DigiZag X 6thStreet Performance Tracker (1).xlsx')
 df = pd.read_excel(input_file)
 
 # Convert 'order_date' column to datetime

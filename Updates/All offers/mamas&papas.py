@@ -18,7 +18,7 @@ output_dir = os.path.join(script_dir, '..', 'output data')
 os.makedirs(output_dir, exist_ok=True)
 
 # Load the CSV data from the input data folder
-input_file = os.path.join(input_dir, 'MNP _ DigiZag Report_Page 1_Table.csv')
+input_file = os.path.join(input_dir, 'MNP _ DigiZag Report_Page 1_Table (1).csv')
 df = pd.read_csv(input_file)
 
 # Convert 'created_date' column to datetime

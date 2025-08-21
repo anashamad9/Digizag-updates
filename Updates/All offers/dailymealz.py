@@ -18,7 +18,7 @@ output_dir = os.path.join(script_dir, '..', 'output data')
 os.makedirs(output_dir, exist_ok=True)
 
 # Load the CSV data from the input data folder
-input_file = os.path.join(input_dir, 'Dailymealz - DigiZag (commission report)_Detailed Code usages_Table.csv')
+input_file = os.path.join(input_dir, 'Dailymealz - DigiZag (commission report)_Detailed Code usages_Table (1).csv')
 df = pd.read_csv(input_file)
 
 # Convert 'Voucher_applied_date' to datetime with a flexible format

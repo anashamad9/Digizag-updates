@@ -19,7 +19,7 @@ output_dir = os.path.join(script_dir, '..', 'output data')
 os.makedirs(output_dir, exist_ok=True)
 
 # Read the CSV file from the input data folder
-input_file = os.path.join(input_dir, 'DigiZag x Level Shoes_All Orders_Table (4).csv')
+input_file = os.path.join(input_dir, 'DigiZag x Level Shoes_All Orders_Table (5).csv')
 df = pd.read_csv(input_file)
 
 # Parse Order Date to datetime

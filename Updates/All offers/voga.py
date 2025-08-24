@@ -19,8 +19,8 @@ output_dir = os.path.join(script_dir, '..', 'output data')
 os.makedirs(output_dir, exist_ok=True)
 
 # Read the CSV files from the input data folder
-df_ftu = pd.read_csv(os.path.join(input_dir, 'FTU 3.csv'))
-df_rtu = pd.read_csv(os.path.join(input_dir, 'RTU 3.csv'))
+df_ftu = pd.read_csv(os.path.join(input_dir, 'FTU.csv'))
+df_rtu = pd.read_csv(os.path.join(input_dir, 'RTU.csv'))
 
 # Convert Period to MM-DD-YYYY format and filter data for the last 'days_back' days, excluding the current day
 for df in [df_ftu, df_rtu]:

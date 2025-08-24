@@ -1,0 +1,17 @@
+"Puchase Date","Order Number",Status,"Coupon Code",Country,"Grand Total incl Tax","Shipping Amount",Tax,"Cash on Delivery Charges","Store Credit Used","Total Refunded",FINAL_TOTAL,TOTAL_ORDERED_QTY,TOTAL_RETURN_QTY,Type,Commission,Category,COMPANY,"COUPON CODE",Customer_Type
+"2025-08-23 01:10:05",PO-AE-250823-12292,complete,Alc4,"United Arab Emirates",151.47,2.51,7.09,0.00,0.00,0.00,141.86,7.0000,0.0000,CPS,.1,Affliate,DigiZag,Alc4,Existing
+"2025-08-23 02:00:26",PO-SA-250823-12320,outfordelivery,NNN,"Saudi Arabia",66.75,2.46,8.38,0.00,0.00,0.00,55.90,3.0000,0.0000,CPS,.1,Affliate,DigiZag,NNN,Existing
+"2025-08-23 03:17:37",PO-KW-250823-12332,delivered,Ck22,Kuwait,48.42,0.00,0.00,0.00,0.00,0.00,48.42,3.0000,0.0000,CPS,.1,Affliate,DigiZag,Ck22,Existing
+"2025-08-23 11:46:54",PO-AE-250823-12387,complete,W112,"United Arab Emirates",59.80,2.51,2.73,0.00,0.00,0.00,54.55,4.0000,0.0000,CPS,0.1,Affliate,DigiZag,W112,Existing
+"2025-08-23 15:22:50",PO-KW-250823-12458,complete,CK22,Kuwait,22.00,1.75,0.00,0.00,0.00,0.00,20.25,4.0000,0.0000,CPS,.1,Affliate,DigiZag,CK22,Existing
+"2025-08-23 16:13:01",PO-SA-250823-12473,partially_shipped,CR7,"Saudi Arabia",42.93,2.46,5.28,0.00,0.00,0.00,35.19,5.0000,0.0000,CPS,.1,Affliate,DigiZag,CR7,Existing
+"2025-08-23 16:44:15",PO-KW-250823-12493,complete,CK22,Kuwait,24.16,1.75,0.00,0.00,0.00,0.00,22.41,2.0000,0.0000,CPS,.1,Affliate,DigiZag,CK22,New
+"2025-08-23 18:39:22",PO-KW-250823-12552,complete,W27,Kuwait,102.82,1.75,0.00,0.00,0.00,0.00,101.07,8.0000,0.0000,CPS,.1,Affliate,DigiZag,W27,Existing
+"2025-08-23 20:03:20",PO-QA-250823-12599,processing,Waf,Qatar,75.25,2.54,0.00,0.00,0.00,0.00,72.71,12.0000,0.0000,CPS,.1,Affliate,DigiZag,Waf,Existing
+"2025-08-23 20:05:25",PO-AE-250823-12601,processing,W112,"United Arab Emirates",41.48,2.51,1.85,0.00,0.00,0.00,37.11,5.0000,0.0000,CPS,0.1,Affliate,DigiZag,W112,New
+"2025-08-23 20:12:43",PO-SA-250823-12604,outfordelivery,W75,"Saudi Arabia",41.38,2.46,4.88,1.50,0.00,0.00,32.53,3.0000,0.0000,CPS,0.1,Affliate,DigiZag,W75,Existing
+"2025-08-23 20:27:53",PO-AE-250823-12623,complete,q21,"United Arab Emirates",25.89,2.51,1.11,0.00,0.00,0.00,22.27,5.0000,0.0000,CPS,.1,Affliate,DigiZag,q21,Existing
+"2025-08-23 22:21:22",PO-KW-250823-12708,complete,Ck22,Kuwait,37.57,1.75,0.00,0.00,0.00,0.00,35.82,3.0000,0.0000,CPS,.1,Affliate,DigiZag,Ck22,Existing
+"2025-08-24 01:29:47",PO-SA-250824-12804,processing,Jhn10,"Saudi Arabia",19.83,2.46,2.27,0.00,0.00,0.00,15.10,2.0000,0.0000,CPS,.1,Affliate,DigiZag,Jhn10,New
+"2025-08-24 09:45:38",PO-AE-250824-12879,processing,W112,"United Arab Emirates",76.16,2.51,3.51,0.00,0.00,0.00,70.14,7.0000,0.0000,CPS,0.1,Affliate,DigiZag,W112,Existing
+"2025-08-24 10:18:48",PO-AE-250824-12884,processing,q21,"United Arab Emirates",27.45,2.51,1.19,0.00,0.00,0.00,23.75,3.0000,0.0000,CPS,.1,Affliate,DigiZag,q21,Existing

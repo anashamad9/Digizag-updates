@@ -18,7 +18,7 @@ output_dir = os.path.join(script_dir, '..', 'output data')
 os.makedirs(output_dir, exist_ok=True)
 
 # Load the Excel data from the input data folder
-input_file = os.path.join(input_dir, 'DigiZag_MAGRABi_Report (2).xlsx')
+input_file = os.path.join(input_dir, 'DigiZag_MAGRABi_Report.xlsx')
 df = pd.read_excel(input_file, sheet_name='Sheet1')
 
 # Convert 'date' column to datetime, handling mixed formats

@@ -19,7 +19,7 @@ output_dir = os.path.join(script_dir, '..', 'output data')
 os.makedirs(output_dir, exist_ok=True)
 
 # Read the CSV file from the input data folder
-input_file = os.path.join(input_dir, 'EG DigiZag Coupon Dashboard_Affiliate Summary_Table (3).csv')
+input_file = os.path.join(input_dir, 'EG DigiZag Coupon Dashboard_Affiliate Summary_Table.csv')
 df = pd.read_csv(input_file)
 
 # Convert egy_date to MM-DD-YYYY format and filter data for the last 'days_back' days including today

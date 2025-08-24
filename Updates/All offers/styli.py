@@ -19,7 +19,7 @@ output_dir = os.path.join(script_dir, '..', 'output data')
 os.makedirs(output_dir, exist_ok=True)
 
 # Read the CSV file from the input data folder
-input_file = os.path.join(input_dir, 'Styli - Affiliate Payout_Raw Data - Order Level_Table (1).csv')
+input_file = os.path.join(input_dir, 'Styli - Affiliate Payout_Raw Data - Order Level_Table.csv')
 df = pd.read_csv(input_file)
 
 # Parse Order Date to datetime

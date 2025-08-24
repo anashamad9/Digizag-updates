@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 folder_path = "/Users/digizagoperation/Desktop/Digizag/Updates/Output Data"
 
 # Read the last update dates
-update_df = pd.read_csv(os.path.join(folder_path, "Admin view_Performance Overview_Table (35).csv"))
+update_df = pd.read_csv(os.path.join(folder_path, "Admin view_Performance Overview_Table.csv"))
 print("update_df columns:", update_df.columns.tolist())
 print("update_df sample:", update_df[['Offer id', 'Last Update']].head())
 update_dict = dict(zip(update_df["Offer id"], update_df["Last Update"]))

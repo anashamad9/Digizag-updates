@@ -9,12 +9,12 @@ import re
 days_back = 50
 OFFER_ID = 1283
 GEO = "ksa"
-STATUS_DEFAULT = "approved"
+STATUS_DEFAULT = "pending"
 DEFAULT_PCT_IF_MISSING = 0.0  # fraction fallback when percent missing (0.30 == 30%)
 
 # Local files
 AFFILIATE_XLSX = "Offers Coupons.xlsx"   # multi-sheet Excel you uploaded
-REPORT_CSV     = "Individual-Item-Report.csv"
+REPORT_CSV     = "Individual-Item-Report (2).csv"
 
 # Offer -> worksheet name mapping
 OFFER_SHEET_BY_ID = {

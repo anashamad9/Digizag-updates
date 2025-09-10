@@ -6,7 +6,7 @@ import re
 # =======================
 # CONFIG
 # =======================
-days_back = 2
+days_back = 30
 OFFER_ID = 1256
 GEO = "no-geo"
 STATUS_DEFAULT = "pending"
@@ -15,7 +15,7 @@ DEFAULT_PCT_IF_MISSING = 0.0  # fraction fallback when percent missing (0.30 == 
 # Local files
 AFFILIATE_XLSX = "Offers Coupons.xlsx"   # multi-sheet Excel you uploaded
 AFFILIATE_SHEET = "AirAlo"               # <-- sheet for this offer
-REPORT_XLSX     = "8682-AdvancedActionListi.xlsx"
+REPORT_XLSX     = "8682-AdvancedActionListi (3).xlsx"
 
 # =======================
 # PATHS

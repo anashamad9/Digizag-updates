@@ -1,9 +1,0 @@
-Order Id,Order Status,Item ID,Item ID,Order Date,Geo,Customer Type,Coupon Code,Quanity,Unit Price,Sale Amount,category_id,category_name,commission_rate,Payout,Currency
-3574833,Pending,10763459,جوال ايفون 14 برو من ابل (256 جيجا) - فضي,2025-08-22T11:52:06,KSA,OLD,ZZ49,1,2159,2159,17004,Mobiles,2.0,43.18,SAR
-3574723,Shipped,10735171,JBL Endurance Peak 3 Dust and Water Proof True Wir,2025-08-22T07:54:20,UAE,OLD,ZZ4,1,199,199,12007,Headphones & wireless audio,2.5,4.97,AED
-3574615,Shipped,10775170,Emporio Armani Men's Silver Dial Stainless Steel B,2025-08-22T03:29:27,UAE,OLD,ZZ4,1,350,350,55006,Men Wrist Watch,3.0,10.5,AED
-3574605,Processing,10690889,Dell Latitude E5470 | Intel Core i7-6600U 2.30GHz ,2025-08-22T03:05:41,UAE,OLD,ZZ73,1,435,435,16012,Laptops,3.0,13.05,AED
-3574322,Processing,10654311,Women's Jacqueline Analog Watch ES3433,2025-08-21T15:17:03,UAE,OLD,H97,1,220,220,55008,Women Wrist Watch,3.0,6.6,AED
-3574298,Pending,10753472,Apple Macbook Air 2019 Model (MVFJ2) | 13-Inch UHD,2025-08-21T14:21:45,UAE,NEW,H35,1,1239,1239,16012,Laptops,3.0,37.17,AED
-3574127,Processing,10756416,ديل لاتيتيود 3350 شاشة لمس 13.3 بوصة ، شاشة انتل ك,2025-08-21T08:56:44,KSA,NEW,H80,1,414,414,16012,Laptops,3.0,12.42,SAR
-3574021,Shipped,10795416,ساعة أبل الذكية السلسلة 9 - 45 ملم/مل (جي بي إس) (,2025-08-21T04:37:36,KSA,NEW,H11,1,899,899,12019,Smartwatches,2.0,17.98,SAR

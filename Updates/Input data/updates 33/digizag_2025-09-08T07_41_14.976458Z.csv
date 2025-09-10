@@ -1,0 +1,42 @@
+Order Id,Order Status,Item ID,Item ID,Order Date,Geo,Customer Type,Coupon Code,Quanity,Unit Price,Sale Amount,category_id,category_name,commission_rate,Payout,Currency
+3588437,Pending,10793628,"MOTOROLA Edge 40 neo, 12 GB+256GB, IP68 Waterproof",2025-09-08T07:34:52,UAE,OLD,H35,1,625,625,17004,Mobiles,2.0,12.5,AED
+3588187,Processing,10796004,Dell Latitude 3190 2-in-1 Laptop | 8GB RAM - 128GB,2025-09-07T20:43:36,UAE,NEW,H97,1,270,270,16012,Laptops,3.0,8.1,AED
+3587354,Processing,10750323,"HP ProBook 6460B Business Laptop, Intel Core i5-2n",2025-09-06T20:52:35,KSA,NEW,H11,1,404,404,16012,Laptops,3.0,12.12,SAR
+3587203,Processing,210680,Apple iPhone 12 128GB -White,2025-09-06T17:35:27,UAE,OLD,ZZ3,1,879,879,17004,Mobiles,2.0,17.58,AED
+3587064,Packed,10789914,"Midea Bme62058Ffd-D 60cm Gas Cooker, With Full Saf",2025-09-06T14:39:16,UAE,OLD,ZZ72,1,649,649,47002,Cooker,3.5,22.72,AED
+3587011,Processing,10679811,iPad (6th generation) 128 GB WIFI + CELLULAR Silve,2025-09-06T13:16:38,UAE,OLD,H4,1,699,699,17005,Tablets,2.0,13.98,AED
+3586868,Shipped,10755941,Motorola G85 5G Smartphone | 12GB RAM + 256GB Stor,2025-09-06T09:46:46,KSA,NEW,ZZ49,1,738,738,17004,Mobiles,2.0,14.76,SAR
+3586705,Shipped,10775144,"EMPORIO ARMANI Outlet Analog AR80007, multicoloure",2025-09-06T06:45:42,UAE,OLD,H4,1,350,350,55008,Women Wrist Watch,3.0,10.5,AED
+3586705,Shipped,10683841,COACH 14503985 Blue Dial Blue Stainless Bracelet B,2025-09-06T06:45:42,UAE,OLD,H4,1,253,253,55006,Men Wrist Watch,3.0,7.59,AED
+3586700,Shipped,10610782,Apple iPhone 14 Pro Max 256GB - Silver,2025-09-06T06:42:14,UAE,NEW,H12,1,2089,2089,17004,Mobiles,2.0,41.78,AED
+3586508,Packed,10795376,حذاء رياضي ACBC رجالي أسود اللون بسحاب Advance Com,2025-09-05T22:00:05,UAE,OLD,H50,1,40,40,54007,Fashion Shoes-Men,4.5,1.8,AED
+3586507,Shipped,10804829,حذاء مدرسة بورج كيدز BTS-2 - أسود,2025-09-05T22:00:05,UAE,OLD,H50,1,12,12,54007,Fashion Shoes-Men,4.5,0.54,AED
+3586507,Shipped,10789667,عروسه 1907,2025-09-05T22:00:05,UAE,OLD,H50,1,19,19,54007,Fashion Shoes-Men,4.5,0.86,AED
+3586507,Shipped,10804717,حذاء رسمي من الجلد للرجال من بيروود موديل BWD 68,2025-09-05T22:00:05,UAE,OLD,H50,1,25,25,54007,Fashion Shoes-Men,4.5,1.12,AED
+3586507,Shipped,10805152,حذاء كريكيت دي إس سي بيمر للرجال والأولاد,2025-09-05T22:00:05,UAE,OLD,H50,1,20,20,54007,Fashion Shoes-Men,4.5,0.9,AED
+3586272,Processing,10684399,HP EliteBook x360 1030 G2 Notebook 2-in-1 Converti,2025-09-05T17:21:46,UAE,NEW,H97,1,855,855,16012,Laptops,3.0,25.65,AED
+3586218,Shipped,10614303,Rochas Desir De Rochas Femme 75ml EDT -Tester,2025-09-05T16:45:17,KSA,OLD,H14,1,109,109,27003,Women Fragrance,2.5,2.72,SAR
+3586218,Shipped,10565065,CALVIN KLEIN ETERNITY MOMENT (W) EDP 100ML TESTER,2025-09-05T16:45:17,KSA,OLD,H14,1,87,87,27003,Women Fragrance,2.5,2.17,SAR
+3585928,Shipped,10801813,Apple iPhone 11 (64GB) - White,2025-09-05T11:25:10,UAE,OLD,H35,1,628,628,17004,Mobiles,2.0,12.56,AED
+3585879,Delivered,10700724,"KDG 2 Pack Cordless Table Lamp,Portable LED Desk L",2025-09-05T10:25:14,UAE,OLD,H35,1,35,35,43014,Lighting,4.5,1.58,AED
+3585879,Delivered,10734823,Milano Brass Shattaf Set Chrome Plated - Milano- S,2025-09-05T10:25:14,UAE,OLD,H35,1,35,35,44012,Plumbing and Bath,4.5,1.58,AED
+3585878,Delivered,10762418,Blue Leather Men's 3923 Formal Shoes,2025-09-05T10:25:14,UAE,OLD,H35,1,49,49,54007,Fashion Shoes-Men,4.5,2.2,AED
+3585878,Delivered,10783677,Burwood Women's Chelsea Boot 39/BLACK,2025-09-05T10:25:14,UAE,OLD,H35,1,39,39,54010,Fashion shoes-Women,4.5,1.76,AED
+3585878,Delivered,10742753,DWIND 2Pcs Artificial Hanging Flower Hanging Green,2025-09-05T10:25:14,UAE,OLD,H35,1,19,19,43009,Home Decor,4.5,0.86,AED
+3585878,Delivered,10730986,Nelle Harper Men's Leather Bifold Wallet,2025-09-05T10:25:14,UAE,OLD,H35,1,9,9,53004,Wallet for men,4.5,0.4,AED
+3585878,Delivered,10762581,"Redare Solar String Lights Outdoor,Warm White Crys",2025-09-05T10:25:14,UAE,OLD,H35,1,39,39,43014,Lighting,4.5,1.76,AED
+3585878,Delivered,10783992,Blue Leather Men's 3923 Brown Formal Shoes 45 EU,2025-09-05T10:25:14,UAE,OLD,H35,1,39,39,54007,Fashion Shoes-Men,4.5,1.76,AED
+3585877,Delivered,10789623,Centrino Black Formal & Dress-Men's Shoes,2025-09-05T10:25:14,UAE,OLD,H35,1,20,20,54007,Fashion Shoes-Men,4.5,0.9,AED
+3585877,Delivered,10781278,VATPAVE Mens Victorian Suit Vest Steampunk Gothic ,2025-09-05T10:25:14,UAE,OLD,H35,1,115,115,51027,Men's Outerwear,4.5,5.18,AED
+3585877,Delivered,10804653,Centrino Boy's 6043-02 sneaker,2025-09-05T10:25:14,UAE,OLD,H35,1,11,11,54005,Fashion Shoes-Boys,4.5,0.5,AED
+3585877,Delivered,10805341,Touch Sensor Bar Table Lamps Portable Cordless Cha,2025-09-05T10:25:14,UAE,OLD,H35,1,11,11,43014,Lighting,4.5,0.5,AED
+3585877,Delivered,10688536,PTron Solero C1 USB Type C to 3.5mm Jack Headphone,2025-09-05T10:25:14,UAE,OLD,H35,1,8,8,17001,Mobiles Accessories,2.0,0.16,AED
+3585877,Delivered,10787059,Centrino Brown Men's Shoes Black44 EU,2025-09-05T10:25:14,UAE,OLD,H35,1,20,20,54007,Fashion Shoes-Men,4.5,0.9,AED
+3585877,Delivered,10805061,Jump Rope with Foam Handle - Green and Black,2025-09-05T10:25:14,UAE,OLD,H35,1,6,6,47508,Exercise & Fitness,4.5,0.27,AED
+3585877,Delivered,10691777,Compatible Accessory Kit - High-Capacity hi cap Re,2025-09-05T10:25:14,UAE,OLD,H35,1,17,17,11003,Camera Accessories,3.0,0.51,AED
+3585877,Delivered,10756726,Centrino Casual Men's Shoes NAVY 45 EU,2025-09-05T10:25:14,UAE,OLD,H35,1,20,20,54007,Fashion Shoes-Men,4.5,0.9,AED
+3585877,Delivered,10805009,Body Sculpture BB-2330 Xtra Pilates Trimmer - Mult,2025-09-05T10:25:14,UAE,OLD,H35,1,16,16,47508,Exercise & Fitness,4.5,0.72,AED
+3585877,Delivered,10688603,Bourge Kids BTS-5 School Shoes,2025-09-05T10:25:14,UAE,OLD,H35,1,12,12,54018,Sport Shoes-Unisex Kids,4.5,0.54,AED
+3585852,Pending,10697098,Lenovo ThinkPad X1 Carbon Gen 9 Laptop with 14-inc,2025-09-05T10:00:42,UAE,OLD,H4,1,1405,1405,16012,Laptops,3.0,42.15,AED
+3585665,Packed,10801724,Apple iPhone 12 mini 64GB - White,2025-09-05T05:09:23,UAE,OLD,H35,1,594,594,17004,Mobiles,2.0,11.88,AED
+3585665,Packed,10801830,Apple iPhone 12 mini (64GB) - Purple,2025-09-05T05:09:23,UAE,OLD,H35,1,594,594,17004,Mobiles,2.0,11.88,AED

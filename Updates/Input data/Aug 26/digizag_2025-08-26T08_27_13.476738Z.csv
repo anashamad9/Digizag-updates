@@ -1,0 +1,60 @@
+Order Id,Order Status,Item ID,Item ID,Order Date,Geo,Customer Type,Coupon Code,Quanity,Unit Price,Sale Amount,category_id,category_name,commission_rate,Payout,Currency
+3577198,Processing,10796004,Dell Latitude 3190 2-in-1 Laptop | 8GB RAM - 128GB,2025-08-26T07:38:19,UAE,NEW,H35,1,270,270,16012,Laptops,3.0,8.1,AED
+3577028,Processing,10700588,Mi Power Bank 3 – 40000mAh Supercharged Powerhouse,2025-08-25T20:40:46,UAE,NEW,ZZ57,1,68.35,68.35,12012,Power Bank,2.5,1.71,AED
+3577027,Packed,10735158,Loreal age perfect zell renaissance midnight serum,2025-08-25T20:40:46,UAE,NEW,ZZ57,2,59,118,22012,Skin Care,4.5,5.31,AED
+3577020,Pending,10694408,Glorious GMMK 2 Prebuilt Full Size Keyboard - Blac,2025-08-25T20:17:19,UAE,NEW,H42,1,225,225,16010,Keyboards & Mouse,3.0,6.75,AED
+3577020,Pending,10743867,Glorious Gaming Mouse - Model O Minus 58 g Superli,2025-08-25T20:17:19,UAE,NEW,H42,1,87,87,16010,Keyboards & Mouse,3.0,2.61,AED
+3576985,Processing,10750248,Dell Latitude 7420 | Intel Core i7 11th Gen | 16GB,2025-08-25T18:57:07,KSA,OLD,ZZ49,1,1380,1380,16012,Laptops,3.0,41.4,SAR
+3576974,Shipped,10622844,Apple iPhone 15 Pro 256 GB - White Titanium,2025-08-25T18:45:15,UAE,NEW,H12,1,2679,2679,17004,Mobiles,2.0,53.58,AED
+3576952,Processing,10784926,Dell Latitude 7000 7420 Laptop 2021 14 inch FHD Co,2025-08-25T18:03:46,UAE,NEW,ZZ57,1,1239,1239,16012,Laptops,3.0,37.17,AED
+3576883,Processing,9909685,Emporio Armani AR1721 Men's Quartz Watch Chronogra,2025-08-25T16:42:06,UAE,OLD,H4,1,399,399,55006,Men Wrist Watch,3.0,11.97,AED
+3576879,Processing,10555459,Apple iPhone 12 Pro Max 256GB - Pacific Blue,2025-08-25T16:26:42,UAE,NEW,ZZ57,1,1389,1389,17004,Mobiles,2.0,27.78,AED
+3576729,Processing,5533334,Apple iPhone 12 Pro 128GB - Gold,2025-08-25T12:25:11,UAE,OLD,H45,1,1079,1079,17004,Mobiles,2.0,21.58,AED
+3576719,Processing,10750380,مايكروسوفت سيرفس برو 7 | لابتوب 2 في 1 بشاشة لمس 1,2025-08-25T12:09:18,KSA,OLD,H50,1,1679,1679,16012,Laptops,3.0,50.37,SAR
+3576358,Processing,10801657,SKMEI Men Electronic Watch Duplex Watch 50 meter W,2025-08-24T20:59:56,UAE,OLD,H35,1,49,49,55006,Men Wrist Watch,3.0,1.47,AED
+3576357,Packed,10552070,SKMEI Men Sports Quartz Waterproof Wristwatch Outd,2025-08-24T20:59:56,UAE,OLD,H35,1,59,59,55006,Men Wrist Watch,3.0,1.77,AED
+3576356,Shipped,10699222,Tommy Hilfiger COMMUNION Men's Watch Analog - Blue,2025-08-24T20:59:56,UAE,OLD,H35,1,150,150,55006,Men Wrist Watch,3.0,4.5,AED
+3576324,Processing,9585829,ابل ايفون 14 برو ماكس 512 جيجابايت - اراجواني,2025-08-24T19:59:40,KSA,NEW,H92,1,2676.47,2676.47,17004,Mobiles,2.0,53.53,SAR
+3576056,Shipped,10792977,تيلو جيمز - جوال لينوفو ليجن ثنائي شرائح الاتصال 2,2025-08-24T13:51:44,KSA,OLD,ZZ4,1,599,599,17004,Mobiles,2.0,11.98,SAR
+3575928,Shipped,10668662,Telo Gamez Lenovo L79031 Legion Phone Duel 12+256G,2025-08-24T10:47:28,KSA,NEW,H14,1,599,599,17004,Mobiles,2.0,11.98,SAR
+3575892,Shipped,10082508,Beurer EM37 Abdominal Muscle Toning Belt | EMS tra,2025-08-24T09:42:13,UAE,OLD,ZZ21,1,129,129,47508,Exercise & Fitness,4.5,5.8,AED
+3575891,Pending,9197698,"Pull Reducer Body Fitness Shaper & Trimmer Gym, Yo",2025-08-24T09:42:13,UAE,OLD,ZZ21,1,17,17,47508,Exercise & Fitness,4.5,0.76,AED
+3575890,Shipped,10729740,SCHWINN AIRDYNE AD6 BIKE,2025-08-24T09:42:12,UAE,OLD,ZZ21,1,899,899,47508,Exercise & Fitness,4.5,40.46,AED
+3575890,Shipped,10757343,Adidas Training Mat - Grey/182.9 x 61 x 1 cm,2025-08-24T09:42:12,UAE,OLD,ZZ21,1,49,49,47508,Exercise & Fitness,4.5,2.2,AED
+3575688,Processing,10697079,Google TV Streamer 4K - Fast Streaming Entertainme,2025-08-23T22:06:59,UAE,NEW,ZZ73,1,190,190,12001,Accessories (Audio/Video/TV/GPS),2.5,4.75,AED
+3575630,Processing,10805874,أبل آيباد برو الجيل الرابع (2022) 11 بوصة واي فاي ,2025-08-23T20:11:25,KSA,NEW,ZZ49,1,1919,1919,17005,Tablets,2.0,38.38,SAR
+3575619,Shipped,10554457,Apple iPhone 14 Pro Max 256GB - Deep Purple,2025-08-23T19:32:13,UAE,NEW,H45,1,2089,2089,17004,Mobiles,2.0,41.78,AED
+3575579,Shipped,10693061,"RAJ Non Stick Induction Fry Pan, 20 cm , Silver, R",2025-08-23T18:20:28,UAE,OLD,ZZ3,1,20,20,45002,Cookware,3.0,0.6,AED
+3575579,Shipped,10691739,MELAMINE FRENCH PLATTER SQ BLACK- MINI 14X14CM C-2,2025-08-23T18:20:28,UAE,OLD,ZZ3,1,4,4,45022,Serving Trays & Platters,3.0,0.12,AED
+3575579,Shipped,10789005,TEFAL Frying Pan | So'Light Pancake Pan 25 cm | Li,2025-08-23T18:20:28,UAE,OLD,ZZ3,1,60,60,45002,Cookware,3.0,1.8,AED
+3575579,Shipped,10786221,Blackstone Stainless Steel Serving Tray With Handl,2025-08-23T18:20:28,UAE,OLD,ZZ3,1,33,33,45022,Serving Trays & Platters,3.0,0.99,AED
+3575579,Shipped,10786446,Anchor Hocking 4 Pieces Essentials Bakeware Set,2025-08-23T18:20:28,UAE,OLD,ZZ3,1,44,44,45001,Bakeware,3.0,1.32,AED
+3575579,Shipped,10743934,"Milton Super Chill Ice Storage Pail, 30 Liter Capa",2025-08-23T18:20:28,UAE,OLD,ZZ3,2,100,200,45021,Food Containers & Storage,3.0,6.0,AED
+3575579,Shipped,10758058,Bajaj Non Stick Flat Tawa Nl-Sft 28 Cm,2025-08-23T18:20:28,UAE,OLD,ZZ3,1,30,30,45002,Cookware,3.0,0.9,AED
+3575578,Shipped,10736418,"Ocean Stack Bowl 5Inch (12.5Cm) , Clear ,P00624, 6",2025-08-23T18:20:28,UAE,OLD,ZZ3,1,19,19,45022,Serving Trays & Platters,3.0,0.57,AED
+3575578,Shipped,10501034,"Deerma Labor-Saving Lightweight Water Spray Mop , ",2025-08-23T18:20:28,UAE,OLD,ZZ3,3,39,117,45025,Vacuum and Cleaning Appliances,3.0,3.51,AED
+3575578,Shipped,10742780,Kenwood Food Processor 1000W Multi-Functional with,2025-08-23T18:20:28,UAE,OLD,ZZ3,1,349,349,45018,Small appliances,3.0,10.47,AED
+3575578,Shipped,10730964,Treo By Milton Borosilicate Vector Tumbler 300 Ml ,2025-08-23T18:20:28,UAE,OLD,ZZ3,1,19,19,45020,Glassware & Drinkware,3.0,0.57,AED
+3575578,Shipped,10783647,Philips Satinelle Essential Corded compact epilato,2025-08-23T18:20:28,UAE,OLD,ZZ3,2,79,158,25008,Shaving & Hair Removal Appliances,3.0,4.74,AED
+3575578,Shipped,10731456,"PHILIPS 650W with plastic bar, promix, white, 3-pi",2025-08-23T18:20:28,UAE,OLD,ZZ3,2,79,158,45007,Food Preparation,3.0,4.74,AED
+3575578,Shipped,10697239,"PHILIPS PowerPro Compact black: 1800W, 330W suctio",2025-08-23T18:20:28,UAE,OLD,ZZ3,1,279,279,45025,Vacuum and Cleaning Appliances,3.0,8.37,AED
+3575577,Shipped,10650087,360 Degree Floor Black Spin Mop Bucket Set Spinnin,2025-08-23T18:20:27,UAE,OLD,ZZ3,2,25,50,45006,Floorcare Accessories,3.0,1.5,AED
+3575577,Shipped,10693687,Opalina Juice Tumbler 6 Pieces -  Clear/Grey,2025-08-23T18:20:27,UAE,OLD,ZZ3,1,45,45,45001,Bakeware,3.0,1.35,AED
+3575577,Shipped,10729920,"Ocean Madison Bordeaux Glass, Set Of 6, Clear, 600",2025-08-23T18:20:27,UAE,OLD,ZZ3,1,55,55,45020,Glassware & Drinkware,3.0,1.65,AED
+3575576,Packed,10699845,Efolia Oud De Arabia (U) EDP 100ML,2025-08-23T18:20:27,UAE,OLD,ZZ3,1,49,49,27001,Unisex Fragrance,2.5,1.23,AED
+3575575,Packed,10691692,"English Blazer Original Gift Set, EDT 100ml, Body ",2025-08-23T18:20:27,UAE,OLD,ZZ3,1,21,21,27002,Men Fragrance,2.5,0.52,AED
+3575513,Shipped,10507371,Apple iPhone 13 Pro 128GB - Sierra Blue,2025-08-23T15:56:54,UAE,NEW,ZZ3,1,1479,1479,17004,Mobiles,2.0,29.58,AED
+3575411,Delivered,10795330,"Apple Watch Ultra (GPS + Cellular, 49mm) Smart wat",2025-08-23T11:19:36,UAE,NEW,ZZ100,1,1599,1599,12019,Smartwatches,2.0,31.98,AED
+3575392,Processing,10619092,Samsung 32-Inch 4K UHD LU32J590UQMXUE Business mon,2025-08-23T10:19:54,UAE,NEW,ZZ73,1,395,395,16002,Computer Monitors,3.0,11.85,AED
+3575378,Shipped,10687231,"DELL Latitude 3340 Business Laptop, Core i5-4th ge",2025-08-23T09:41:20,KSA,NEW,H80,1,460.29,460.29,16012,Laptops,3.0,13.81,SAR
+3575269,Delivered,10668662,تيلو جيمز لينوفو L79031 ليجيون فون ديوال 12+256 جي,2025-08-23T02:06:55,KSA,OLD,ZZ3,1,599,599,17004,Mobiles,2.0,11.98,SAR
+3575126,Shipped,10750217,ديل لاتيتيود  3440 شاشة 14 بوصة i5 الجيل الرابع 8 ,2025-08-22T19:53:59,KSA,OLD,ZZ49,2,499,998,16012,Laptops,3.0,29.94,SAR
+3575119,Shipped,10624380,"Lenovo Thinkpad T450 14"" Display Laptop Intel Core",2025-08-22T19:49:52,KSA,NEW,H18,1,499,499,16012,Laptops,3.0,14.97,SAR
+3574833,Shipped,10763459,جوال ايفون 14 برو من ابل (256 جيجا) - فضي,2025-08-22T11:52:06,KSA,OLD,ZZ49,1,2159,2159,17004,Mobiles,2.0,43.18,SAR
+3574723,Delivered,10735171,JBL Endurance Peak 3 Dust and Water Proof True Wir,2025-08-22T07:54:20,UAE,OLD,ZZ4,1,199,199,12007,Headphones & wireless audio,2.5,4.97,AED
+3574615,Delivered,10775170,Emporio Armani Men's Silver Dial Stainless Steel B,2025-08-22T03:29:27,UAE,OLD,ZZ4,1,350,350,55006,Men Wrist Watch,3.0,10.5,AED
+3574605,Delivered,10690889,Dell Latitude E5470 | Intel Core i7-6600U 2.30GHz ,2025-08-22T03:05:41,UAE,OLD,ZZ73,1,435,435,16012,Laptops,3.0,13.05,AED
+3574322,Delivered,10654311,Women's Jacqueline Analog Watch ES3433,2025-08-21T15:17:03,UAE,OLD,H97,1,220,220,55008,Women Wrist Watch,3.0,6.6,AED
+3574298,Packed,10753472,Apple Macbook Air 2019 Model (MVFJ2) | 13-Inch UHD,2025-08-21T14:21:45,UAE,NEW,H35,1,1239,1239,16012,Laptops,3.0,37.17,AED
+3574127,Shipped,10756416,ديل لاتيتيود 3350 شاشة لمس 13.3 بوصة ، شاشة انتل ك,2025-08-21T08:56:44,KSA,NEW,H80,1,414,414,16012,Laptops,3.0,12.42,SAR
+3574021,Delivered,10795416,ساعة أبل الذكية السلسلة 9 - 45 ملم/مل (جي بي إس) (,2025-08-21T04:37:36,KSA,NEW,H11,1,899,899,12019,Smartwatches,2.0,17.98,SAR

@@ -8,17 +8,18 @@ import re
 # =======================
 days_back = 30
 OFFER_ID = 1106
-STATUS_DEFAULT = "approved"
-DEFAULT_PCT_IF_MISSING = 0.0  # fraction fallback when percent missing (0.30 == 30%)
+STATUS_DEFAULT = "pending"          # always "pending"
+DEFAULT_PCT_IF_MISSING = 0.0        # fallback fraction when percent missing (0.30 == 30%)
+FALLBACK_AFFILIATE_ID = "1"         # when coupon has no affiliate, use "1" and payout=0
 
 # Local files
-AFFILIATE_XLSX = "Offers Coupons.xlsx"
-AFFILIATE_SHEET = "Bloomingdales"
-REPORT_CSV     = "BLM _ DigiZag Report_Page 1_Table.csv"
+AFFILIATE_XLSX   = "Offers Coupons.xlsx"   # multi-sheet Excel you uploaded
+AFFILIATE_SHEET  = "Bloomingdales"         # <-- sheet for this offer
+REPORT_CSV       = "BLM _ DigiZag Report_Page 1_Table.csv"
 
-# Currency rate & commission
-AED_TO_USD = 3.67
-COMMISSION_ON_SALE = 0.06  # 6%
+# Currency conversion & base commission (your current logic)
+USD_PER_AED = 1 / 3.67
+BASE_REVENUE_RATE = 0.06  # 6% of sale_amount
 
 # Country → geo mapping
 COUNTRY_TO_GEO = {"AE": "uae", "KW": "kwt"}
@@ -60,6 +61,7 @@ def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.Data
     code_col = cols_lower.get("code")
     aff_col  = cols_lower.get("id") or cols_lower.get("affiliate_id")  # accept 'ID' or 'affiliate_ID'
     type_col = cols_lower.get("type")
+    # Prefer a 'payout' column; fallback to new/old customer payout if present
     payout_col = (cols_lower.get("payout")
                   or cols_lower.get("new customer payout")
                   or cols_lower.get("old customer payout"))
@@ -73,7 +75,7 @@ def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.Data
     if not payout_col:
         raise ValueError(f"[{sheet_name}] must contain a payout column (e.g., 'payout').")
 
-    # Parse payout cell: remove '%', coerce numeric
+    # Clean and parse the payout column:
     payout_raw = (
         df_sheet[payout_col]
         .astype(str)
@@ -91,21 +93,21 @@ def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.Data
         .replace({"": None})
     )
 
-    # Percent for revenue/sale
+    # For percentage types ('revenue'/'sale'): convert >1 to fraction; else keep as-is; fill default when NaN
     pct_fraction = payout_num.where(type_norm.isin(["revenue", "sale"]))
     pct_fraction = pct_fraction.apply(
         lambda v: (v / 100.0) if pd.notna(v) and v > 1 else (v if pd.notna(v) else DEFAULT_PCT_IF_MISSING)
     )
 
-    # Fixed amount
+    # For fixed type: keep numeric as-is; otherwise NaN
     fixed_amount = payout_num.where(type_norm.eq("fixed"))
 
     out = pd.DataFrame({
         "code_norm": df_sheet[code_col].apply(normalize_coupon),
         "affiliate_ID": df_sheet[aff_col].fillna("").astype(str).str.strip(),
         "type_norm": type_norm,
-        "pct_fraction": pct_fraction,
-        "fixed_amount": fixed_amount
+        "pct_fraction": pct_fraction,   # used when type is 'revenue' or 'sale'
+        "fixed_amount": fixed_amount    # used when type is 'fixed'
     }).dropna(subset=["code_norm"])
 
     # Deduplicate by code (last wins)
@@ -113,32 +115,35 @@ def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.Data
     return out
 
 # =======================
-# LOAD MAIN REPORT
+# LOAD REPORT
 # =======================
-print(f"Current date: {datetime.now().date()}, Start date (days_back={days_back}): {(datetime.now().date() - timedelta(days=days_back))}")
+end_date = datetime.now().date()
+start_date = end_date - timedelta(days=days_back)
+print(f"Current date: {end_date}, Start date (days_back={days_back}): {start_date}")
 
 df = pd.read_csv(input_file)
 
-# Convert 'created_date' to datetime (format like 'Aug 22, 2025')
+# Convert 'created_date' column to datetime
 df['created_date'] = pd.to_datetime(df['created_date'], format='%b %d, %Y', errors='coerce')
 before = len(df)
 df = df.dropna(subset=['created_date'])
 print(f"Total rows before filtering: {before}")
 print(f"Rows with invalid dates dropped: {before - len(df)}")
 
-end_date = datetime.now().date()
-start_date = end_date - timedelta(days=days_back)
-
-# Filter by date range (inclusive of end_date)
-df_filtered = df[(df['created_date'].dt.date >= start_date) & (df['created_date'].dt.date <= end_date)].copy()
+# Filter by date range (inclusive)
+df_filtered = df[(df['created_date'].dt.date >= start_date) &
+                 (df['created_date'].dt.date <= end_date)].copy()
 print(f"Rows after filtering date range: {len(df_filtered)}")
 
-# Geo mapping
-df_filtered['geo'] = df_filtered['country'].map(COUNTRY_TO_GEO)
+# =======================
+# DERIVED FIELDS
+# =======================
+# sale_amount in USD and base revenue (6% of sale)
+df_filtered['sale_amount'] = (df_filtered['AED_net_amount'] * USD_PER_AED)
+df_filtered['revenue'] = df_filtered['sale_amount'] * BASE_REVENUE_RATE
 
-# USD sale amount and revenue
-df_filtered['sale_amount'] = (df_filtered['AED_net_amount'] / AED_TO_USD)
-df_filtered['revenue'] = df_filtered['sale_amount'] * COMMISSION_ON_SALE
+# Country → geo
+df_filtered['geo'] = df_filtered['country'].map(COUNTRY_TO_GEO).fillna('no-geo')
 
 # Normalize coupon for joining
 df_filtered['coupon_norm'] = df_filtered['Coupon'].apply(normalize_coupon)
@@ -149,7 +154,10 @@ df_filtered['coupon_norm'] = df_filtered['Coupon'].apply(normalize_coupon)
 map_df = load_affiliate_mapping_from_xlsx(affiliate_xlsx_path, AFFILIATE_SHEET)
 df_joined = df_filtered.merge(map_df, how="left", left_on="coupon_norm", right_on="code_norm")
 
-# Ensure required fields exist
+# Determine which rows have missing affiliate match (NaN/empty after merge)
+missing_aff_mask = df_joined['affiliate_ID'].isna() | (df_joined['affiliate_ID'].astype(str).str.strip() == "")
+
+# Normalize fields
 df_joined['affiliate_ID'] = df_joined['affiliate_ID'].fillna("").astype(str).str.strip()
 df_joined['type_norm'] = df_joined['type_norm'].fillna("revenue")
 df_joined['pct_fraction'] = df_joined['pct_fraction'].fillna(DEFAULT_PCT_IF_MISSING)
@@ -171,9 +179,9 @@ payout.loc[mask_sale] = (df_joined.loc[mask_sale, 'sale_amount'] * df_joined.loc
 mask_fixed = df_joined['type_norm'].str.lower().eq('fixed')
 payout.loc[mask_fixed] = df_joined.loc[mask_fixed, 'fixed_amount'].fillna(0.0)
 
-# Force payout = 0 when affiliate_id is missing/empty
-mask_no_aff = (df_joined['affiliate_ID'] == "")
-payout.loc[mask_no_aff] = 0.0
+# Enforce rule: if no affiliate match, set affiliate_id="1" and payout=0
+payout.loc[missing_aff_mask] = 0.0
+df_joined.loc[missing_aff_mask, 'affiliate_ID'] = FALLBACK_AFFILIATE_ID
 
 df_joined['payout'] = payout.round(2)
 
@@ -184,7 +192,7 @@ output_df = pd.DataFrame({
     'offer': OFFER_ID,
     'affiliate_id': df_joined['affiliate_ID'],
     'date': df_joined['created_date'].dt.strftime('%m-%d-%Y'),
-    'status': STATUS_DEFAULT,
+    'status': STATUS_DEFAULT,                 # always "pending"
     'payout': df_joined['payout'],
     'revenue': df_joined['revenue'].round(2),
     'sale amount': df_joined['sale_amount'].round(2),
@@ -198,6 +206,7 @@ output_df.to_csv(output_file, index=False)
 print(f"Saved: {output_file}")
 print(
     f"Rows: {len(output_df)} | "
-    f"Coupons without affiliate_id (payout forced to 0): {int(mask_no_aff.sum())} | "
+    f"Coupons with no affiliate (set aff={FALLBACK_AFFILIATE_ID}, payout=0): {int(missing_aff_mask.sum())} | "
     f"Type counts -> revenue: {int(mask_rev.sum())}, sale: {int(mask_sale.sum())}, fixed: {int(mask_fixed.sum())}"
 )
+print(f"Date range processed: {output_df['date'].min() if not output_df.empty else 'N/A'} to {output_df['date'].max() if not output_df.empty else 'N/A'}")

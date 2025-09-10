@@ -1,6 +1,0 @@
-"Puchase Date","Order Number",Status,"Coupon Code",Country,"Grand Total incl Tax","Shipping Amount",Tax,"Cash on Delivery Charges","Store Credit Used","Total Refunded",FINAL_TOTAL,TOTAL_ORDERED_QTY,TOTAL_RETURN_QTY,Type,Commission,Category,COMPANY,"COUPON CODE",Customer_Type
-"2025-09-01 11:46:45",PO-KW-250901-01190,processing,W27,Kuwait,33.97,1.75,0.00,0.00,0.00,0.00,32.22,2.0000,0.0000,CPS,.1,Affliate,DigiZag,W27,Existing
-"2025-09-01 17:38:48",PO-KW-250901-01357,processing,W125,Kuwait,24.44,1.75,0.00,0.00,0.00,0.00,22.69,2.0000,0.0000,CPS,0.1,Affliate,DigiZag,W125,Existing
-"2025-09-01 18:05:31",PO-SA-250901-01374,complete,CR7,"Saudi Arabia",57.06,2.46,7.12,0.00,0.00,0.00,47.47,2.0000,0.0000,CPS,.1,Affliate,DigiZag,CR7,Existing
-"2025-09-01 23:15:35",PO-KW-250901-01566,in_transfer_to_store,CK22,Kuwait,7.65,0.00,0.00,0.00,0.00,0.00,7.65,2.0000,0.0000,CPS,.1,Affliate,DigiZag,CK22,Existing
-"2025-09-01 23:36:56",PO-KW-250901-01586,processing,CK22,Kuwait,20.80,1.75,0.00,1.50,0.00,0.00,17.55,1.0000,0.0000,CPS,.1,Affliate,DigiZag,CK22,Existing

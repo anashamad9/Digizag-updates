@@ -15,7 +15,7 @@ FALLBACK_AFFILIATE_ID = "1"         # when no affiliate match: set to "1" and pa
 # Local files
 AFFILIATE_XLSX  = "Offers Coupons.xlsx"
 AFFILIATE_SHEET = "Mamas&Papas"     # coupons sheet name for this offer
-REPORT_CSV      = "MNP _ DigiZag Report_Page 1_Table (3).csv"
+REPORT_CSV      = "MNP _ DigiZag Report_Page 1_Table (4).csv"
 
 # Country → geo mapping
 COUNTRY_GEO = {"SA": "ksa", "AE": "uae", "KW": "kwt"}

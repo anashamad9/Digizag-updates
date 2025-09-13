@@ -16,7 +16,7 @@ GEO = "no-geo"
 # Local files
 AFFILIATE_XLSX   = "Offers Coupons.xlsx"   # multi-sheet Excel
 AFFILIATE_SHEET  = "Baytonia"              # <-- sheet for this offer
-REPORT_CSV       = "DigiZag__Baytonia_ Orders Tracking Report_DigiZag_Table.csv"
+REPORT_CSV       = "DigiZag__Baytonia_ Orders Tracking Report_DigiZag_Table (1).csv"
 
 USD_PER_SAR = 1 / 3.75  # Total is assumed SAR -> USD
 

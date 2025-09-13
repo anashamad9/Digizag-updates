@@ -12,7 +12,7 @@ STATUS_DEFAULT = "pending"
 DEFAULT_PCT_IF_MISSING = 0.0
 FALLBACK_AFFILIATE_ID = "1"
 
-REPORT_CSV      = "Styli - Affiliate Payout_Raw Data - Order Level_Table (5).csv"
+REPORT_CSV      = "Styli - Affiliate Payout_Raw Data - Order Level_Table (6).csv"
 AFFILIATE_XLSX  = "Offers Coupons.xlsx"
 AFFILIATE_SHEET = "Styli"
 

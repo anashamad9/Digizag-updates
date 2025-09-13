@@ -1,0 +1,9 @@
+"Puchase Date","Order Number",Status,"Coupon Code",Country,"Grand Total incl Tax","Shipping Amount",Tax,"Cash on Delivery Charges","Store Credit Used","Total Refunded",FINAL_TOTAL,TOTAL_ORDERED_QTY,TOTAL_RETURN_QTY,Type,Commission,Category,COMPANY,"COUPON CODE",Customer_Type
+"2025-09-12 04:38:45",PO-SA-250912-06955,complete,ALC4,"Saudi Arabia",64.90,2.46,8.14,0.00,0.00,0.00,54.29,3.0000,0.0000,CPS,.1,Affliate,DigiZag,ALC4,Existing
+"2025-09-12 14:59:14",PO-SA-250912-07094,processing,W67,"Saudi Arabia",33.77,2.46,4.08,0.00,0.00,0.00,27.22,5.0000,0.0000,CPS,0.1,Affliate,DigiZag,W67,New
+"2025-09-12 16:37:46",PO-SA-250912-07119,processing,Alc4,"Saudi Arabia",41.99,2.46,5.16,0.00,0.00,0.00,34.37,4.0000,0.0000,CPS,.1,Affliate,DigiZag,Alc4,Existing
+"2025-09-12 23:10:29",PO-SA-250912-07300,processing,X90,"Saudi Arabia",17.67,2.46,1.98,0.00,0.00,0.00,13.23,1.0000,0.0000,CPS,0.1,Affliate,DigiZag,X90,Existing
+"2025-09-13 00:29:59",PO-SA-250913-07335,processing,NNN,"Saudi Arabia",15.02,2.46,1.64,0.00,0.00,0.00,10.92,1.0000,0.0000,CPS,.1,Affliate,DigiZag,NNN,Existing
+"2025-09-13 03:00:03",PO-SA-250913-07366,processing,W126,"Saudi Arabia",13.53,2.46,1.44,0.00,0.00,0.00,9.63,1.0000,0.0000,CPS,0.1,Affliate,DigiZag,W126,Existing
+"2025-09-13 12:02:40",PO-AE-250913-07464,processing,CK22,"United Arab Emirates",60.96,2.51,2.78,0.00,0.00,0.00,55.67,5.0000,0.0000,CPS,.1,Affliate,DigiZag,CK22,Existing
+"2025-09-13 14:15:10",PO-SA-250913-07523,processing,W78,"Saudi Arabia",28.04,2.46,3.34,0.00,0.00,0.00,22.24,1.0000,0.0000,CPS,0.1,Affliate,DigiZag,W78,Existing

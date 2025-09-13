@@ -6,14 +6,14 @@ import re
 # =======================
 # CONFIG
 # =======================
-days_back = 3
+days_back = 1
 OFFER_ID = 1166
 STATUS_DEFAULT = "pending"
 DEFAULT_PCT_IF_MISSING = 0.0
 FALLBACK_AFFILIATE_ID = "1"
 
 # Files
-REPORT_XLSX     = "sales (6).xlsx"
+REPORT_XLSX     = "sales (8).xlsx"
 AFFILIATE_XLSX  = "Offers Coupons.xlsx"
 AFFILIATE_SHEET = "Noon GCC"
 

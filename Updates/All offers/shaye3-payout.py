@@ -11,7 +11,7 @@ STATUS_DEFAULT = "pending"
 DEFAULT_PCT_IF_MISSING = 0.0
 FALLBACK_AFFILIATE_ID = "1"
 
-REPORT_CSV      = "Social Affiliate - digizag_Untitled Page_Pivot table (4).csv"
+REPORT_CSV      = "Social Affiliate - digizag_Untitled Page_Pivot table (5).csv"
 AFFILIATE_XLSX  = "Offers Coupons.xlsx"
 OUTPUT_CSV      = "shaye3.csv"
 

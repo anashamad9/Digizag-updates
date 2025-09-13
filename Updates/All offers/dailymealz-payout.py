@@ -16,7 +16,7 @@ GEO = "no-geo"
 # Local files
 AFFILIATE_XLSX  = "Offers Coupons.xlsx"    # multi-sheet Excel
 AFFILIATE_SHEET = "DailyMeals"             # coupons sheet for this offer
-REPORT_CSV      = "Dailymealz - DigiZag (commission report)_Detailed Code usages_Table.csv"
+REPORT_CSV      = "Dailymealz - DigiZag (commission report)_Detailed Code usages_Table (1).csv"
 
 # =======================
 # PATHS

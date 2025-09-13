@@ -16,7 +16,7 @@ GEO_FALLBACK = "no-geo"             # used if you later want to remap; for now w
 # Local files
 AFFILIATE_XLSX  = "Offers Coupons.xlsx"    # multi-sheet Excel
 AFFILIATE_SHEET = "Magrabi"                # coupons sheet for this offer
-REPORT_XLSX     = "DigiZag_MAGRABi_Report.xlsx"
+REPORT_XLSX     = "DigiZag_MAGRABi_Report (1).xlsx"
 REPORT_SHEET    = "Sheet1"
 
 # =======================

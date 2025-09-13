@@ -12,7 +12,7 @@ DEFAULT_PCT_IF_MISSING = 0.0
 FALLBACK_AFFILIATE_ID = "1"
 AFFILIATE_XLSX  = "Offers Coupons.xlsx"
 AFFILIATE_SHEET = "Sun & Sands"   # change if your tab is named differently (e.g., "SSS")
-REPORT_CSV      = "SSS- Digizag Daily Report_Untitled Page_Table (4).csv"
+REPORT_CSV      = "SSS- Digizag Daily Report_Untitled Page_Table (5).csv"
 OUTPUT_CSV      = "sun_sand.csv"
 
 # Date window (yesterday only; excludes today)

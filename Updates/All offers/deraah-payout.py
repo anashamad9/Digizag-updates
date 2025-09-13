@@ -6,7 +6,7 @@ import re
 # =======================
 # CONFIG
 # =======================
-days_back = 8
+days_back = 12
 OFFER_ID = 1185
 STATUS_DEFAULT = "pending"          # always "pending"
 DEFAULT_PCT_IF_MISSING = 0.0        # percent fallback (0.30 == 30%)
@@ -16,7 +16,7 @@ GEO = "ksa"
 # Local files
 AFFILIATE_XLSX  = "Offers Coupons.xlsx"    # multi-sheet Excel
 AFFILIATE_SHEET = "Deraah"                 # coupons sheet name
-REPORT_XLSX     = "company_digizag.xlsx"
+REPORT_XLSX     = "company_digizag (1).xlsx"
 REPORT_SHEET    = "Worksheet"
 
 # =======================

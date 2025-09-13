@@ -14,8 +14,8 @@ FALLBACK_AFFILIATE_ID = "1"
 GEO = "no-geo"
 
 # Files
-FTU_CSV         = "FTU 2.csv"
-RTU_CSV         = "RTU 3.csv"
+FTU_CSV         = "FTU.csv"
+RTU_CSV         = "RTU.csv"
 AFFILIATE_XLSX  = "Offers Coupons.xlsx"
 AFFILIATE_SHEET = "VogaCloset"
 OUTPUT_CSV      = "voga.csv"

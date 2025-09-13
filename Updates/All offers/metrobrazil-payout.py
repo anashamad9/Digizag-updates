@@ -16,7 +16,7 @@ GEO = "no-geo"
 # Local files
 AFFILIATE_XLSX  = "Offers Coupons.xlsx"
 AFFILIATE_SHEET = "MetroBrazil"     # coupons sheet name for this offer
-REPORT_XLSX     = "DigiZag New 30-days (1).xlsx"
+REPORT_XLSX     = "DigiZag New 30-days (2).xlsx"
 REPORT_SHEET    = "DigiZag"
 
 # =======================

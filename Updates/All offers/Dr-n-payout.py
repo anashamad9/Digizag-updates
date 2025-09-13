@@ -1,28 +1,75 @@
+#!/usr/bin/env python3
 import pandas as pd
 from datetime import datetime, timedelta
 import os
 import re
+from typing import List, Optional
 
 # =======================
 # CONFIG
 # =======================
 days_back = 8
 OFFER_ID = 1334
-STATUS_DEFAULT = "pending"          # always "pending"
-DEFAULT_PCT_IF_MISSING = 0.0        # fallback fraction for % values
-FALLBACK_AFFILIATE_ID = "1"         # when no affiliate match: set to "1" and payout=0
+STATUS_DEFAULT = "pending"
+DEFAULT_PCT_IF_MISSING = 0.0
+FALLBACK_AFFILIATE_ID = "1"
 
-# Local files
+# File names
 AFFILIATE_XLSX  = "Offers Coupons.xlsx"
 AFFILIATE_SHEET = "Dr Nutrition"    # coupons sheet for this offer
 
 # =======================
-# PATHS
+# PATHS & SEARCH
 # =======================
-script_dir = os.path.dirname(os.path.abspath(__file__))
-input_dir = os.path.join(script_dir, '..', 'input data')
+def existing_dirs(paths: List[str]) -> List[str]:
+    out = []
+    for p in paths:
+        try:
+            if os.path.isdir(p):
+                out.append(p)
+        except Exception:
+            pass
+    return out
+
+def get_script_dir() -> str:
+    try:
+        return os.path.dirname(os.path.abspath(__file__))
+    except NameError:
+        # Fallback for interactive runs
+        return os.getcwd()
+
+script_dir = get_script_dir()
+
+# Where to look for inputs (includes your upload area)
+SEARCH_DIRS = existing_dirs([
+    os.path.join(script_dir, '..', 'input data'),
+    script_dir,
+    os.path.abspath(os.path.join(script_dir, '..')),
+    '/mnt/data',
+])
+
+# ALWAYS write outputs to a sibling "../output data" next to the script
 output_dir = os.path.join(script_dir, '..', 'output data')
 os.makedirs(output_dir, exist_ok=True)
+
+def find_first_existing_file(filename: str, extra_dirs: Optional[List[str]] = None) -> Optional[str]:
+    dirs = SEARCH_DIRS + (extra_dirs or [])
+    for d in dirs:
+        cand = os.path.join(d, filename)
+        if os.path.isfile(cand):
+            return cand
+    return None
+
+def list_matching_files(prefix: str, suffix: str) -> List[str]:
+    files = []
+    for d in SEARCH_DIRS:
+        try:
+            for f in os.listdir(d):
+                if f.startswith(prefix) and f.endswith(suffix):
+                    files.append(os.path.join(d, f))
+        except Exception:
+            pass
+    return files
 
 # =======================
 # HELPERS
@@ -35,35 +82,53 @@ def normalize_coupon(x: str) -> str:
     parts = re.split(r"[;,\s]+", s)
     return parts[0] if parts else s
 
-def extract_timestamp(filename):
-    m = re.search(r'Dr\.Nutrition_DigiZag_Report_\d{4}_\d{2}_\d{2}_\d{2}_\d{2}_\d{2}', filename)
+def extract_timestamp(fullpath: str) -> datetime:
+    filename = os.path.basename(fullpath)
+    m = re.search(r'Dr\.Nutrition_DigiZag_Report_(\d{4}_\d{2}_\d{2}_\d{2}_\d{2}_\d{2})', filename)
     if m:
-        return datetime.strptime(m.group(0).replace('Dr.Nutrition_DigiZag_Report_', '').replace('_', '-'),
-                                 '%Y-%m-%d-%H-%M-%S')
+        ts = m.group(1).replace('_', '-')
+        return datetime.strptime(ts, '%Y-%m-%d-%H-%M-%S')
     return datetime.min
+
+def choose_sheet(xlsx_path: str, preferred: str = "Worksheet") -> str:
+    xf = pd.ExcelFile(xlsx_path)
+    return preferred if preferred in xf.sheet_names else xf.sheet_names[0]
+
+def norm_key(s: str) -> str:
+    return re.sub(r"\s+", "", s).strip().lower()
+
+def get_col(df: pd.DataFrame, candidates: List[str]) -> str:
+    """
+    Case/space-insensitive column resolver.
+    Returns the real column name from df.columns that matches any candidate.
+    """
+    norm = {norm_key(c): c for c in df.columns}
+    for cand in candidates:
+        key = norm_key(cand)
+        if key in norm:
+            return norm[key]
+    raise KeyError(f"None of the columns {candidates} found. Available: {list(df.columns)}")
 
 def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.DataFrame:
     """
     Returns mapping with: code_norm, affiliate_ID, type_norm, pct_fraction, fixed_amount
     """
     df_sheet = pd.read_excel(xlsx_path, sheet_name=sheet_name, dtype=str)
-    cols_lower = {c.lower().strip(): c for c in df_sheet.columns}
 
-    code_col = cols_lower.get("code")
-    aff_col  = cols_lower.get("id") or cols_lower.get("affiliate_id")
-    type_col = cols_lower.get("type")
-    payout_col = (cols_lower.get("payout")
-                  or cols_lower.get("new customer payout")
-                  or cols_lower.get("old customer payout"))
+    code_col = get_col(df_sheet, ["Code"])
+    aff_col  = get_col(df_sheet, ["Id", "affiliate_id"])
+    type_col = get_col(df_sheet, ["type"])
 
-    if not code_col:
-        raise ValueError(f"[{sheet_name}] must contain a 'Code' column.")
-    if not aff_col:
-        raise ValueError(f"[{sheet_name}] must contain an 'ID' (or 'affiliate_ID') column.")
-    if not type_col:
-        raise ValueError(f"[{sheet_name}] must contain a 'type' column with values 'revenue'/'sale'/'fixed'.")
-    if not payout_col:
-        raise ValueError(f"[{sheet_name}] must contain a payout column (e.g., 'payout').")
+    # Prefer a single 'payout'; else fall back to new/old or ' Discount' if that's what exists
+    payout_col = None
+    for cand in ["payout", "new customer payout", "old customer payout", " Discount"]:
+        try:
+            payout_col = get_col(df_sheet, [cand])
+            break
+        except KeyError:
+            continue
+    if payout_col is None:
+        raise ValueError(f"[{sheet_name}] must contain a payout column (e.g., 'payout' or 'new/old customer payout').")
 
     payout_raw = df_sheet[payout_col].astype(str).str.replace("%", "", regex=False).str.strip()
     payout_num = pd.to_numeric(payout_raw, errors="coerce")
@@ -104,110 +169,129 @@ def map_geo(geo):
 # =======================
 end_date = datetime.now().date()
 start_date = end_date - timedelta(days=days_back)
-print(f"Current date: {end_date}, Start date (days_back={days_back}): {start_date}")
+print(f"[INFO] Current date: {end_date}, Start date (days_back={days_back}): {start_date}")
+print(f"[INFO] Input search dirs: {SEARCH_DIRS}")
+print(f"[INFO] Output dir: {output_dir}")
 
-dr_nutrition_files = [f for f in os.listdir(input_dir)
-                      if f.startswith('Dr.Nutrition_DigiZag_Report_') and f.endswith('.xlsx')]
-if not dr_nutrition_files:
-    raise FileNotFoundError("No files starting with 'Dr.Nutrition_DigiZag_Report_' found in the input directory.")
+matches = list_matching_files('Dr.Nutrition_DigiZag_Report_', '.xlsx')
+if not matches:
+    raise FileNotFoundError(
+        "No files starting with 'Dr.Nutrition_DigiZag_Report_' found in: "
+        + ", ".join(SEARCH_DIRS)
+    )
 
-latest_file = max(dr_nutrition_files, key=extract_timestamp)
-input_file = os.path.join(input_dir, latest_file)
-print(f"Using input file: {latest_file}")
+latest_path = max(matches, key=extract_timestamp)
+print(f"[INFO] Using input file: {latest_path}")
+report_sheet = choose_sheet(latest_path, preferred="Worksheet")
+print(f"[INFO] Using report sheet: {report_sheet}")
 
-df = pd.read_excel(input_file, sheet_name='Worksheet')
+df = pd.read_excel(latest_path, sheet_name=report_sheet)
 
-# Convert 'Created Date'
-df['Created Date'] = pd.to_datetime(df['Created Date'], format='%Y-%m-%d %H:%M:%S', errors='coerce')
+# Normalize column names (case/space insensitive lookup)
+created_col   = get_col(df, ["Created Date", "Date", "Created"])
+campaign_col  = get_col(df, ["Campaign"])
+status_col    = get_col(df, ["Status"])
+code_col      = get_col(df, ["Code"])
+sell_col      = get_col(df, ["Selling Price"])
+comm_col      = get_col(df, ["commission"])
+country_col   = get_col(df, ["country"])
+
+# Convert date/time and drop invalids
+df[created_col] = pd.to_datetime(df[created_col], errors='coerce')
 before = len(df)
-df = df.dropna(subset=['Created Date'])
-print(f"Total rows before filtering: {before}")
-print(f"Rows with invalid dates dropped: {before - len(df)}")
+df = df.dropna(subset=[created_col])
+print(f"[INFO] Total rows before filtering: {before}")
+print(f"[INFO] Rows with invalid dates dropped: {before - len(df)}")
 
 # Campaign filter (DigiZag) and not canceled
-df_offer = df[df['Campaign'] == 'DigiZag'].copy()
-df_offer = df_offer[df_offer['Status'].astype(str).str.lower() != 'canceled'].copy()
+df_offer = df[df[campaign_col].astype(str) == 'DigiZag'].copy()
+df_offer = df_offer[df_offer[status_col].astype(str).str.lower() != 'canceled'].copy()
 
-# Date window (exclude 'today' to match prior patterns)
+# Date window (exclude 'today')
 df_filtered = df_offer[
-    (df_offer['Created Date'].dt.date >= start_date) &
-    (df_offer['Created Date'].dt.date < end_date)
+    (df_offer[created_col].dt.date >= start_date) &
+    (df_offer[created_col].dt.date < end_date)
 ].copy()
 
 # =======================
 # DERIVED FIELDS
 # =======================
-# Currency conversion: AED->USD (commission and selling price are AED)
-df_filtered['sale_amount'] = df_filtered['Selling Price'] / 3.67
-df_filtered['revenue'] = df_filtered['commission'] / 3.67
+# Currency conversion: AED->USD
+df_filtered["sale_amount"] = pd.to_numeric(df_filtered[sell_col], errors="coerce") / 3.67
+df_filtered["revenue"]     = pd.to_numeric(df_filtered[comm_col], errors="coerce") / 3.67
 
 # Geo mapping; drop Jordan
-df_filtered['geo'] = df_filtered['country'].apply(map_geo)
-df_filtered = df_filtered.dropna(subset=['geo'])
+df_filtered["geo"] = df_filtered[country_col].apply(map_geo)
+df_filtered = df_filtered.dropna(subset=["geo"])
 
 # Normalize coupon for joining
-df_filtered['coupon_norm'] = df_filtered['Code'].apply(normalize_coupon)
+df_filtered["coupon_norm"] = df_filtered[code_col].apply(normalize_coupon)
 
 # =======================
-# JOIN AFFILIATE MAPPING (type-aware)
+# JOIN AFFILIATE MAPPING
 # =======================
-affiliate_xlsx_path = os.path.join(input_dir, AFFILIATE_XLSX)
+affiliate_xlsx_path = find_first_existing_file(AFFILIATE_XLSX)
+if affiliate_xlsx_path is None:
+    raise FileNotFoundError(f"Could not find '{AFFILIATE_XLSX}' in: {SEARCH_DIRS}")
+print(f"[INFO] Using affiliate file: {affiliate_xlsx_path} | sheet: {AFFILIATE_SHEET}")
+
 map_df = load_affiliate_mapping_from_xlsx(affiliate_xlsx_path, AFFILIATE_SHEET)
 df_joined = df_filtered.merge(map_df, how="left", left_on="coupon_norm", right_on="code_norm")
 
 # Missing affiliate?
-missing_aff_mask = df_joined['affiliate_ID'].isna() | (df_joined['affiliate_ID'].astype(str).str.strip() == "")
+missing_aff_mask = df_joined["affiliate_ID"].isna() | (df_joined["affiliate_ID"].astype(str).str.strip() == "")
 
 # Normalize fields
-df_joined['affiliate_ID'] = df_joined['affiliate_ID'].fillna("").astype(str).str.strip()
-df_joined['type_norm'] = df_joined['type_norm'].fillna("revenue")
-df_joined['pct_fraction'] = df_joined['pct_fraction'].fillna(DEFAULT_PCT_IF_MISSING)
+df_joined["affiliate_ID"] = df_joined["affiliate_ID"].fillna("").astype(str).str.strip()
+df_joined["type_norm"]    = df_joined["type_norm"].fillna("revenue")
+df_joined["pct_fraction"] = df_joined["pct_fraction"].fillna(DEFAULT_PCT_IF_MISSING)
 
 # =======================
 # COMPUTE PAYOUT (by type)
 # =======================
 payout = pd.Series(0.0, index=df_joined.index)
 
-mask_rev = df_joined['type_norm'].str.lower().eq('revenue')
-payout.loc[mask_rev] = df_joined.loc[mask_rev, 'revenue'] * df_joined.loc[mask_rev, 'pct_fraction']
+mask_rev   = df_joined["type_norm"].str.lower().eq("revenue")
+mask_sale  = df_joined["type_norm"].str.lower().eq("sale")
+mask_fixed = df_joined["type_norm"].str.lower().eq("fixed")
 
-mask_sale = df_joined['type_norm'].str.lower().eq('sale')
-payout.loc[mask_sale] = df_joined.loc[mask_sale, 'sale_amount'] * df_joined.loc[mask_sale, 'pct_fraction']
-
-mask_fixed = df_joined['type_norm'].str.lower().eq('fixed')
-payout.loc[mask_fixed] = df_joined.loc[mask_fixed, 'fixed_amount'].fillna(0.0)
+payout.loc[mask_rev]   = df_joined.loc[mask_rev,   "revenue"]     * df_joined.loc[mask_rev,   "pct_fraction"]
+payout.loc[mask_sale]  = df_joined.loc[mask_sale,  "sale_amount"] * df_joined.loc[mask_sale,  "pct_fraction"]
+payout.loc[mask_fixed] = df_joined.loc[mask_fixed, "fixed_amount"].fillna(0.0)
 
 # Enforce: if no affiliate match, set affiliate_id="1", payout=0
 payout.loc[missing_aff_mask] = 0.0
-df_joined.loc[missing_aff_mask, 'affiliate_ID'] = FALLBACK_AFFILIATE_ID
+df_joined.loc[missing_aff_mask, "affiliate_ID"] = FALLBACK_AFFILIATE_ID
 
-df_joined['payout'] = payout.round(2)
+df_joined["payout"] = payout.round(2)
 
 # =======================
 # BUILD FINAL OUTPUT
 # =======================
 output_df = pd.DataFrame({
-    'offer': OFFER_ID,
-    'affiliate_id': df_joined['affiliate_ID'],
-    'date': df_joined['Created Date'].dt.strftime('%m-%d-%Y'),
-    'status': STATUS_DEFAULT,
-    'payout': df_joined['payout'],
-    'revenue': df_joined['revenue'].round(2),
-    'sale amount': df_joined['sale_amount'].round(2),
-    'coupon': df_joined['coupon_norm'],
-    'geo': df_joined['geo'],
+    "offer":        OFFER_ID,
+    "affiliate_id": df_joined["affiliate_ID"],
+    "date":         df_joined[created_col].dt.strftime("%m-%d-%Y"),
+    "status":       STATUS_DEFAULT,
+    "payout":       df_joined["payout"],
+    "revenue":      df_joined["revenue"].round(2),
+    "sale amount":  df_joined["sale_amount"].round(2),
+    "coupon":       df_joined["coupon_norm"],
+    "geo":          df_joined["geo"],
 })
 
 # =======================
-# SAVE
+# SAVE — ALWAYS INTO output_dir
 # =======================
-output_file = os.path.join(output_dir, 'Dr Nu.csv')
+output_file = os.path.join(output_dir, "Dr_Nu.csv")
 output_df.to_csv(output_file, index=False)
 
-print(f"Saved: {output_file}")
+print(f"[OK] Saved: {output_file}")
 print(
-    f"Rows: {len(output_df)} | "
-    f"Coupons with no affiliate (set aff={FALLBACK_AFFILIATE_ID}, payout=0): {int(missing_aff_mask.sum())} | "
+    f"[STATS] Rows: {len(output_df)} | "
+    f"Fallback affiliates: {int(missing_aff_mask.sum())} | "
     f"Type counts -> revenue: {int(mask_rev.sum())}, sale: {int(mask_sale.sum())}, fixed: {int(mask_fixed.sum())}"
 )
-print(f"Date range processed: {output_df['date'].min() if not output_df.empty else 'N/A'} to {output_df['date'].max() if not output_df.empty else 'N/A'}")
+print(f"[INFO] Date range processed: "
+      f"{output_df['date'].min() if not output_df.empty else 'N/A'} to "
+      f"{output_df['date'].max() if not output_df.empty else 'N/A'}")

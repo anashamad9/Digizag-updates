@@ -13,9 +13,9 @@ STATUS_DEFAULT = "pending"
 DEFAULT_PCT_IF_MISSING = 0.0  # fraction fallback when percent missing (0.30 == 30%)
 
 # Local files
-AFFILIATE_XLSX = "Offers Coupons.xlsx"   # multi-sheet Excel you uploaded
-AFFILIATE_SHEET = "AirAlo"               # <-- sheet for this offer
-REPORT_XLSX     = "8682-AdvancedActionListi (3).xlsx"
+AFFILIATE_XLSX  = "Offers Coupons.xlsx"   # multi-sheet Excel you uploaded
+AFFILIATE_SHEET = "AirAlo"                # <-- sheet for this offer
+REPORT_PREFIX   = "8682-AdvancedActionListi"  # any .xlsx starting with this will match
 
 # =======================
 # PATHS
@@ -25,7 +25,6 @@ input_dir = os.path.join(script_dir, '..', 'input data')
 output_dir = os.path.join(script_dir, '..', 'output data')
 os.makedirs(output_dir, exist_ok=True)
 
-input_file = os.path.join(input_dir, REPORT_XLSX)
 affiliate_xlsx_path = os.path.join(input_dir, AFFILIATE_XLSX)
 output_file = os.path.join(output_dir, 'airalo.csv')
 
@@ -69,8 +68,6 @@ def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.Data
         raise ValueError(f"[{sheet_name}] must contain a payout column (e.g., 'payout').")
 
     # Clean and parse the payout column:
-    # - Remove % if present
-    # - Try numeric
     payout_raw = (
         df_sheet[payout_col]
         .astype(str)
@@ -109,10 +106,44 @@ def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.Data
     out = out.drop_duplicates(subset=["code_norm"], keep="last")
     return out
 
+def find_matching_xlsx(directory: str, prefix: str) -> str:
+    """
+    Find an .xlsx in `directory` whose base filename starts with `prefix` (case-insensitive).
+    - Ignores temporary files like '~$...'
+    - Prefers exact '<prefix>.xlsx' if present
+    - Otherwise returns the newest by modified time
+    """
+    prefix_lower = prefix.lower()
+    candidates = []
+    for fname in os.listdir(directory):
+        if fname.startswith("~$"):
+            continue
+        if not fname.lower().endswith(".xlsx"):
+            continue
+        base = os.path.splitext(fname)[0].lower()
+        if base.startswith(prefix_lower):
+            candidates.append(os.path.join(directory, fname))
+
+    if not candidates:
+        available = [f for f in os.listdir(directory) if f.lower().endswith(".xlsx")]
+        raise FileNotFoundError(
+            f"No .xlsx file starting with '{prefix}' found in: {directory}\n"
+            f"Available .xlsx files: {available}"
+        )
+
+    exact = [p for p in candidates if os.path.basename(p).lower() == (prefix_lower + ".xlsx")]
+    if exact:
+        return exact[0]
+
+    return max(candidates, key=os.path.getmtime)
+
 # =======================
 # LOAD MAIN REPORT
 # =======================
 print(f"Current date: {datetime.now().date()}, Start date (days_back={days_back}): {(datetime.now().date() - timedelta(days=days_back))}")
+
+# Find the changing-named report file dynamically
+input_file = find_matching_xlsx(input_dir, REPORT_PREFIX)
 
 df = pd.read_excel(input_file)
 
@@ -188,6 +219,7 @@ output_df = pd.DataFrame({
 # Save
 output_df.to_csv(output_file, index=False)
 
+print(f"Using report file: {input_file}")
 print(f"Saved: {output_file}")
 print(
     f"Rows: {len(output_df)} | "

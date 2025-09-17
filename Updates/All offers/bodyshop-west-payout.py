@@ -13,11 +13,13 @@ DEFAULT_PCT_IF_MISSING = 0.0
 FALLBACK_AFFILIATE_ID = "1"
 
 # Files
-KSA_CSV         = "KSA.csv"
-UAE_CSV         = "UAE (1).csv"
 AFFILIATE_XLSX  = "Offers Coupons.xlsx"
 AFFILIATE_SHEET = "The Body Shop West KSA & UAE"
 OUTPUT_CSV      = "thebodyshop.csv"
+
+# Dynamic prefixes (any CSV starting with these will match)
+KSA_PREFIX = "KSA"
+UAE_PREFIX = "UAE"
 
 # =======================
 # PATHS
@@ -27,8 +29,6 @@ input_dir  = os.path.join(script_dir, '..', 'input data')
 output_dir = os.path.join(script_dir, '..', 'output data')
 os.makedirs(output_dir, exist_ok=True)
 
-ksa_path = os.path.join(input_dir, KSA_CSV)
-uae_path = os.path.join(input_dir, UAE_CSV)
 affiliate_xlsx_path = os.path.join(input_dir, AFFILIATE_XLSX)
 output_file = os.path.join(output_dir, OUTPUT_CSV)
 
@@ -42,6 +42,36 @@ print(f"Current date: {end_date}, Start date (days_back={days_back}): {start_dat
 # =======================
 # HELPERS
 # =======================
+def find_matching_csv(directory: str, prefix: str) -> str:
+    """
+    Find a .csv in `directory` whose base filename starts with `prefix` (case-insensitive).
+    - Ignores temporary files like '~$...'
+    - Prefers exact '<prefix>.csv' if present
+    - Otherwise returns the newest by modified time
+    """
+    prefix_lower = prefix.lower()
+    candidates = []
+    for fname in os.listdir(directory):
+        if fname.startswith("~$"):
+            continue
+        if not fname.lower().endswith(".csv"):
+            continue
+        base = os.path.splitext(fname)[0].lower()
+        if base.startswith(prefix_lower):
+            candidates.append(os.path.join(directory, fname))
+
+    if not candidates:
+        available = [f for f in os.listdir(directory) if f.lower().endswith(".csv")]
+        raise FileNotFoundError(
+            f"No .csv file starting with '{prefix}' found in: {directory}\n"
+            f"Available .csv files: {available}"
+        )
+
+    exact = [p for p in candidates if os.path.basename(p).lower() == (prefix_lower + ".csv")]
+    if exact:
+        return exact[0]
+    return max(candidates, key=os.path.getmtime)
+
 def normalize_coupon(x: str) -> str:
     """Uppercase, trim, and take the first token if multiple codes separated by ; , or whitespace."""
     if pd.isna(x):
@@ -79,11 +109,9 @@ def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.Data
     payout_num = pd.to_numeric(payout_raw, errors="coerce")
     type_norm  = df_sheet[type_col].astype(str).str.strip().str.lower().replace({"": None})
 
-    # percentage for revenue/sale
     pct_fraction = payout_num.where(type_norm.isin(["revenue", "sale"])).apply(
         lambda v: (v/100.0) if pd.notna(v) and v > 1 else (v if pd.notna(v) else DEFAULT_PCT_IF_MISSING)
     )
-    # fixed for 'fixed'
     fixed_amount = payout_num.where(type_norm.eq("fixed"))
 
     out = pd.DataFrame({
@@ -97,8 +125,13 @@ def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.Data
     return out.drop_duplicates(subset=["code_norm"], keep="last")
 
 # =======================
-# LOAD & COMBINE DATA
+# LOAD & COMBINE DATA (DYNAMIC FILENAMES)
 # =======================
+ksa_path = find_matching_csv(input_dir, KSA_PREFIX)
+uae_path = find_matching_csv(input_dir, UAE_PREFIX)
+print(f"Using KSA file: {ksa_path}")
+print(f"Using UAE file: {uae_path}")
+
 ksa_df = pd.read_csv(ksa_path)
 uae_df = pd.read_csv(uae_path)
 
@@ -110,7 +143,7 @@ uae_df["geo"] = "uae"
 
 df = pd.concat([ksa_df, uae_df], ignore_index=True)
 
-# Some columns may have leading/trailing spaces; normalize headers once
+# Normalize headers once
 df.columns = [c.strip() for c in df.columns]
 
 # =======================
@@ -132,7 +165,6 @@ print(f"Rows after filtering date range: {len(df)}")
 # Sale amount (AED -> USD using 3.67; the source column had spaces in your draft)
 grand_total_col = 'Grand Total (Base)'
 if grand_total_col not in df.columns:
-    # fallback for exact original spacing variant
     alt = " Grand Total (Base) "
     if alt in df.columns:
         df.rename(columns={alt: grand_total_col}, inplace=True)
@@ -194,6 +226,7 @@ output_df = pd.DataFrame({
 # =======================
 # SAVE
 # =======================
+output_file = os.path.join(output_dir, OUTPUT_CSV)
 output_df.to_csv(output_file, index=False)
 
 print(f"Saved: {output_file}")

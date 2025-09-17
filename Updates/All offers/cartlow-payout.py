@@ -16,6 +16,9 @@ FALLBACK_AFFILIATE_ID = "1"         # when coupon has no affiliate, use "1" and 
 AFFILIATE_XLSX  = "Offers Coupons.xlsx"    # multi-sheet Excel
 AFFILIATE_SHEET = "Cartlow"                # <-- change if your sheet is differently named
 
+# Dynamic prefix for input CSVs
+REPORT_PREFIX = "digizag_"                 # any CSV starting with this will be considered
+
 # =======================
 # PATHS
 # =======================
@@ -35,26 +38,68 @@ def normalize_coupon(x: str) -> str:
     parts = re.split(r"[;,\s]+", s)
     return parts[0] if parts else s
 
-def extract_timestamp(filename: str):
+_TS_RE = re.compile(
+    r'(?i)^'                      # start, case-insensitive
+    r'digizag_'                   # prefix
+    r'(?P<date>\d{4}-\d{2}-\d{2})'          # YYYY-MM-DD
+    r'T'
+    r'(?P<h>\d{2})_(?P<m>\d{2})_(?P<s>\d{2})'  # HH_MM_SS
+    r'(?:\.(?P<us>\d+))?'                      # optional .microseconds
+    r'Z'
+)
+
+def extract_timestamp_from_name(fname: str) -> datetime | None:
     """
-    From filename like:
-    digizag_2025-YYYY-MM-DDTHH_MM_SS.ssssssZ.csv
-    return a datetime for sorting. If no match, return min datetime.
+    Parse timestamps like:
+    digizag_2025-09-14T11_22_33.123456Z.csv  or  digizag_2025-09-14T11_22_33Z.csv
+    Return a datetime, or None if not parseable.
     """
-    m = re.search(r'digizag_2025-\d{4}-\d{2}-\d{2}T\d{2}_\d{2}_\d{2}\.\d{6}Z', filename)
+    base = os.path.splitext(os.path.basename(fname))[0]
+    m = _TS_RE.match(base)
     if not m:
-        return datetime.min
-    stamp = m.group(0).replace('digizag_', '').replace('T', ' ')
-    # convert HH_MM_SS to HH:MM:SS
-    date_part, time_part = stamp.split(' ')
-    time_part = time_part.replace('_', ':')
-    # strip trailing Z
-    if time_part.endswith('Z'):
-        time_part = time_part[:-1]
+        return None
+    us = m.group('us') or "0"
     try:
-        return datetime.strptime(f"{date_part} {time_part}", "%Y-%m-%d %H:%M:%S.%f")
+        return datetime.strptime(
+            f"{m.group('date')} {m.group('h')}:{m.group('m')}:{m.group('s')}.{us}",
+            "%Y-%m-%d %H:%M:%S.%f"
+        )
     except Exception:
-        return datetime.min
+        return None
+
+def find_latest_csv_by_prefix(directory: str, prefix: str) -> str:
+    """
+    Find the latest CSV starting with `prefix`:
+    1) Prefer the newest by embedded timestamp in the filename if present.
+    2) If none have timestamps, or ties, fall back to newest by mtime.
+    """
+    candidates = [
+        os.path.join(directory, f)
+        for f in os.listdir(directory)
+        if f.lower().endswith(".csv") and f.startswith(prefix)
+    ]
+    if not candidates:
+        available = [f for f in os.listdir(directory) if f.lower().endswith(".csv")]
+        raise FileNotFoundError(
+            f"No CSVs starting with '{prefix}' in {directory}. "
+            f"Available CSVs: {available}"
+        )
+
+    with_stamps = []
+    without_stamps = []
+    for p in candidates:
+        ts = extract_timestamp_from_name(p)
+        if ts is not None:
+            with_stamps.append((ts, p))
+        else:
+            without_stamps.append(p)
+
+    if with_stamps:
+        with_stamps.sort(key=lambda t: t[0])
+        return with_stamps[-1][1]  # newest by embedded timestamp
+
+    # fallback: newest by modification time
+    return max(candidates, key=os.path.getmtime)
 
 def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.DataFrame:
     """
@@ -123,13 +168,13 @@ start_date = end_date - timedelta(days=days_back)
 today = datetime.now().date()
 print(f"Current date: {today}, Start date (days_back={days_back}): {start_date}")
 
-digizag_files = [f for f in os.listdir(input_dir) if f.startswith('digizag_2025-') and f.endswith('.csv')]
+digizag_files = [f for f in os.listdir(input_dir) if f.startswith(REPORT_PREFIX) and f.lower().endswith('.csv')]
 if not digizag_files:
-    raise FileNotFoundError("No files starting with 'digizag_2025-' found in the input directory.")
+    raise FileNotFoundError(f"No files starting with '{REPORT_PREFIX}' found in the input directory.")
 
-latest_file = max(digizag_files, key=extract_timestamp)
+latest_file = find_latest_csv_by_prefix(input_dir, REPORT_PREFIX)
 input_file = os.path.join(input_dir, latest_file)
-print(f"Using input file: {latest_file}")
+print(f"Using input file: {os.path.basename(latest_file) if os.path.isabs(latest_file) else latest_file}")
 
 df = pd.read_csv(input_file)
 

@@ -11,7 +11,7 @@ STATUS_DEFAULT = "pending"
 DEFAULT_PCT_IF_MISSING = 0.0
 FALLBACK_AFFILIATE_ID = "1"
 
-REPORT_CSV      = "Social Affiliate - digizag_Untitled Page_Pivot table (5).csv"
+REPORT_PREFIX   = "Social Affiliate - digizag_Untitled Page_Pivot table"  # dynamic CSV name start
 AFFILIATE_XLSX  = "Offers Coupons.xlsx"
 OUTPUT_CSV      = "shaye3.csv"
 
@@ -51,27 +51,69 @@ input_dir  = os.path.join(script_dir, '..', 'input data')
 output_dir = os.path.join(script_dir, '..', 'output data')
 os.makedirs(output_dir, exist_ok=True)
 
-input_file = os.path.join(input_dir, REPORT_CSV)
 affiliate_xlsx_path = os.path.join(input_dir, AFFILIATE_XLSX)
 output_file = os.path.join(output_dir, OUTPUT_CSV)
 
 # =======================
 # DATE WINDOW
 # =======================
-end_date = datetime.now().date()
+end_date = datetime.now().date()     # inclusive (keeps today's rows)
 start_date = end_date - timedelta(days=days_back)
 print(f"Current date: {end_date}, Start date (days_back={days_back}): {start_date}")
 
 # =======================
 # HELPERS
 # =======================
+def find_matching_csv(directory: str, prefix: str) -> str:
+    """
+    Find a .csv in `directory` whose base filename starts with `prefix` (case-insensitive).
+    - Ignores temporary files like '~$...'
+    - Prefers exact '<prefix>.csv' if present
+    - Otherwise returns the newest by modified time
+    """
+    prefix_lower = prefix.lower()
+    candidates = []
+    for fname in os.listdir(directory):
+        if fname.startswith("~$"):
+            continue
+        if not fname.lower().endswith(".csv"):
+            continue
+        base = os.path.splitext(fname)[0].lower()
+        if base.startswith(prefix_lower):
+            candidates.append(os.path.join(directory, fname))
+
+    if not candidates:
+        available = [f for f in os.listdir(directory) if f.lower().endswith(".csv")]
+        raise FileNotFoundError(
+            f"No .csv file starting with '{prefix}' found in: {directory}\n"
+            f"Available .csv files: {available}"
+        )
+
+    exact = [p for p in candidates if os.path.basename(p).lower() == (prefix_lower + ".csv")]
+    if exact:
+        return exact[0]
+
+    return max(candidates, key=os.path.getmtime)
+
 def normalize_coupon(x: str) -> str:
     """Uppercase, trim, take first token if multiple codes separated by ; , or whitespace."""
     if pd.isna(x):
         return ""
-    s = str(x).strip().upper()
+    s = str(x).replace("\u00A0", " ").strip().upper()
     parts = re.split(r"[;,\s]+", s)
     return parts[0] if parts else s
+
+def normalize_brand(x) -> str:
+    """Lowercase, strip spaces/NBSP for brand short codes like 'VS', 'PK'."""
+    if pd.isna(x):
+        return ""
+    return str(x).replace("\u00A0", " ").strip().lower()
+
+def _as_pct_fraction(series: pd.Series) -> pd.Series:
+    """Accepts 73, 73%, or 0.73 -> fraction in [0..1]."""
+    raw = series.astype(str).str.replace("%", "", regex=False).str.strip()
+    num = pd.to_numeric(raw, errors="coerce")
+    return num.apply(lambda v: (v/100.0) if pd.notna(v) and v > 1 else (v if pd.notna(v) else DEFAULT_PCT_IF_MISSING))
 
 def load_affiliate_mapping_for_offer(xlsx_path: str, sheet_name: str, offer_id: int) -> pd.DataFrame:
     """
@@ -81,28 +123,33 @@ def load_affiliate_mapping_for_offer(xlsx_path: str, sheet_name: str, offer_id: 
     - 'payout' may be % (for revenue/sale) or fixed (for fixed).
     """
     df_sheet = pd.read_excel(xlsx_path, sheet_name=sheet_name, dtype=str)
-    cols_lower = {c.lower().strip(): c for c in df_sheet.columns}
+    cols_lower = {str(c).lower().strip(): c for c in df_sheet.columns}
 
-    code_col   = cols_lower.get("code")
+    code_col   = cols_lower.get("code") or cols_lower.get("coupon code") or cols_lower.get("coupon")
     aff_col    = cols_lower.get("id") or cols_lower.get("affiliate_id")
-    type_col   = cols_lower.get("type")
+    type_col   = cols_lower.get("type") or cols_lower.get("payout type") or cols_lower.get("commission type")
     payout_col = (cols_lower.get("payout")
                   or cols_lower.get("new customer payout")
-                  or cols_lower.get("old customer payout"))
+                  or cols_lower.get("old customer payout")
+                  or cols_lower.get("commission")
+                  or cols_lower.get("rate"))
 
     if not code_col:
-        raise ValueError(f"[{sheet_name}] must contain a 'Code' column.")
+        raise ValueError(f"[{sheet_name}] must contain a 'Code' (or Coupon Code) column.")
     if not aff_col:
         raise ValueError(f"[{sheet_name}] must contain an 'ID' (or 'affiliate_ID') column.")
     if not type_col:
         raise ValueError(f"[{sheet_name}] must contain a 'type' column (revenue/sale/fixed).")
     if not payout_col:
-        raise ValueError(f"[{sheet_name}] must contain a payout column (e.g., 'payout').")
+        raise ValueError(f"[{sheet_name}] must contain a payout-like column (e.g., 'payout').")
 
-    # Parse payout as % or fixed
-    payout_raw = df_sheet[payout_col].astype(str).str.replace("%", "", regex=False).str.strip()
-    payout_num = pd.to_numeric(payout_raw, errors="coerce")
-    type_norm  = df_sheet[type_col].astype(str).str.strip().str.lower().replace({"": None})
+    payout_num = pd.to_numeric(
+        df_sheet[payout_col].astype(str).str.replace("%", "", regex=False).str.strip(),
+        errors="coerce"
+    )
+    type_norm = (
+        df_sheet[type_col].astype(str).str.strip().str.lower().replace({"": None}).fillna("revenue")
+    )
 
     pct_fraction = payout_num.where(type_norm.isin(["revenue", "sale"])).apply(
         lambda v: (v/100.0) if pd.notna(v) and v > 1 else (v if pd.notna(v) else DEFAULT_PCT_IF_MISSING)
@@ -113,26 +160,40 @@ def load_affiliate_mapping_for_offer(xlsx_path: str, sheet_name: str, offer_id: 
         "offer": offer_id,
         "code_norm": df_sheet[code_col].apply(normalize_coupon),
         "affiliate_ID": df_sheet[aff_col].fillna("").astype(str).str.strip(),
-        "type_norm": type_norm.fillna("revenue"),
+        "type_norm": type_norm,
         "pct_fraction": pct_fraction.fillna(DEFAULT_PCT_IF_MISSING),
         "fixed_amount": fixed_amount
     }).dropna(subset=["code_norm"])
 
-    # Deduplicate per offer+code
-    return out.drop_duplicates(subset=["offer", "code_norm"], keep="last")
+    out["has_aff"] = out["affiliate_ID"].astype(str).str.len() > 0
+    out = (
+        out.sort_values(by=["offer", "code_norm", "has_aff"], ascending=[True, True, False])
+           .drop_duplicates(subset=["offer", "code_norm"], keep="first")
+           .drop(columns=["has_aff"])
+    )
+    return out
 
 def build_master_affiliate_map(xlsx_path: str, offer_to_sheet_map: dict) -> pd.DataFrame:
     frames = []
     for offer_id, sheet in offer_to_sheet_map.items():
-        frames.append(load_affiliate_mapping_for_offer(xlsx_path, sheet, offer_id))
+        try:
+            frames.append(load_affiliate_mapping_for_offer(xlsx_path, sheet, offer_id))
+        except Exception as e:
+            print(f"Warning: skipped sheet '{sheet}' for offer {offer_id}: {e}")
+    if not frames:
+        return pd.DataFrame(columns=["offer","code_norm","affiliate_ID","type_norm","pct_fraction","fixed_amount"])
     return pd.concat(frames, ignore_index=True)
 
 # =======================
 # LOAD REPORT
 # =======================
+# Dynamically select the changing report CSV
+input_file = find_matching_csv(input_dir, REPORT_PREFIX)
+print(f"Using report file: {input_file}")
+
 df = pd.read_csv(input_file)
 
-# Convert 'Date' and filter
+# Convert 'Date' and filter by date window (inclusive of end_date)
 df['Date'] = pd.to_datetime(df['Date'], format='%b %d, %Y', errors='coerce')
 before = len(df)
 df = df.dropna(subset=['Date'])
@@ -142,15 +203,23 @@ print(f"Rows with invalid dates dropped: {before - len(df)}")
 df = df[(df['Date'].dt.date >= start_date) & (df['Date'].dt.date <= end_date)].copy()
 print(f"Rows after filtering date range: {len(df)}")
 
-# Map Brand -> Offer
-df['offer'] = df['Brand'].map(brand_to_offer)
+# Map Brand -> Offer using normalized brand code
+df['brand_norm'] = df['Brand'].apply(normalize_brand)
+df['offer'] = df['brand_norm'].map(brand_to_offer)
 
-# Remove rows where Affiliate Cost is 0
-df = df[df['Affiliate Cost'] != 0].copy()
+missing_offer = df['offer'].isna().sum()
+if missing_offer:
+    print(f"Rows with unknown brand code (no offer mapping): {missing_offer}")
+df = df.dropna(subset=['offer']).copy()
+df['offer'] = df['offer'].astype(int)
 
-# Rename for clarity and normalize coupon for join
+# Keep rows with positive Affiliate Cost only
+df['Affiliate Cost'] = pd.to_numeric(df['Affiliate Cost'], errors='coerce').fillna(0.0)
+df = df[df['Affiliate Cost'] > 0].copy()
+
+# Rename/derive and normalize coupon for join
 df['sale_amount'] = pd.to_numeric(df['Affiliate Revenue'], errors='coerce').fillna(0.0)
-df['revenue']     = pd.to_numeric(df['Affiliate Cost'], errors='coerce').fillna(0.0)
+df['revenue']     = df['Affiliate Cost']
 df['coupon_norm'] = df['Coupon Code'].apply(normalize_coupon)
 
 # =======================
@@ -165,18 +234,31 @@ df_joined = df.merge(master_map, how="left", left_on=["offer", "coupon_norm"], r
 
 # Missing affiliate?
 missing_aff_mask = df_joined['affiliate_ID'].isna() | (df_joined['affiliate_ID'].astype(str).str.strip() == "")
+if missing_aff_mask.any():
+    sample_unmatched = (
+        df_joined.loc[missing_aff_mask, ['offer', 'coupon_norm']]
+        .drop_duplicates()
+        .head(20)
+        .to_dict(orient="records")
+    )
+    print("Unmatched (offer, coupon) samples:", sample_unmatched)
 
 # =======================
 # PAYOUT (by type)
 # =======================
-payout = pd.Series(0.0, index=df_joined.index)
+df_joined['sale_amount'] = pd.to_numeric(df_joined['sale_amount'], errors='coerce').fillna(0.0)
+df_joined['revenue']     = pd.to_numeric(df_joined['revenue'], errors='coerce').fillna(0.0)
 
+df_joined['type_norm']    = df_joined['type_norm'].fillna("revenue")
+df_joined['pct_fraction'] = df_joined['pct_fraction'].fillna(DEFAULT_PCT_IF_MISSING)
+
+payout = pd.Series(0.0, index=df_joined.index)
 mask_rev   = df_joined['type_norm'].str.lower().eq('revenue')
 mask_sale  = df_joined['type_norm'].str.lower().eq('sale')
 mask_fixed = df_joined['type_norm'].str.lower().eq('fixed')
 
-payout.loc[mask_rev]   = df_joined.loc[mask_rev,   'revenue']     * df_joined.loc[mask_rev,   'pct_fraction'].fillna(DEFAULT_PCT_IF_MISSING)
-payout.loc[mask_sale]  = df_joined.loc[mask_sale,  'sale_amount'] * df_joined.loc[mask_sale,  'pct_fraction'].fillna(DEFAULT_PCT_IF_MISSING)
+payout.loc[mask_rev]   = df_joined.loc[mask_rev,   'revenue']     * df_joined.loc[mask_rev,   'pct_fraction']
+payout.loc[mask_sale]  = df_joined.loc[mask_sale,  'sale_amount'] * df_joined.loc[mask_sale,  'pct_fraction']
 payout.loc[mask_fixed] = df_joined.loc[mask_fixed, 'fixed_amount'].fillna(0.0)
 
 # Enforce fallback: no coupon match → affiliate_id="1", payout=0
@@ -189,7 +271,7 @@ df_joined['payout'] = payout.round(2)
 # BUILD OUTPUT (NEW STRUCTURE)
 # =======================
 output_df = pd.DataFrame({
-    'offer': df_joined['offer'],
+    'offer': df_joined['offer'].astype(int),
     'affiliate_id': df_joined['affiliate_ID'],
     'date': df_joined['Date'].dt.strftime('%m-%d-%Y'),
     'status': STATUS_DEFAULT,

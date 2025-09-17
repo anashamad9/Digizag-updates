@@ -16,21 +16,21 @@ DEFAULT_PCT_IF_MISSING = 0.0
 FALLBACK_AFFILIATE_ID = "1"
 
 # Local files
-AFFILIATE_XLSX  = "Offers Coupons.xlsx"
-AFFILIATE_SHEET = "Mumzworld"
-REPORT_CSV      = "DigiZag Dashboard_Commission Dashboard_Table (1).csv"
+AFFILIATE_XLSX   = "Offers Coupons.xlsx"
+AFFILIATE_SHEET  = "Mumzworld"
+REPORT_PREFIX    = "DigiZag Dashboard_Commission Dashboard_Table"  # suffix like " (1).csv" is OK
+OUTPUT_CSV       = "mumzworld.csv"
 
 # =======================
 # PATHS
 # =======================
 script_dir = os.path.dirname(os.path.abspath(__file__))
-input_dir = os.path.join(script_dir, '..', 'input data')
+input_dir  = os.path.join(script_dir, '..', 'input data')
 output_dir = os.path.join(script_dir, '..', 'output data')
 os.makedirs(output_dir, exist_ok=True)
 
-input_file = os.path.join(input_dir, REPORT_CSV)
 affiliate_xlsx_path = os.path.join(input_dir, AFFILIATE_XLSX)
-output_file = os.path.join(output_dir, 'mumzworld.csv')
+output_file         = os.path.join(output_dir, OUTPUT_CSV)
 
 # =======================
 # HELPERS
@@ -94,7 +94,6 @@ def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.Data
     if not payout_col:
         raise ValueError(f"[{sheet_name}] must contain a payout column (payout / new customer payout / old customer payout).")
 
-    # Normalize & parse fields
     type_norm = (
         df_sheet[type_col]
         .astype(str).str.strip().str.lower()
@@ -131,12 +130,35 @@ def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.Data
     )
     return out
 
+def find_latest_csv_by_prefix(directory: str, prefix: str) -> str:
+    """
+    Return the path to the most recently modified CSV whose *base name* starts with `prefix`.
+    Matches e.g. 'DigiZag Dashboard_Commission Dashboard_Table.csv' or '... (3).csv'
+    """
+    prefix_norm = prefix.lower().strip()
+    candidates = []
+    for f in os.listdir(directory):
+        if not f.lower().endswith(".csv"):
+            continue
+        base = os.path.splitext(f)[0].lower().strip()
+        if base.startswith(prefix_norm):
+            candidates.append(os.path.join(directory, f))
+    if not candidates:
+        avail = [f for f in os.listdir(directory) if f.lower().endswith(".csv")]
+        raise FileNotFoundError(
+            f"No CSV starting with '{prefix}' in {directory}. Available CSVs: {avail}"
+        )
+    return max(candidates, key=os.path.getmtime)
+
 # =======================
 # LOAD & PREP REPORT
 # =======================
 end_date = datetime.now().date()             # exclusive upper bound (we exclude "today")
 start_date = end_date - timedelta(days=days_back)
 print(f"Window: {start_date} ≤ date < {end_date} (exclude today)")
+
+input_file = find_latest_csv_by_prefix(input_dir, REPORT_PREFIX)
+print(f"Using input file: {os.path.basename(input_file)}")
 
 df = pd.read_csv(input_file)
 
@@ -155,7 +177,11 @@ for _, row in df.iterrows():
 
     # New
     if new_orders > 0 and pd.notnull(row.get('New Cust Revenue')):
-        sale_per = float(row['New Cust Revenue']) / new_orders
+        try:
+            total_new_rev = float(row['New Cust Revenue'])
+        except Exception:
+            total_new_rev = 0.0
+        sale_per = (total_new_rev / new_orders) if new_orders else 0.0
         for _ in range(new_orders):
             expanded.append({
                 'order_date': order_date,
@@ -169,7 +195,11 @@ for _, row in df.iterrows():
 
     # Repeat
     if repeat_orders > 0 and pd.notnull(row.get('Repeat Cust Revenue')):
-        sale_per = float(row['Repeat Cust Revenue']) / repeat_orders
+        try:
+            total_rep_rev = float(row['Repeat Cust Revenue'])
+        except Exception:
+            total_rep_rev = 0.0
+        sale_per = (total_rep_rev / repeat_orders) if repeat_orders else 0.0
         for _ in range(repeat_orders):
             expanded.append({
                 'order_date': order_date,
@@ -189,7 +219,7 @@ if df_expanded.empty:
     print("No rows after expansion; empty file written.")
     raise SystemExit(0)
 
-df_expanded['order_date'] = pd.to_datetime(df_expanded['order_date'])
+df_expanded['order_date']  = pd.to_datetime(df_expanded['order_date'])
 df_expanded['coupon_norm'] = df_expanded['coupon_code'].apply(normalize_coupon)
 
 # =======================

@@ -14,8 +14,8 @@ FALLBACK_AFFILIATE_ID = "1"         # when coupon has no affiliate, use "1" and 
 
 # Local files
 AFFILIATE_XLSX  = "Offers Coupons.xlsx"    # multi-sheet Excel
-AFFILIATE_SHEET = "Dabdoob"                 # <-- coupons sheet name for this offer
-REPORT_XLSX     = "Orders_Coupons_Report_Digizag.xlsx"
+AFFILIATE_SHEET = "Dabdoob"                # <-- coupons sheet name for this offer
+REPORT_PREFIX   = "Orders_Coupons_Report_Digizag"  # dynamic filename start
 REPORT_SHEET    = "Sheet1"
 
 # FX helpers (to USD)
@@ -32,13 +32,43 @@ input_dir = os.path.join(script_dir, '..', 'input data')
 output_dir = os.path.join(script_dir, '..', 'output data')
 os.makedirs(output_dir, exist_ok=True)
 
-input_file = os.path.join(input_dir, REPORT_XLSX)
 affiliate_xlsx_path = os.path.join(input_dir, AFFILIATE_XLSX)
 output_file = os.path.join(output_dir, 'dabdoub.csv')  # keeping your filename
 
 # =======================
 # HELPERS
 # =======================
+def find_matching_xlsx(directory: str, prefix: str) -> str:
+    """
+    Find an .xlsx in `directory` whose base filename starts with `prefix` (case-insensitive).
+    - Ignores temporary files like '~$...'
+    - Prefers exact '<prefix>.xlsx' if present
+    - Otherwise returns the newest by modified time
+    """
+    prefix_lower = prefix.lower()
+    candidates = []
+    for fname in os.listdir(directory):
+        if fname.startswith("~$"):
+            continue
+        if not fname.lower().endswith(".xlsx"):
+            continue
+        base = os.path.splitext(fname)[0].lower()
+        if base.startswith(prefix_lower):
+            candidates.append(os.path.join(directory, fname))
+
+    if not candidates:
+        available = [f for f in os.listdir(directory) if f.lower().endswith(".xlsx")]
+        raise FileNotFoundError(
+            f"No .xlsx file starting with '{prefix}' found in: {directory}\n"
+            f"Available .xlsx files: {available}"
+        )
+
+    exact = [p for p in candidates if os.path.basename(p).lower() == (prefix_lower + ".xlsx")]
+    if exact:
+        return exact[0]
+
+    return max(candidates, key=os.path.getmtime)
+
 def normalize_coupon(x: str) -> str:
     """Uppercase, trim, and take the first token if multiple codes separated by ; , or whitespace."""
     if pd.isna(x):
@@ -107,12 +137,15 @@ def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.Data
     return out.drop_duplicates(subset=["code_norm"], keep="last")
 
 # =======================
-# LOAD REPORT
+# LOAD REPORT (dynamic filename)
 # =======================
 today = datetime.now().date()
 end_date = today
 start_date = end_date - timedelta(days=days_back)
 print(f"Current date: {today}, Start date (days_back={days_back}): {start_date}")
+
+input_file = find_matching_xlsx(input_dir, REPORT_PREFIX)
+print(f"Using report file: {input_file}")
 
 df = pd.read_excel(input_file, sheet_name=REPORT_SHEET)
 
@@ -149,7 +182,7 @@ def compute_sale_amount(country: str, subtotal):
 
 df_filtered['sale_amount'] = df_filtered.apply(lambda r: compute_sale_amount(str(r.get('Country', '')), r.get('Subtotal')), axis=1)
 
-# Base revenue 10% of sale_amount (your rule)
+# Base revenue 10% of sale_amount
 df_filtered['revenue'] = df_filtered['sale_amount'] * 0.10
 
 # GEO mapping

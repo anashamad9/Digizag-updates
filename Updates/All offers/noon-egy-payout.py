@@ -14,7 +14,8 @@ FALLBACK_AFFILIATE_ID = "1"
 GEO = "egy"
 
 # Files
-REPORT_CSV      = "EG DigiZag Coupon Dashboard_Affiliate Summary_Table (2).csv"
+REPORT_CSV_PATTERN = r"^EG DigiZag Coupon Dashboard_Affiliate Summary_Table.*\.csv$"
+REPORT_CSV_DEFAULT = "EG DigiZag Coupon Dashboard_Affiliate Summary_Table (2).csv"
 AFFILIATE_XLSX  = "Offers Coupons.xlsx"
 AFFILIATE_SHEET = "Noon Egypt"   # coupons sheet for this offer
 
@@ -26,17 +27,31 @@ input_dir = os.path.join(script_dir, '..', 'input data')
 output_dir = os.path.join(script_dir, '..', 'output data')
 os.makedirs(output_dir, exist_ok=True)
 
-input_file = os.path.join(input_dir, REPORT_CSV)
 affiliate_xlsx_path = os.path.join(input_dir, AFFILIATE_XLSX)
 output_file = os.path.join(output_dir, 'noon_egypt.csv')
 
 # =======================
 # HELPERS
 # =======================
+def pick_latest_report():
+    """Use the default filename if present; else pick newest file matching the pattern."""
+    default_path = os.path.join(input_dir, REPORT_CSV_DEFAULT)
+    if os.path.exists(default_path):
+        return default_path
+    rx = re.compile(REPORT_CSV_PATTERN, re.IGNORECASE)
+    cands = [f for f in os.listdir(input_dir) if rx.match(f)]
+    if not cands:
+        raise FileNotFoundError(
+            "Could not find report CSV. Looked for default "
+            f"'{REPORT_CSV_DEFAULT}' or any file matching pattern '{REPORT_CSV_PATTERN}'."
+        )
+    best = max(cands, key=lambda f: os.path.getmtime(os.path.join(input_dir, f)))
+    return os.path.join(input_dir, best)
+
 def normalize_coupon(x: str) -> str:
     if pd.isna(x):
         return ""
-    s = str(x).strip().upper()
+    s = str(x).replace("\u00A0", " ").strip().upper()  # normalize NBSP too
     parts = re.split(r"[;,\s]+", s)
     return parts[0] if parts else s
 
@@ -47,21 +62,23 @@ def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.Data
       pct_fraction (for 'revenue'/'sale'), fixed_amount (for 'fixed')
     """
     df_sheet = pd.read_excel(xlsx_path, sheet_name=sheet_name, dtype=str)
-    cols_lower = {c.lower().strip(): c for c in df_sheet.columns}
+    cols_lower = {str(c).lower().strip(): c for c in df_sheet.columns}
 
-    code_col = cols_lower.get("code")
+    def need(name):
+        col = cols_lower.get(name)
+        if not col:
+            raise ValueError(f"[{sheet_name}] must contain '{name}' column.")
+        return col
+
+    code_col = need("code")
     aff_col  = cols_lower.get("id") or cols_lower.get("affiliate_id")
-    type_col = cols_lower.get("type")
+    type_col = need("type")
     payout_col = (cols_lower.get("payout")
                   or cols_lower.get("new customer payout")
                   or cols_lower.get("old customer payout"))
 
-    if not code_col:
-        raise ValueError(f"[{sheet_name}] must contain a 'Code' column.")
     if not aff_col:
         raise ValueError(f"[{sheet_name}] must contain an 'ID' (or 'affiliate_ID') column.")
-    if not type_col:
-        raise ValueError(f"[{sheet_name}] must contain a 'type' column (revenue/sale/fixed).")
     if not payout_col:
         raise ValueError(f"[{sheet_name}] must contain a payout column (e.g., 'payout').")
 
@@ -85,22 +102,36 @@ def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.Data
     return out.drop_duplicates(subset=["code_norm"], keep="last")
 
 def get_revenue_per_order(tier: str) -> float:
-    t = str(tier)
-    if '4.75 - 14.25' in t:
-        return 0.30
-    elif '14.26 - 23.85' in t:
-        return 0.70
-    elif '23.86 - 37.24' in t:
-        return 1.30
-    elif '37.25 - 59.40' in t:
-        return 2.20
-    elif '59.41 - 72.00' in t:
-        return 3.25
-    elif '72.01 - 110.00' in t:
-        return 4.25
-    elif 'Above 110.01' in t:
-        return 7.00
+    """
+    Map the GMV tier label (gmv_tag_usd) to a fixed revenue per order.
+    Matching is whitespace-insensitive and case-insensitive.
+    """
+    if tier is None or (isinstance(tier, float) and pd.isna(tier)):
+        return 0.0
+    t = re.sub(r"\s+", " ", str(tier)).strip().lower()
+
+    table = {
+        "4.75 - 14.25": 0.30,
+        "14.26 - 23.85": 0.70,
+        "23.86 - 37.24": 1.30,
+        "37.25 - 59.40": 2.20,
+        "59.41 - 72.00": 3.25,
+        "72.01 - 110.00": 4.25,
+        "above 110.01": 7.00,
+    }
+    for k, v in table.items():
+        if re.sub(r"\s+", " ", k).strip().lower() in t:
+            return v
     return 0.0
+
+def get_col(df: pd.DataFrame, *candidates: str) -> str:
+    """Find a column by case-insensitive, space-normalized name."""
+    low = {re.sub(r"\s+", " ", str(c)).strip().lower(): c for c in df.columns}
+    for cand in candidates:
+        key = re.sub(r"\s+", " ", cand).strip().lower()
+        if key in low:
+            return low[key]
+    raise KeyError(f"None of the expected columns found: {candidates}")
 
 # =======================
 # LOAD & FILTER REPORT
@@ -110,25 +141,38 @@ start_date = end_date - timedelta(days=days_back + 1)
 today = datetime.now().date()
 print(f"Current date: {today}, Start date (days_back={days_back}): {start_date}")
 
+input_file = pick_latest_report()
+print(f"Using input file: {os.path.basename(input_file)}")
+
 df = pd.read_csv(input_file)
 
-df['egy_date'] = pd.to_datetime(df['egy_date'], format='%b %d, %Y', errors='coerce')
-df = df.dropna(subset=['egy_date'])
-df = df[(df['egy_date'].dt.date >= start_date) & (df['egy_date'].dt.date < end_date)]
+# Resolve columns robustly
+date_col   = get_col(df, "egy_date")
+orders_col = get_col(df, "orders")
+gmv_col    = get_col(df, "gmv_usd", "gmv usd", "gmv (usd)")
+tier_col   = get_col(df, "gmv_tag_usd", "gmv tag usd")
+code_col   = get_col(df, "coupon code", "coupon", "code")
+
+# Parse & date filter
+df[date_col] = pd.to_datetime(df[date_col], format='%b %d, %Y', errors='coerce')
+df = df.dropna(subset=[date_col])
+df = df[(df[date_col].dt.date >= start_date) & (df[date_col].dt.date < end_date)].copy()
 
 # =======================
 # EXPAND & DERIVE
 # =======================
-orders = pd.to_numeric(df['Orders'], errors='coerce').fillna(0).astype(int).clip(lower=0)
+orders = pd.to_numeric(df[orders_col], errors='coerce').fillna(0).astype(int).clip(lower=0)
 df_expanded = df.loc[df.index.repeat(orders)].reset_index(drop=True)
 
 # Per-order values
-df_expanded['sale_amount'] = pd.to_numeric(df_expanded['GMV_USD'], errors='coerce').fillna(0.0) / \
-                              pd.to_numeric(df_expanded['Orders'], errors='coerce').replace(0, pd.NA).fillna(1)
-df_expanded['revenue'] = df_expanded['gmv_tag_usd'].apply(get_revenue_per_order)
+den = pd.to_numeric(df_expanded[orders_col], errors='coerce').replace(0, pd.NA).fillna(1)
+gmv_usd = pd.to_numeric(df_expanded[gmv_col], errors='coerce').fillna(0.0)
+
+df_expanded['sale_amount'] = (gmv_usd / den).astype(float)
+df_expanded['revenue'] = df_expanded[tier_col].apply(get_revenue_per_order)
 
 # Prepare join keys
-df_expanded['coupon_norm'] = df_expanded['Coupon Code'].apply(normalize_coupon)
+df_expanded['coupon_norm'] = df_expanded[code_col].apply(normalize_coupon)
 
 # =======================
 # JOIN AFFILIATE MAPPING (type-aware)
@@ -170,7 +214,7 @@ df_joined['payout'] = payout.round(2)
 output_df = pd.DataFrame({
     'offer': OFFER_ID,
     'affiliate_id': df_joined['affiliate_ID'],
-    'date': df_joined['egy_date'].dt.strftime('%m-%d-%Y'),
+    'date': df_joined[date_col].dt.strftime('%m-%d-%Y'),
     'status': STATUS_DEFAULT,
     'payout': df_joined['payout'],
     'revenue': df_joined['revenue'].round(2),

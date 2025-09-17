@@ -2,6 +2,7 @@ import pandas as pd
 from datetime import datetime, timedelta
 import os
 import re
+from typing import Optional
 
 # =======================
 # CONFIG
@@ -15,6 +16,7 @@ FALLBACK_AFFILIATE_ID = "1"         # when no affiliate match: set to "1" and pa
 # Local files
 AFFILIATE_XLSX  = "Offers Coupons.xlsx"
 AFFILIATE_SHEET = "Eyewa"           # coupons sheet name for this offer
+REPORT_PREFIX   = "ConversionsExport_"  # dynamic CSV name start
 
 # =======================
 # PATHS
@@ -35,11 +37,54 @@ def normalize_coupon(x: str) -> str:
     parts = re.split(r"[;,\s]+", s)
     return parts[0] if parts else s
 
-def extract_start_date(filename):
-    m = re.search(r'ConversionsExport_(\d{4}-\d{2}-\d{2})_\d{4}-\d{2}-\d{2}\.csv', filename)
-    if m:
+# ConversionsExport_YYYY-MM-DD_YYYY-MM-DD.csv  (we read the first date as the 'start')
+_START_DATE_RE = re.compile(r'ConversionsExport_(\d{4}-\d{2}-\d{2})_\d{4}-\d{2}-\d{2}', re.IGNORECASE)
+
+def extract_start_date_from_name(filename: str) -> Optional[datetime]:
+    m = _START_DATE_RE.search(os.path.basename(filename))
+    if not m:
+        return None
+    try:
         return datetime.strptime(m.group(1), '%Y-%m-%d')
-    return datetime.min
+    except Exception:
+        return None
+
+def find_latest_conversions_export(directory: str, prefix: str) -> str:
+    """
+    Return path to the 'best' ConversionsExport CSV:
+      1) consider only *.csv with basename starting with `prefix` (case-insensitive)
+      2) prefer the one with the newest embedded start date
+      3) fallback to newest by modification time if none parse cleanly
+    """
+    candidates = []
+    for fname in os.listdir(directory):
+        if fname.startswith("~$"):
+            continue
+        if not fname.lower().endswith(".csv"):
+            continue
+        base = os.path.splitext(fname)[0]
+        if base.lower().startswith(prefix.lower()):
+            candidates.append(os.path.join(directory, fname))
+
+    if not candidates:
+        available = [f for f in os.listdir(directory) if f.lower().endswith(".csv")]
+        raise FileNotFoundError(
+            f"No .csv files starting with '{prefix}' found in: {directory}\n"
+            f"Available .csv files: {available}"
+        )
+
+    dated = []
+    for p in candidates:
+        dt = extract_start_date_from_name(p)
+        if dt:
+            dated.append((dt, p))
+
+    if dated:
+        dated.sort(key=lambda t: t[0])
+        return dated[-1][1]  # newest start date
+
+    # fallback: newest by modification time
+    return max(candidates, key=os.path.getmtime)
 
 def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.DataFrame:
     """
@@ -110,20 +155,15 @@ def calculate_revenue(row):
     return 0.0
 
 # =======================
-# LOAD LATEST REPORT
+# LOAD LATEST REPORT (dynamic)
 # =======================
 end_date = datetime.now().date()
 start_date = end_date - timedelta(days=days_back)
 today = datetime.now().date()
 print(f"Current date: {end_date}, Start date (days_back={days_back}): {start_date}")
 
-conversions_files = [f for f in os.listdir(input_dir) if f.startswith('ConversionsExport_') and f.endswith('.csv')]
-if not conversions_files:
-    raise FileNotFoundError("No files starting with 'ConversionsExport_' found in the input directory.")
-
-latest_file = max(conversions_files, key=extract_start_date)
-input_file = os.path.join(input_dir, latest_file)
-print(f"Using input file: {latest_file}")
+input_file = find_latest_conversions_export(input_dir, REPORT_PREFIX)
+print(f"Using input file: {os.path.basename(input_file)}")
 
 df = pd.read_csv(input_file)
 

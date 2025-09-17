@@ -16,7 +16,7 @@ GEO = "no-geo"
 # Local files
 AFFILIATE_XLSX   = "Offers Coupons.xlsx"   # multi-sheet Excel
 AFFILIATE_SHEET  = "Baytonia"              # <-- sheet for this offer
-REPORT_CSV       = "DigiZag__Baytonia_ Orders Tracking Report_DigiZag_Table (1).csv"
+REPORT_PREFIX    = "DigiZag__Baytonia_ Orders Tracking Report_DigiZag_Table"  # dynamic CSV name start
 
 USD_PER_SAR = 1 / 3.75  # Total is assumed SAR -> USD
 
@@ -28,13 +28,43 @@ input_dir = os.path.join(script_dir, '..', 'input data')
 output_dir = os.path.join(script_dir, '..', 'output data')
 os.makedirs(output_dir, exist_ok=True)
 
-input_file = os.path.join(input_dir, REPORT_CSV)
 affiliate_xlsx_path = os.path.join(input_dir, AFFILIATE_XLSX)
 output_file = os.path.join(output_dir, 'baytonia.csv')
 
 # =======================
 # HELPERS
 # =======================
+def find_matching_csv(directory: str, prefix: str) -> str:
+    """
+    Find a .csv in `directory` whose base filename starts with `prefix` (case-insensitive).
+    - Ignores temporary files like '~$...'
+    - Prefers exact '<prefix>.csv' if present
+    - Otherwise returns the newest by modified time
+    """
+    prefix_lower = prefix.lower()
+    candidates = []
+    for fname in os.listdir(directory):
+        if fname.startswith("~$"):
+            continue
+        if not fname.lower().endswith(".csv"):
+            continue
+        base = os.path.splitext(fname)[0].lower()
+        if base.startswith(prefix_lower):
+            candidates.append(os.path.join(directory, fname))
+
+    if not candidates:
+        available = [f for f in os.listdir(directory) if f.lower().endswith(".csv")]
+        raise FileNotFoundError(
+            f"No .csv file starting with '{prefix}' found in: {directory}\n"
+            f"Available .csv files: {available}"
+        )
+
+    exact = [p for p in candidates if os.path.basename(p).lower() == (prefix_lower + ".csv")]
+    if exact:
+        return exact[0]
+
+    return max(candidates, key=os.path.getmtime)
+
 def normalize_coupon(x: str) -> str:
     """Uppercase, trim, and take the first token if multiple codes separated by ; , or whitespace."""
     if pd.isna(x):
@@ -116,6 +146,10 @@ def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.Data
 end_date = datetime.now().date()
 start_date = end_date - timedelta(days=days_back)
 print(f"Current date: {end_date}, Start date (days_back={days_back}): {start_date}")
+
+# Dynamically pick the changing report CSV
+input_file = find_matching_csv(input_dir, REPORT_PREFIX)
+print(f"Using report file: {input_file}")
 
 df = pd.read_csv(input_file)
 

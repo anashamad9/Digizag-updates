@@ -15,7 +15,10 @@ FALLBACK_AFFILIATE_ID = "1"         # when no affiliate match: set to "1" and pa
 # Local files
 AFFILIATE_XLSX  = "Offers Coupons.xlsx"
 AFFILIATE_SHEET = "Mamas&Papas"     # coupons sheet name for this offer
-REPORT_CSV      = "MNP _ DigiZag Report_Page 1_Table (4).csv"
+
+# Report filename prefix (any tail like '(4).csv' is OK)
+REPORT_PREFIX   = "MNP _ DigiZag Report_Page 1_Table"
+OUTPUT_CSV      = "mamas_papas.csv"
 
 # Country → geo mapping
 COUNTRY_GEO = {"SA": "ksa", "AE": "uae", "KW": "kwt"}
@@ -28,15 +31,38 @@ input_dir = os.path.join(script_dir, '..', 'input data')
 output_dir = os.path.join(script_dir, '..', 'output data')
 os.makedirs(output_dir, exist_ok=True)
 
-input_file = os.path.join(input_dir, REPORT_CSV)
 affiliate_xlsx_path = os.path.join(input_dir, AFFILIATE_XLSX)
-output_file = os.path.join(output_dir, 'mamas_papas.csv')
+output_file = os.path.join(output_dir, OUTPUT_CSV)
 
 # =======================
 # HELPERS
 # =======================
+def _norm_name(s: str) -> str:
+    """Lowercase + collapse spaces for robust comparisons."""
+    return re.sub(r"\s+", " ", str(s).strip()).lower()
+
+def find_latest_csv_by_prefix(directory: str, prefix: str) -> str:
+    """
+    Find the newest CSV whose base filename starts with `prefix`
+    (case/space-insensitive). Falls back to modified time.
+    """
+    prefix_n = _norm_name(prefix)
+    candidates = []
+    for fname in os.listdir(directory):
+        if not fname.lower().endswith(".csv"):
+            continue
+        base = os.path.splitext(fname)[0]
+        if _norm_name(base).startswith(prefix_n):
+            candidates.append(os.path.join(directory, fname))
+    if not candidates:
+        avail = [f for f in os.listdir(directory) if f.lower().endswith(".csv")]
+        raise FileNotFoundError(
+            f"No CSV starting with '{prefix}' in: {directory}\nAvailable CSVs: {avail}"
+        )
+    return max(candidates, key=os.path.getmtime)
+
 def normalize_coupon(x: str) -> str:
-    """Uppercase, trim, first token if multiple codes separated by ; , or whitespace."""
+    """Uppercase, trim, first token if multiple codes separated by ; , or whitespace (handles NBSP)."""
     if pd.isna(x):
         return ""
     s = str(x).replace("\u00A0", " ").strip().upper()  # NBSP -> space
@@ -120,29 +146,70 @@ def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.Data
     )
     return out
 
+def resolve_required_columns(df: pd.DataFrame):
+    """
+    Accept exact names used in your file; add light fallbacks for minor variants.
+    """
+    cols = {str(c).strip().lower(): c for c in df.columns}
+
+    def get(*cands):
+        for c in cands:
+            if c in cols:
+                return cols[c]
+        return None
+
+    created_date = get("created_date", "created date", "created")
+    aed_net      = get("aed_net_amount", "aed net amount", "aed_net")
+    country      = get("country")
+    coupon       = get("aff_coupon", "coupon", "coupon code", "affiliate coupon")
+
+    missing = [nm for nm, col in {
+        "created_date": created_date,
+        "AED_net_amount": aed_net,
+        "aff_coupon": coupon
+    }.items() if not col]
+
+    if missing:
+        raise KeyError(f"Missing required columns: {missing}. Found: {list(df.columns)}")
+
+    return created_date, aed_net, country, coupon
+
 # =======================
-# LOAD REPORT
+# DATE WINDOW
 # =======================
 end_date = datetime.now().date()
 start_date = end_date - timedelta(days=days_back)
 print(f"Current date: {end_date}, Start date (days_back={days_back}): {start_date}")
 
-df = pd.read_csv(input_file)
+# =======================
+# PICK REPORT BY PREFIX
+# =======================
+report_path = find_latest_csv_by_prefix(input_dir, REPORT_PREFIX)
+print(f"Using report file: {os.path.basename(report_path)}")
+
+# =======================
+# LOAD REPORT
+# =======================
+df_raw = pd.read_csv(report_path)
+created_date_col, aed_net_col, country_col, coupon_col = resolve_required_columns(df_raw)
 
 # Convert 'created_date'
-df['created_date'] = pd.to_datetime(df['created_date'], format='%b %d, %Y', errors='coerce')
-before = len(df)
-df = df.dropna(subset=['created_date'])
+df_raw[created_date_col] = pd.to_datetime(df_raw[created_date_col], format='%b %d, %Y', errors='coerce')
+before = len(df_raw)
+df = df_raw.dropna(subset=[created_date_col]).copy()
 print(f"Total rows before filtering: {before}")
 print(f"Rows with invalid dates dropped: {before - len(df)}")
 
 # Geo mapping
-df['geo'] = df['country'].map(COUNTRY_GEO).fillna(df['country'])
+if country_col:
+    df["geo"] = df[country_col].map(COUNTRY_GEO).fillna(df[country_col])
+else:
+    df["geo"] = df.get("geo", "no-geo")
 
 # Date filter (inclusive)
 df_filtered = df[
-    (df['created_date'].dt.date >= start_date) &
-    (df['created_date'].dt.date <= end_date)
+    (df[created_date_col].dt.date >= start_date) &
+    (df[created_date_col].dt.date <= end_date)
 ].copy()
 print(f"Rows after filtering date range: {len(df_filtered)}")
 
@@ -150,13 +217,13 @@ print(f"Rows after filtering date range: {len(df_filtered)}")
 # DERIVED FIELDS
 # =======================
 # sale_amount (AED -> USD)
-df_filtered['sale_amount'] = df_filtered['AED_net_amount'] / 3.67
+df_filtered['sale_amount'] = pd.to_numeric(df_filtered[aed_net_col], errors='coerce').fillna(0.0) / 3.67
 
 # revenue 6% of sale_amount
 df_filtered['revenue'] = df_filtered['sale_amount'] * 0.06
 
 # coupon normalization
-df_filtered['coupon_norm'] = df_filtered['aff_coupon'].apply(normalize_coupon)
+df_filtered['coupon_norm'] = df_filtered[coupon_col].apply(normalize_coupon)
 
 # =======================
 # JOIN AFFILIATE MAPPING (type-aware)
@@ -198,7 +265,7 @@ df_joined['payout'] = payout.round(2)
 output_df = pd.DataFrame({
     'offer': OFFER_ID,
     'affiliate_id': df_joined['affiliate_ID'],
-    'date': df_joined['created_date'].dt.strftime('%m-%d-%Y'),
+    'date': df_joined[created_date_col].dt.strftime('%m-%d-%Y'),
     'status': STATUS_DEFAULT,
     'payout': df_joined['payout'],
     'revenue': df_joined['revenue'].round(2),

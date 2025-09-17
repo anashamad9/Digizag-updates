@@ -12,7 +12,7 @@ FALLBACK_AFFILIATE_ID = "1"
 DEFAULT_PCT_IF_MISSING = 0.0
 
 # How many days back to include (EXCLUDES today)
-DAYS_BACK = 20
+DAYS_BACK = 2
 
 # Currency: set divisor to 1.0 if sale amounts are already USD
 AED_TO_USD_DIVISOR = 3.67
@@ -30,6 +30,9 @@ input_dir  = os.path.join(script_dir, '..', 'input data')
 output_dir = os.path.join(script_dir, '..', 'output data')
 os.makedirs(output_dir, exist_ok=True)
 
+aff_map_path  = os.path.join(input_dir, AFFILIATE_XLSX)
+output_path   = os.path.join(output_dir, OUTPUT_CSV)
+
 # =======================
 # DATE WINDOW
 # =======================
@@ -38,18 +41,53 @@ start_date = today - timedelta(days=DAYS_BACK)
 print(f"Today: {today} | Start date (days_back={DAYS_BACK}): {start_date}")
 
 # =======================
-# FIND LATEST SOURCE FILE (conversion_item_report_YYYY-MM-DD_HH_MM_SS.csv)
+# FIND LATEST SOURCE FILE (conversion_item_report_YYYY-MM-DD_HH_MM_SS*.csv)
 # =======================
-pattern = re.compile(r"^conversion_item_report_\d{4}-\d{2}-\d{2}_\d{2}_\d{2}_\d{2}\.csv$")
-candidates = [f for f in os.listdir(input_dir) if pattern.match(f)]
+# Accepts optional suffix before .csv, e.g., "(1)"
+NAME_RE = re.compile(
+    r"^conversion_item_report_(\d{4}-\d{2}-\d{2})_(\d{2})_(\d{2})_(\d{2}).*\.csv$",
+    re.IGNORECASE
+)
+
+def extract_stamp(fname: str):
+    """
+    Return a datetime from the filename if it matches the expected pattern,
+    else None.
+    """
+    m = NAME_RE.match(fname)
+    if not m:
+        return None
+    date_s, hh, mm, ss = m.groups()
+    try:
+        return datetime.strptime(f"{date_s} {hh}:{mm}:{ss}", "%Y-%m-%d %H:%M:%S")
+    except Exception:
+        return None
+
+candidates = []
+for f in os.listdir(input_dir):
+    if not f.lower().endswith(".csv"):
+        continue
+    if NAME_RE.match(f):
+        candidates.append(f)
+
 if not candidates:
-    raise FileNotFoundError("No 'conversion_item_report_...' file found in input data folder.")
-latest_file = max(candidates, key=lambda f: os.path.getmtime(os.path.join(input_dir, f)))
+    avail = [f for f in os.listdir(input_dir) if f.lower().endswith(".csv")]
+    raise FileNotFoundError(
+        "No 'conversion_item_report_YYYY-MM-DD_HH_MM_SS*.csv' file found in input data folder.\n"
+        f"Available CSVs: {avail}"
+    )
+
+# Prefer by embedded timestamp; fallback to mtime if none parse
+stamped = [(extract_stamp(f), f) for f in candidates]
+stamped = [t for t in stamped if t[0] is not None]
+if stamped:
+    stamped.sort(key=lambda t: t[0])
+    latest_file = stamped[-1][1]
+else:
+    latest_file = max(candidates, key=lambda f: os.path.getmtime(os.path.join(input_dir, f)))
+
 source_path = os.path.join(input_dir, latest_file)
 print(f"Using input file: {latest_file}")
-
-aff_map_path  = os.path.join(input_dir, AFFILIATE_XLSX)
-output_path   = os.path.join(output_dir, OUTPUT_CSV)
 
 # =======================
 # HELPERS
@@ -92,7 +130,7 @@ def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.Data
     fixed_amount = payout_num.where(type_norm.eq("fixed"))
 
     return pd.DataFrame({
-        "code_norm": df_sheet[cols_lower["code"]].apply(normalize_coupon),
+        "code_norm": df_sheet[code_col].apply(normalize_coupon),
         "affiliate_ID": df_sheet[aff_col].fillna("").astype(str).str.strip(),
         "type_norm": type_norm.fillna("revenue"),
         "pct_fraction": pct_fraction.fillna(DEFAULT_PCT_IF_MISSING),

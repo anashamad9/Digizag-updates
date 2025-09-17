@@ -13,11 +13,16 @@ DEFAULT_PCT_IF_MISSING = 0.0        # fallback fraction if percent missing
 FALLBACK_AFFILIATE_ID = "1"         # when no affiliate match: set "1" and payout = 0
 GEO_FALLBACK = "no-geo"             # used if you later want to remap; for now we keep country as-is
 
-# Local files
-AFFILIATE_XLSX  = "Offers Coupons.xlsx"    # multi-sheet Excel
-AFFILIATE_SHEET = "Magrabi"                # coupons sheet for this offer
-REPORT_XLSX     = "DigiZag_MAGRABi_Report (1).xlsx"
+# Dynamic report file: pick any .xlsx that starts with this prefix
+REPORT_PREFIX   = "DigiZag_MAGRABi_Report"
 REPORT_SHEET    = "Sheet1"
+
+# Affiliate map
+AFFILIATE_XLSX  = "Offers Coupons.xlsx"
+AFFILIATE_SHEET = "Magrabi"
+
+# Output
+OUTPUT_CSV      = "magrabi.csv"
 
 # =======================
 # PATHS
@@ -27,15 +32,42 @@ input_dir = os.path.join(script_dir, '..', 'input data')
 output_dir = os.path.join(script_dir, '..', 'output data')
 os.makedirs(output_dir, exist_ok=True)
 
-input_file = os.path.join(input_dir, REPORT_XLSX)
 affiliate_xlsx_path = os.path.join(input_dir, AFFILIATE_XLSX)
-output_file = os.path.join(output_dir, 'magrabi.csv')
+output_file = os.path.join(output_dir, OUTPUT_CSV)
 
 # =======================
 # HELPERS
 # =======================
+def _norm_name(s: str) -> str:
+    return re.sub(r"\s+", " ", str(s).strip()).lower()
+
+def find_matching_xlsx(directory: str, prefix: str) -> str:
+    """
+    Find an .xlsx in `directory` whose base filename starts with `prefix` (space/case-insensitive).
+    Prefer exact '<prefix>.xlsx' if present; else pick newest by mtime.
+    """
+    prefix_n = _norm_name(prefix)
+    candidates = []
+    for fname in os.listdir(directory):
+        if fname.startswith("~$"):
+            continue
+        if not fname.lower().endswith(".xlsx"):
+            continue
+        base = os.path.splitext(fname)[0]
+        if _norm_name(base).startswith(prefix_n):
+            candidates.append(os.path.join(directory, fname))
+    if not candidates:
+        available = [f for f in os.listdir(directory) if f.lower().endswith(".xlsx")]
+        raise FileNotFoundError(
+            f"No .xlsx starting with '{prefix}' in: {directory}\nAvailable: {available}"
+        )
+    exact = [p for p in candidates if _norm_name(os.path.splitext(os.path.basename(p))[0]) == prefix_n]
+    if exact:
+        return exact[0]
+    return max(candidates, key=os.path.getmtime)
+
 def normalize_coupon(x: str) -> str:
-    """Uppercase, trim, take the first token if multiple codes separated by ; , or whitespace."""
+    """Uppercase, trim, take first token if multiple codes separated by ; , or whitespace."""
     if pd.isna(x):
         return ""
     s = str(x).strip().upper()
@@ -43,7 +75,7 @@ def normalize_coupon(x: str) -> str:
     return parts[0] if parts else s
 
 def convert_date(val):
-    """Handle Excel serials and string dates."""
+    """Handle Excel serials (days since 1899-12-30) and normal strings."""
     if pd.isna(val):
         return pd.NaT
     # try Excel serial first
@@ -51,6 +83,20 @@ def convert_date(val):
         return pd.to_datetime(val, origin='1899-12-30', unit='D')
     except Exception:
         return pd.to_datetime(val, errors='coerce')
+
+def resolve_col(df: pd.DataFrame, candidates) -> str:
+    """Resolve a column name case-insensitively with startswith fallback."""
+    low = {str(c).strip().lower(): c for c in df.columns}
+    for cand in candidates:
+        k = cand.strip().lower()
+        if k in low:
+            return low[k]
+    # startswith fallback (helps with weird suffixes)
+    for actual_lower, actual in low.items():
+        for cand in candidates:
+            if actual_lower.startswith(cand.strip().lower()):
+                return actual
+    return None
 
 def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.DataFrame:
     """
@@ -62,7 +108,7 @@ def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.Data
     cols_lower = {c.lower().strip(): c for c in df_sheet.columns}
 
     code_col = cols_lower.get("code")
-    aff_col  = cols_lower.get("id") or cols_lower.get("affiliate_id")  # accept 'ID' or 'affiliate_ID'
+    aff_col  = cols_lower.get("id") or cols_lower.get("affiliate_id")
     type_col = cols_lower.get("type")
     payout_col = (cols_lower.get("payout")
                   or cols_lower.get("new customer payout")
@@ -79,8 +125,7 @@ def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.Data
 
     payout_raw = df_sheet[payout_col].astype(str).str.replace("%", "", regex=False).str.strip()
     payout_num = pd.to_numeric(payout_raw, errors="coerce")
-
-    type_norm = df_sheet[type_col].astype(str).str.strip().str.lower().replace({"": None})
+    type_norm  = df_sheet[type_col].astype(str).str.strip().str.lower().replace({"": None})
 
     # % for revenue/sale
     pct_fraction = payout_num.where(type_norm.isin(["revenue", "sale"])).apply(
@@ -101,26 +146,53 @@ def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.Data
     return out.drop_duplicates(subset=["code_norm"], keep="last")
 
 # =======================
-# LOAD & CLEAN REPORT
+# DATE WINDOW
 # =======================
 end_date = datetime.now().date()
 start_date = end_date - timedelta(days=days_back)
+today = end_date
 print(f"Current date: {end_date}, Start date (days_back={days_back}): {start_date}")
 
-df = pd.read_excel(input_file, sheet_name=REPORT_SHEET)
+# =======================
+# PICK REPORT (prefix-based)
+# =======================
+report_path = find_matching_xlsx(input_dir, REPORT_PREFIX)
+print(f"Using report file: {os.path.basename(report_path)}")
+
+# =======================
+# LOAD & CLEAN REPORT
+# =======================
+df_raw = pd.read_excel(report_path, sheet_name=REPORT_SHEET)
+
+# Normalize headers once
+df_raw.columns = [str(c).strip() for c in df_raw.columns]
+
+# Resolve columns (common EN/AR variants)
+date_col    = resolve_col(df_raw, ["date", "order date", "action date", "created", "created at", "تاريخ", "التاريخ", "تاريخ الطلب"])
+status_col  = resolve_col(df_raw, ["status", "order status", "الحالة"])
+price_col   = resolve_col(df_raw, ["price (sar)", "price sar", "price", "amount (sar)", "amount", "total", "subtotal", "قيمة", "السعر"])
+coupon_col  = resolve_col(df_raw, ["coupon code", "coupon", "promo code", "voucher", "voucher code", "رمز", "كود", "كوبون"])
+country_col = resolve_col(df_raw, ["country", "geo", "الدولة", "بلد"])
+
+# Hard requirements
+missing = [nm for nm, col in {
+    "date": date_col, "status": status_col, "price": price_col, "coupon": coupon_col
+}.items() if not col]
+if missing:
+    raise KeyError(f"Missing required columns: {missing}. Found columns: {list(df_raw.columns)}")
 
 # Convert 'date' flexibly
-df['date'] = df['date'].apply(convert_date)
-before = len(df)
-df = df.dropna(subset=['date'])
+df_raw['__date_parsed'] = df_raw[date_col].apply(convert_date)
+before = len(df_raw)
+df = df_raw.dropna(subset=['__date_parsed']).copy()
 print(f"Total rows before filtering: {before}")
 print(f"Rows with invalid dates dropped: {before - len(df)}")
 
-# Filter out cancelled + date range (inclusive)
-df_filtered = df[df['status'].astype(str).str.strip().str.lower() != 'cancelled'].copy()
-df_filtered = df_filtered[
-    (df_filtered['date'].dt.date >= start_date) &
-    (df_filtered['date'].dt.date <= end_date)
+# Filter out cancelled + date range (exclude today to match common pattern)
+df = df[df[status_col].astype(str).str.strip().str.lower() != 'cancelled']
+df_filtered = df[
+    (df['__date_parsed'].dt.date >= start_date) &
+    (df['__date_parsed'].dt.date < today)
 ].copy()
 print(f"Rows after filtering cancelled and date range: {len(df_filtered)}")
 
@@ -128,16 +200,19 @@ print(f"Rows after filtering cancelled and date range: {len(df_filtered)}")
 # DERIVED FIELDS
 # =======================
 # sale_amount (SAR -> USD)
-df_filtered['sale_amount'] = df_filtered['price (SAR)'] / 3.75
+df_filtered['sale_amount'] = pd.to_numeric(df_filtered[price_col], errors='coerce').fillna(0.0) / 3.75
 
 # revenue fixed value
 df_filtered['revenue'] = 26.66
 
 # coupon normalization
-df_filtered['coupon_norm'] = df_filtered['Coupon Code'].apply(normalize_coupon)
+df_filtered['coupon_norm'] = df_filtered[coupon_col].apply(normalize_coupon)
 
 # geo: keep the original 'country' value (you can map later if needed)
-df_filtered['geo'] = df_filtered['country'].fillna(GEO_FALLBACK)
+if country_col:
+    df_filtered['geo'] = df_filtered[country_col].fillna(GEO_FALLBACK)
+else:
+    df_filtered['geo'] = GEO_FALLBACK
 
 # =======================
 # JOIN AFFILIATE MAPPING (type-aware)
@@ -182,7 +257,7 @@ df_joined['payout'] = payout.round(2)
 output_df = pd.DataFrame({
     'offer': OFFER_ID,
     'affiliate_id': df_joined['affiliate_ID'],
-    'date': df_joined['date'].dt.strftime('%m-%d-%Y'),
+    'date': df_joined['__date_parsed'].dt.strftime('%m-%d-%Y'),
     'status': STATUS_DEFAULT,
     'payout': df_joined['payout'],
     'revenue': df_joined['revenue'].round(2),

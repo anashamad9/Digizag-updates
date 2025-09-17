@@ -16,7 +16,7 @@ GEO = "ksa"
 # Local files
 AFFILIATE_XLSX  = "Offers Coupons.xlsx"    # multi-sheet Excel
 AFFILIATE_SHEET = "Deraah"                 # coupons sheet name
-REPORT_XLSX     = "company_digizag (1).xlsx"
+REPORT_PREFIX   = "company_digizag"        # dynamic filename start (e.g., "company_digizag (1).xlsx")
 REPORT_SHEET    = "Worksheet"
 
 # =======================
@@ -27,13 +27,40 @@ input_dir = os.path.join(script_dir, '..', 'input data')
 output_dir = os.path.join(script_dir, '..', 'output data')
 os.makedirs(output_dir, exist_ok=True)
 
-input_file = os.path.join(input_dir, REPORT_XLSX)
 affiliate_xlsx_path = os.path.join(input_dir, AFFILIATE_XLSX)
 output_file = os.path.join(output_dir, 'deraah.csv')
 
 # =======================
 # HELPERS
 # =======================
+def find_matching_xlsx(directory: str, prefix: str) -> str:
+    """
+    Find an .xlsx in `directory` whose base filename starts with `prefix` (case-insensitive).
+    - Ignores temp files like '~$...'
+    - Prefers exact '<prefix>.xlsx' if present
+    - Otherwise returns the newest by modified time
+    """
+    prefix_lower = prefix.lower()
+    candidates = []
+    for fname in os.listdir(directory):
+        if fname.startswith("~$"):
+            continue
+        if not fname.lower().endswith(".xlsx"):
+            continue
+        base = os.path.splitext(fname)[0].lower()
+        if base.startswith(prefix_lower):
+            candidates.append(os.path.join(directory, fname))
+    if not candidates:
+        available = [f for f in os.listdir(directory) if f.lower().endswith(".xlsx")]
+        raise FileNotFoundError(
+            f"No .xlsx file starting with '{prefix}' found in: {directory}\n"
+            f"Available .xlsx files: {available}"
+        )
+    exact = [p for p in candidates if os.path.basename(p).lower() == (prefix_lower + ".xlsx")]
+    if exact:
+        return exact[0]
+    return max(candidates, key=os.path.getmtime)
+
 def normalize_coupon(x: str) -> str:
     """Uppercase, trim, and take the first token if multiple codes separated by ; , or whitespace."""
     if pd.isna(x):
@@ -72,25 +99,16 @@ def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.Data
     if not payout_col:
         raise ValueError(f"[{sheet_name}] must contain a payout column (e.g., 'payout').")
 
-    payout_raw = (
-        df_sheet[payout_col]
-        .astype(str)
-        .str.replace("%", "", regex=False)
-        .str.strip()
-    )
+    payout_raw = df_sheet[payout_col].astype(str).str.replace("%", "", regex=False).str.strip()
     payout_num = pd.to_numeric(payout_raw, errors="coerce")
 
     type_norm = (
         df_sheet[type_col]
-        .astype(str)
-        .str.strip()
-        .str.lower()
-        .replace({"": None})
+        .astype(str).str.strip().str.lower().replace({"": None})
     )
 
     # % for revenue/sale
-    pct_fraction = payout_num.where(type_norm.isin(["revenue", "sale"]))
-    pct_fraction = pct_fraction.apply(
+    pct_fraction = payout_num.where(type_norm.isin(["revenue", "sale"])).apply(
         lambda v: (v / 100.0) if pd.notna(v) and v > 1 else (v if pd.notna(v) else DEFAULT_PCT_IF_MISSING)
     )
     # fixed
@@ -107,11 +125,14 @@ def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.Data
     return out.drop_duplicates(subset=["code_norm"], keep="last")
 
 # =======================
-# LOAD REPORT
+# LOAD REPORT (dynamic)
 # =======================
 end_date = datetime.now().date()
 start_date = end_date - timedelta(days=days_back)
 print(f"Current date: {end_date}, Start date (days_back={days_back}): {start_date}")
+
+input_file = find_matching_xlsx(input_dir, REPORT_PREFIX)
+print(f"Using report file: {input_file}")
 
 df = pd.read_excel(input_file, sheet_name=REPORT_SHEET)
 

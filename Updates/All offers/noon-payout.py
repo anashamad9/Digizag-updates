@@ -6,14 +6,15 @@ import re
 # =======================
 # CONFIG
 # =======================
-days_back = 1
+days_back = 4
 OFFER_ID = 1166
 STATUS_DEFAULT = "pending"
 DEFAULT_PCT_IF_MISSING = 0.0
 FALLBACK_AFFILIATE_ID = "1"
 
 # Files
-REPORT_XLSX     = "sales (8).xlsx"
+REPORT_XLSX_DEFAULT = "sales (12).xlsx"
+REPORT_XLSX_PATTERN = r"^sales \(\d+\)\.xlsx$"  # fallback: newest matching file
 AFFILIATE_XLSX  = "Offers Coupons.xlsx"
 AFFILIATE_SHEET = "Noon GCC"
 
@@ -25,41 +26,65 @@ input_dir = os.path.join(script_dir, '..', 'input data')
 output_dir = os.path.join(script_dir, '..', 'output data')
 os.makedirs(output_dir, exist_ok=True)
 
-input_file = os.path.join(input_dir, REPORT_XLSX)
 affiliate_xlsx_path = os.path.join(input_dir, AFFILIATE_XLSX)
 output_file = os.path.join(output_dir, 'noon.csv')
 
 # =======================
 # HELPERS
 # =======================
+def pick_report_path() -> str:
+    """Use the default report if present; otherwise pick the newest 'sales (N).xlsx'."""
+    default_path = os.path.join(input_dir, REPORT_XLSX_DEFAULT)
+    if os.path.exists(default_path):
+        return default_path
+    rx = re.compile(REPORT_XLSX_PATTERN, re.IGNORECASE)
+    cands = [f for f in os.listdir(input_dir) if rx.match(f)]
+    if not cands:
+        raise FileNotFoundError(
+            f"No report found. Expected '{REPORT_XLSX_DEFAULT}' or files matching '{REPORT_XLSX_PATTERN}'."
+        )
+    newest = max(cands, key=lambda f: os.path.getmtime(os.path.join(input_dir, f)))
+    return os.path.join(input_dir, newest)
+
 def normalize_coupon(x: str) -> str:
     if pd.isna(x):
         return ""
-    s = str(x).strip().upper()
+    s = str(x).replace("\u00A0", " ").strip().upper()
     parts = re.split(r"[;,\s]+", s)
     return parts[0] if parts else s
+
+def get_col(df: pd.DataFrame, *candidates: str) -> str:
+    """Find a column by case-insensitive, space-normalized name; raise if none found."""
+    low = {re.sub(r"\s+", " ", str(c)).strip().lower(): c for c in df.columns}
+    for cand in candidates:
+        key = re.sub(r"\s+", " ", cand).strip().lower()
+        if key in low:
+            return low[key]
+    raise KeyError(f"None of the expected columns found: {candidates}")
 
 def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.DataFrame:
     """
     Returns mapping with: code_norm, affiliate_ID, type_norm, pct_fraction, fixed_amount
-    Accepts 'ID' or 'affiliate_ID' and payout as % (for revenue/sale) or fixed number (for fixed).
+    Accepts 'ID' or 'affiliate_ID' and payout as % (for revenue/sale) or fixed (for fixed).
     """
     df_sheet = pd.read_excel(xlsx_path, sheet_name=sheet_name, dtype=str)
-    cols_lower = {c.lower().strip(): c for c in df_sheet.columns}
+    cols_lower = {str(c).lower().strip(): c for c in df_sheet.columns}
 
-    code_col = cols_lower.get("code")
+    def need(name):
+        col = cols_lower.get(name)
+        if not col:
+            raise ValueError(f"[{sheet_name}] must contain '{name}' column.")
+        return col
+
+    code_col = need("code")
     aff_col  = cols_lower.get("id") or cols_lower.get("affiliate_id")
-    type_col = cols_lower.get("type")
+    type_col = need("type")
     payout_col = (cols_lower.get("payout")
                   or cols_lower.get("new customer payout")
                   or cols_lower.get("old customer payout"))
 
-    if not code_col:
-        raise ValueError(f"[{sheet_name}] must contain a 'Code' column.")
     if not aff_col:
         raise ValueError(f"[{sheet_name}] must contain an 'ID' (or 'affiliate_ID') column.")
-    if not type_col:
-        raise ValueError(f"[{sheet_name}] must contain a 'type' column (revenue/sale/fixed).")
     if not payout_col:
         raise ValueError(f"[{sheet_name}] must contain a payout column (e.g., 'payout').")
 
@@ -75,53 +100,75 @@ def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.Data
     out = pd.DataFrame({
         "code_norm": df_sheet[code_col].apply(normalize_coupon),
         "affiliate_ID": df_sheet[aff_col].fillna("").astype(str).str.strip(),
-        "type_norm": type_norm,
-        "pct_fraction": pct_fraction,
+        "type_norm": type_norm.fillna("revenue"),
+        "pct_fraction": pct_fraction.fillna(DEFAULT_PCT_IF_MISSING),
         "fixed_amount": fixed_amount
     }).dropna(subset=["code_norm"])
 
     return out.drop_duplicates(subset=["code_norm"], keep="last")
 
 # =======================
-# LOAD REPORT
+# DATE WINDOW
 # =======================
 end_date = datetime.now().date() + timedelta(days=1)  # include 'today'
 start_date = end_date - timedelta(days=days_back + 1)
 today = datetime.now().date()
 print(f"Current date: {today}, Start date (days_back={days_back}): {start_date}")
 
-df = pd.read_excel(input_file)
+# =======================
+# LOAD REPORT
+# =======================
+input_file = pick_report_path()
+print(f"Using input file: {os.path.basename(input_file)}")
+
+df_raw = pd.read_excel(input_file)
+
+# Resolve columns (robust to small header changes)
+adv_col      = get_col(df_raw, "advertiser")
+date_col     = get_col(df_raw, "order date")
+ftu_orders_c = get_col(df_raw, "ftu orders")
+ftu_value_c  = get_col(df_raw, "ftu order values", "ftu order value", "ftu order amount")
+rtu_orders_c = get_col(df_raw, "rtu orders")
+rtu_value_c  = get_col(df_raw, "rtu order value", "rtu order values", "rtu order amount")
+coupon_col   = get_col(df_raw, "coupon code", "coupon", "code")
+country_col  = get_col(df_raw, "country")
 
 # Filter for Noon only
-df = df[df['Advertiser'] == 'Noon'].copy()
+df = df_raw[df_raw[adv_col].astype(str).str.strip().str.lower() == "noon"].copy()
 
 # Date filter
-df['Order Date'] = pd.to_datetime(df['Order Date'], errors='coerce')
-df = df.dropna(subset=['Order Date'])
-df = df[(df['Order Date'].dt.date >= start_date) & (df['Order Date'].dt.date < end_date)].copy()
+df[date_col] = pd.to_datetime(df[date_col], errors='coerce')
+df = df.dropna(subset=[date_col])
+df = df[(df[date_col].dt.date >= start_date) & (df[date_col].dt.date < end_date)].copy()
 
 # =======================
 # EXPAND FTU / RTU
 # =======================
-# FTU
-ftu = df.loc[df.index.repeat(pd.to_numeric(df['FTU Orders'], errors='coerce').fillna(0).astype(int))].copy()
-ftu = ftu[ftu['FTU Orders'] > 0]
-ftu['sale_amount'] = (pd.to_numeric(ftu['FTU Order Values'], errors='coerce').fillna(0.0) /
-                      pd.to_numeric(ftu['FTU Orders'], errors='coerce').replace(0, pd.NA).fillna(1).astype(float)) / 3.67
+# FTU expansion
+ftu_rep = pd.to_numeric(df[ftu_orders_c], errors='coerce').fillna(0).astype(int).clip(lower=0)
+ftu = df.loc[df.index.repeat(ftu_rep)].copy()
+ftu = ftu[ftu[ftu_orders_c] > 0]
+ftu['sale_amount'] = (
+    pd.to_numeric(ftu[ftu_value_c], errors='coerce').fillna(0.0) /
+    pd.to_numeric(ftu[ftu_orders_c], errors='coerce').replace(0, pd.NA).fillna(1).astype(float)
+) / 3.67
 ftu['revenue'] = 4.08
-ftu['order_date'] = ftu['Order Date']
-ftu['coupon_code'] = ftu['Coupon Code']
-ftu['Country'] = ftu['Country']
+ftu['order_date'] = ftu[date_col]
+ftu['coupon_code'] = ftu[coupon_col]
+ftu['Country'] = ftu[country_col]
 
-# RTU
-rtu = df.loc[df.index.repeat(pd.to_numeric(df['RTU Orders'], errors='coerce').fillna(0).astype(int))].copy()
-rtu = rtu[rtu['RTU Orders'] > 0]
-rtu['sale_amount'] = (pd.to_numeric(rtu['RTU Order Value'], errors='coerce').fillna(0.0) /
-                      pd.to_numeric(rtu['RTU Orders'], errors='coerce').replace(0, pd.NA).fillna(1).astype(float)) / 3.67
+# RTU expansion
+rtu_rep = pd.to_numeric(df[rtu_orders_c], errors='coerce').fillna(0).astype(int).clip(lower=0)
+rtu = df.loc[df.index.repeat(rtu_rep)].copy()
+rtu = rtu[rtu[rtu_orders_c] > 0]
+rtu['sale_amount'] = (
+    pd.to_numeric(rtu[rtu_value_c], errors='coerce').fillna(0.0) /
+    pd.to_numeric(rtu[rtu_orders_c], errors='coerce').replace(0, pd.NA).fillna(1).astype(float)
+) / 3.67
 rtu['revenue'] = 2.72
-rtu['order_date'] = rtu['Order Date']
-rtu['coupon_code'] = rtu['Coupon Code']
-rtu['Country'] = rtu['Country']
+rtu['order_date'] = rtu[date_col]
+rtu['coupon_code'] = rtu[coupon_col]
+rtu['Country'] = rtu[country_col]
 
 # Combine
 df_expanded = pd.concat([ftu, rtu], ignore_index=True)

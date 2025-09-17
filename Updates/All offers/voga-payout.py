@@ -13,12 +13,12 @@ DEFAULT_PCT_IF_MISSING = 0.0
 FALLBACK_AFFILIATE_ID = "1"
 GEO = "no-geo"
 
-# Files
-FTU_CSV         = "FTU.csv"
-RTU_CSV         = "RTU.csv"
-AFFILIATE_XLSX  = "Offers Coupons.xlsx"
-AFFILIATE_SHEET = "VogaCloset"
-OUTPUT_CSV      = "voga.csv"
+# Files (dynamic starts-with prefixes)
+FTU_PREFIX       = "FTU"
+RTU_PREFIX       = "RTU"
+AFFILIATE_XLSX   = "Offers Coupons.xlsx"
+AFFILIATE_SHEET  = "VogaCloset"
+OUTPUT_CSV       = "voga.csv"
 
 # =======================
 # PATHS
@@ -28,8 +28,6 @@ input_dir = os.path.join(script_dir, '..', 'input data')
 output_dir = os.path.join(script_dir, '..', 'output data')
 os.makedirs(output_dir, exist_ok=True)
 
-ftu_path = os.path.join(input_dir, FTU_CSV)
-rtu_path = os.path.join(input_dir, RTU_CSV)
 affiliate_xlsx_path = os.path.join(input_dir, AFFILIATE_XLSX)
 output_file = os.path.join(output_dir, OUTPUT_CSV)
 
@@ -45,6 +43,36 @@ print(f"Window: {start_date} ≤ date < {end_exclusive} (last {days_back} day(s)
 # =======================
 # HELPERS
 # =======================
+def find_matching_csv(directory: str, prefix: str) -> str:
+    """
+    Find a .csv in `directory` whose base filename starts with `prefix` (case-insensitive).
+    - Ignores temporary files like '~$...'
+    - Prefers exact '<prefix>.csv' if present
+    - Otherwise returns the newest by modified time
+    """
+    prefix_lower = prefix.lower()
+    candidates = []
+    for fname in os.listdir(directory):
+        if fname.startswith("~$"):
+            continue
+        if not fname.lower().endswith(".csv"):
+            continue
+        base = os.path.splitext(fname)[0].lower()
+        if base.startswith(prefix_lower):
+            candidates.append(os.path.join(directory, fname))
+
+    if not candidates:
+        available = [f for f in os.listdir(directory) if f.lower().endswith(".csv")]
+        raise FileNotFoundError(
+            f"No .csv file starting with '{prefix}' found in: {directory}\n"
+            f"Available .csv files: {available}"
+        )
+
+    exact = [p for p in candidates if os.path.basename(p).lower() == (prefix_lower + ".csv")]
+    if exact:
+        return exact[0]
+    return max(candidates, key=os.path.getmtime)
+
 def normalize_coupon(x: str) -> str:
     """Trim/uppercase. If multiple codes separated by ; , or whitespace, take the first token."""
     if pd.isna(x):
@@ -138,6 +166,12 @@ def prep_and_expand(df: pd.DataFrame, pct: float, user_tag: str) -> pd.DataFrame
 # =======================
 # LOAD & PREP FTU / RTU
 # =======================
+# Dynamically select the changing report CSVs
+ftu_path = find_matching_csv(input_dir, FTU_PREFIX)
+rtu_path = find_matching_csv(input_dir, RTU_PREFIX)
+print(f"Using FTU file: {ftu_path}")
+print(f"Using RTU file: {rtu_path}")
+
 df_ftu = pd.read_csv(ftu_path)
 df_rtu = pd.read_csv(rtu_path)
 

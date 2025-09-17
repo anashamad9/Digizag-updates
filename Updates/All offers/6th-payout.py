@@ -12,7 +12,8 @@ STATUS_DEFAULT = "pending"
 DEFAULT_PCT_IF_MISSING = 0.0
 FALLBACK_AFFILIATE_ID = "1"
 
-REPORT_XLSX     = "DigiZag X 6thStreet Performance Tracker (2).xlsx"
+# Any file that STARTS WITH this prefix will be matched (case-insensitive)
+REPORT_PREFIX   = "DigiZag X 6thStreet Performance Tracker"
 AFFILIATE_XLSX  = "Offers Coupons.xlsx"
 AFFILIATE_SHEET = "6th Street"   # change if your tab name differs
 OUTPUT_CSV      = "6th.csv"
@@ -24,18 +25,6 @@ end_date = datetime.now().date()
 start_date = end_date - timedelta(days=days_back - 1)
 today = datetime.now().date()
 print(f"Current date: {end_date}, Start date (days_back={days_back}): {start_date}")
-
-# =======================
-# PATHS
-# =======================
-script_dir = os.path.dirname(os.path.abspath(__file__))
-input_dir = os.path.join(script_dir, '..', 'input data')
-output_dir = os.path.join(script_dir, '..', 'output data')
-os.makedirs(output_dir, exist_ok=True)
-
-input_file = os.path.join(input_dir, REPORT_XLSX)
-affiliate_xlsx_path = os.path.join(input_dir, AFFILIATE_XLSX)
-output_file = os.path.join(output_dir, OUTPUT_CSV)
 
 # =======================
 # HELPERS
@@ -92,6 +81,53 @@ def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.Data
     }).dropna(subset=["code_norm"])
 
     return out.drop_duplicates(subset=["code_norm"], keep="last")
+
+def find_matching_report_file(directory: str, prefix: str) -> str:
+    """
+    Find an .xlsx file in `directory` whose filename starts with `prefix` (case-insensitive).
+    - Ignores temporary files like '~$...'
+    - Prefers exact '<prefix>.xlsx' if present
+    - Otherwise returns the most recently modified matching file
+    Raises FileNotFoundError with a helpful message if none found.
+    """
+    prefix_lower = prefix.lower()
+    candidates = []
+    for fname in os.listdir(directory):
+        if fname.startswith("~$"):  # ignore Excel temp/lock files
+            continue
+        if not fname.lower().endswith(".xlsx"):
+            continue
+        if os.path.splitext(fname)[0].lower().startswith(prefix_lower):
+            candidates.append(os.path.join(directory, fname))
+
+    if not candidates:
+        available = [f for f in os.listdir(directory) if f.lower().endswith(".xlsx")]
+        raise FileNotFoundError(
+            f"No .xlsx file starting with '{prefix}' found in: {directory}\n"
+            f"Available .xlsx files: {available}"
+        )
+
+    # Prefer exact match
+    exact = [p for p in candidates if os.path.basename(p).lower() == (prefix_lower + ".xlsx")]
+    if exact:
+        return exact[0]
+
+    # Otherwise choose the newest by mtime
+    return max(candidates, key=os.path.getmtime)
+
+# =======================
+# PATHS
+# =======================
+script_dir = os.path.dirname(os.path.abspath(__file__))
+input_dir = os.path.join(script_dir, '..', 'input data')
+output_dir = os.path.join(script_dir, '..', 'output data')
+os.makedirs(output_dir, exist_ok=True)
+
+# Find the changing-named report file dynamically
+input_file = find_matching_report_file(input_dir, REPORT_PREFIX)
+
+affiliate_xlsx_path = os.path.join(input_dir, AFFILIATE_XLSX)
+output_file = os.path.join(output_dir, OUTPUT_CSV)
 
 # =======================
 # LOAD & FILTER SOURCE
@@ -188,8 +224,12 @@ output_df = pd.DataFrame({
 # =======================
 # SAVE
 # =======================
+output_dir = os.path.join(script_dir, '..', 'output data')
+os.makedirs(output_dir, exist_ok=True)
+output_file = os.path.join(output_dir, OUTPUT_CSV)
 output_df.to_csv(output_file, index=False)
 
+print(f"Using report file: {input_file}")
 print(f"Saved: {output_file}")
 print(
     f"Rows: {len(output_df)} | "

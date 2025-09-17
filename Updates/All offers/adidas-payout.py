@@ -14,7 +14,7 @@ DEFAULT_PCT_IF_MISSING = 0.0  # fraction fallback when percent missing (0.30 == 
 
 # Local files
 AFFILIATE_XLSX = "Offers Coupons.xlsx"   # multi-sheet Excel you uploaded
-REPORT_CSV     = "Individual-Item-Report (3).csv"
+REPORT_PREFIX  = "Individual-Item-Report"  # any CSV starting with this will match
 
 # Offer -> worksheet name mapping
 OFFER_SHEET_BY_ID = {
@@ -30,7 +30,6 @@ input_dir = os.path.join(script_dir, '..', 'input data')
 output_dir = os.path.join(script_dir, '..', 'output data')
 os.makedirs(output_dir, exist_ok=True)
 
-input_file = os.path.join(input_dir, REPORT_CSV)
 affiliate_xlsx_path = os.path.join(input_dir, AFFILIATE_XLSX)
 output_file = os.path.join(output_dir, 'adidasssss_with_payout.csv')
 
@@ -83,8 +82,6 @@ def load_affiliate_mapping_from_xlsx(xlsx_path: str, offer_id: int) -> pd.DataFr
         raise ValueError(f"[{sheet_name}] must contain a payout column (e.g., 'payout').")
 
     # Clean and parse the payout column:
-    # - Remove % if present
-    # - Try numeric
     payout_raw = (
         df_sheet[payout_col]
         .astype(str)
@@ -122,6 +119,40 @@ def load_affiliate_mapping_from_xlsx(xlsx_path: str, offer_id: int) -> pd.DataFr
     # Deduplicate by code (last wins)
     out = out.drop_duplicates(subset=["code_norm"], keep="last")
     return out
+
+def find_matching_csv(directory: str, prefix: str) -> str:
+    """
+    Find a .csv in `directory` whose base filename starts with `prefix` (case-insensitive).
+    - Ignores temporary files like '~$...'
+    - Prefers exact '<prefix>.csv' if present
+    - Otherwise returns the newest by modified time
+    """
+    prefix_lower = prefix.lower()
+    candidates = []
+    for fname in os.listdir(directory):
+        if fname.startswith("~$"):
+            continue
+        if not fname.lower().endswith(".csv"):
+            continue
+        base = os.path.splitext(fname)[0].lower()
+        if base.startswith(prefix_lower):
+            candidates.append(os.path.join(directory, fname))
+
+    if not candidates:
+        available = [f for f in os.listdir(directory) if f.lower().endswith(".csv")]
+        raise FileNotFoundError(
+            f"No .csv file starting with '{prefix}' found in: {directory}\n"
+            f"Available .csv files: {available}"
+        )
+
+    exact = [p for p in candidates if os.path.basename(p).lower() == (prefix_lower + ".csv")]
+    if exact:
+        return exact[0]
+
+    return max(candidates, key=os.path.getmtime)
+
+# Find the changing-named report file dynamically
+input_file = find_matching_csv(input_dir, REPORT_PREFIX)
 
 # =======================
 # LOAD MAIN REPORT
@@ -192,7 +223,6 @@ payout.loc[mask_sale] = (df_joined.loc[mask_sale, 'sale_amount'] * df_joined.loc
 
 # fixed amount
 mask_fixed = df_joined['type_norm'].str.lower().eq('fixed')
-# if fixed_amount is NaN for fixed rows, treat as 0
 payout.loc[mask_fixed] = df_joined.loc[mask_fixed, 'fixed_amount'].fillna(0.0)
 
 # Force payout = 0 when affiliate_id is missing/empty
@@ -219,6 +249,7 @@ output_df = pd.DataFrame({
 # Save
 output_df.to_csv(output_file, index=False)
 
+print(f"Using report file: {input_file}")
 print(f"Saved: {output_file}")
 print(
     f"Rows: {len(output_df)} | "

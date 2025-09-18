@@ -1,0 +1,18 @@
+Store,Order Date,Order No,User Tag,Return Exchange Flag,Coupon Code,shortpick,Net Sales (in AED),Order Count
+UnderArmour_SA,"Sep 6, 2025",USA0192313,Repeat,null,EB35,0,365.246,1
+UnderArmour_SA,"Sep 6, 2025",USA0192330,New,null,EB56,1,74.9994,1
+UnderArmour_SA,"Sep 12, 2025",USA0192654,Repeat,null,EB56,0,601.6415999999999,1
+UnderArmour_SA,"Sep 6, 2025",USA0192180,Repeat,Returned,EB35,0,303.6334,1
+UnderArmour_SA,"Sep 12, 2025",USA0192744,Repeat,null,EB56,0,391.9118,1
+UnderArmour_SA,"Sep 12, 2025",USA0192653,Repeat,null,EB56,0,601.6415999999999,1
+UnderArmour_SA,"Sep 7, 2025",USA0192348,New,null,EB56,0,406.4844,1
+UnderArmour_SA,"Sep 6, 2025",USA0192330,New,null,EB56,0,1289.3272,1
+UnderArmour_AE,"Sep 7, 2025",UAE0245211,New,Returned,EB9,0,76.31,1
+UnderArmour_AE,"Sep 7, 2025",UAE0245211,New,null,EB9,0,1515.9300000000003,1
+UnderArmour_AE,"Sep 6, 2025",UAE0245064,New,null,EB5,0,339.88,1
+UnderArmour_AE,"Sep 6, 2025",UAE0245064,New,Returned,EB5,0,196.19,1
+UnderArmour_AE,"Sep 6, 2025",UAE0245064,New,null,EB5,1,86.79,1
+UnderArmour_AE,"Sep 4, 2025",UAE0244788,Repeat,null,EB35,0,423.33,1
+UnderArmour_AE,"Sep 2, 2025",UAE0244659,New,null,EB44,0,345.33000000000004,1
+UnderArmour_AE,"Sep 7, 2025",UAE0245211,New,null,EB9,1,127.75,1
+UnderArmour_AE,"Sep 2, 2025",UAE0244659,New,Returned,EB44,0,79.33,1

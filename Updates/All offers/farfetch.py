@@ -11,7 +11,7 @@ output_dir = os.path.join(script_dir, '..', 'output data')
 os.makedirs(output_dir, exist_ok=True)
 
 # Load the input CSV file
-input_file = os.path.join(input_dir, 'conversion_item_report_2025-09-17_11_09_20.csv')
+input_file = os.path.join(input_dir, 'conversion_item_report_2025-09-18_11_17_39.csv')
 df = pd.read_csv(input_file)
 
 # Process the data, handling missing values

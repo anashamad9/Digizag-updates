@@ -1,0 +1,5 @@
+"Puchase Date","Order Number",Status,"Coupon Code",Country,"Grand Total incl Tax","Shipping Amount",Tax,"Cash on Delivery Charges","Store Credit Used","Total Refunded",FINAL_TOTAL,TOTAL_ORDERED_QTY,TOTAL_RETURN_QTY,Type,Commission,Category,COMPANY,"COUPON CODE",Customer_Type
+"2025-09-17 09:12:12",PO-BH-250917-09176,complete,ALC4,Bahrain,22.93,2.46,1.86,0.00,0.00,0.00,18.61,2.0000,0.0000,CPS,.1,Affliate,DigiZag,ALC4,Existing
+"2025-09-17 14:06:51",PO-AE-250917-09289,processing,Q21,"United Arab Emirates",140.46,2.51,6.57,0.00,0.00,0.00,131.37,6.0000,0.0000,CPS,.1,Affliate,DigiZag,Q21,Existing
+"2025-09-17 16:25:54",PO-SA-250917-09342,complete,WAF,"Saudi Arabia",19.09,2.46,2.17,0.00,0.00,0.00,14.46,1.0000,0.0000,CPS,.1,Affliate,DigiZag,WAF,Existing
+"2025-09-17 21:44:55",PO-AE-250917-09446,partially_shipped,W99,"United Arab Emirates",28.96,2.51,2.49,0.00,25.77,0.00,49.73,3.0000,0.0000,CPS,0.1,Affliate,DigiZag,W99,Existing

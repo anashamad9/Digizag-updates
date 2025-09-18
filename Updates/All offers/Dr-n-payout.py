@@ -8,7 +8,7 @@ from typing import List, Optional
 # =======================
 # CONFIG
 # =======================
-days_back = 8
+days_back = 120
 OFFER_ID = 1334
 STATUS_DEFAULT = "pending"
 DEFAULT_PCT_IF_MISSING = 0.0
@@ -195,6 +195,10 @@ code_col      = get_col(df, ["Code"])
 sell_col      = get_col(df, ["Selling Price"])
 comm_col      = get_col(df, ["commission"])
 country_col   = get_col(df, ["country"])
+try:
+    type_detail_col = get_col(df, ["Type"])
+except KeyError:
+    type_detail_col = None
 
 # Convert date/time and drop invalids
 df[created_col] = pd.to_datetime(df[created_col], errors='coerce')
@@ -212,6 +216,14 @@ df_filtered = df_offer[
     (df_offer[created_col].dt.date >= start_date) &
     (df_offer[created_col].dt.date < end_date)
 ].copy()
+
+# Track raw Type values for special payout handling (e.g., coupon M33)
+if type_detail_col is not None:
+    df_filtered["order_type_value"] = df_filtered[type_detail_col].fillna("")
+else:
+    df_filtered["order_type_value"] = ""
+df_filtered["order_type_value"] = df_filtered["order_type_value"].astype(str)
+df_filtered["order_type_norm"] = df_filtered["order_type_value"].str.strip().str.lower()
 
 # =======================
 # DERIVED FIELDS
@@ -258,6 +270,18 @@ mask_fixed = df_joined["type_norm"].str.lower().eq("fixed")
 payout.loc[mask_rev]   = df_joined.loc[mask_rev,   "revenue"]     * df_joined.loc[mask_rev,   "pct_fraction"]
 payout.loc[mask_sale]  = df_joined.loc[mask_sale,  "sale_amount"] * df_joined.loc[mask_sale,  "pct_fraction"]
 payout.loc[mask_fixed] = df_joined.loc[mask_fixed, "fixed_amount"].fillna(0.0)
+
+# Special handling for coupon M33 based on report "Type"
+coupon_norm_upper = df_joined["coupon_norm"].fillna("").astype(str).str.upper()
+type_norm_series = df_joined.get("order_type_norm", pd.Series("", index=df_joined.index))
+type_norm_series = type_norm_series.fillna("").astype(str).str.strip().str.lower()
+
+mask_m33 = coupon_norm_upper.eq("M33")
+mask_m33_sale = mask_m33 & type_norm_series.eq("sale")
+mask_m33_empty = mask_m33 & type_norm_series.eq("")
+
+payout.loc[mask_m33_sale] = df_joined.loc[mask_m33_sale, "revenue"] * 0.90
+payout.loc[mask_m33_empty] = df_joined.loc[mask_m33_empty, "revenue"] * 0.85
 
 # Enforce: if no affiliate match, set affiliate_id="1", payout=0
 payout.loc[missing_aff_mask] = 0.0

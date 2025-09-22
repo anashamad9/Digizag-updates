@@ -6,7 +6,7 @@ import re
 # =======================
 # CONFIG
 # =======================
-days_back = 140
+days_back = 14
 OFFER_ID = 1291
 STATUS_DEFAULT = "pending"          # always pending
 DEFAULT_PCT_IF_MISSING = 0.0        # fallback fraction if percent missing

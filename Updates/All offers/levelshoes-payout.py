@@ -12,7 +12,7 @@ FALLBACK_AFFILIATE_ID = "1"
 DEFAULT_PCT_IF_MISSING = 0.0
 
 # How many days back to include (EXCLUDES today)
-DAYS_BACK = 2
+DAYS_BACK = 6
 
 # Currency: set divisor to 1.0 if sale amounts are already USD
 AED_TO_USD_DIVISOR = 3.67

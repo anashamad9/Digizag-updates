@@ -6,7 +6,7 @@ import re
 # =======================
 # CONFIG
 # =======================
-days_back = 50
+days_back = 5
 OFFER_ID = 1260
 STATUS_DEFAULT = "pending"          # always pending
 DEFAULT_PCT_IF_MISSING = 0.0        # fallback fraction if percent missing
@@ -47,6 +47,24 @@ def extract_date(filename):
         except Exception:
             return datetime.min
     return datetime.min
+
+def parse_date_column(series: pd.Series) -> pd.Series:
+    """
+    Robust date parsing:
+    1) Try %d-%b-%Y (e.g., 21-Sep-2025)
+    2) Fill remaining with %d-%b-%y (e.g., 21-Sep-25)
+    3) Fill remaining with pandas inference (dayfirst)
+    """
+    s = pd.to_datetime(series, format='%d-%b-%Y', errors='coerce')
+    need2 = s.isna()
+    if need2.any():
+        s2 = pd.to_datetime(series[need2], format='%d-%b-%y', errors='coerce')
+        s.loc[need2] = s2
+    need3 = s.isna()
+    if need3.any():
+        s3 = pd.to_datetime(series[need3], dayfirst=True, errors='coerce')
+        s.loc[need3] = s3
+    return s
 
 def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.DataFrame:
     """
@@ -117,29 +135,59 @@ df = pd.read_csv(input_file)
 # =======================
 # CLEAN & EXPAND
 # =======================
-# Convert Date and exclude the current day
-df['Date'] = pd.to_datetime(df['Date'], format='%d-%b-%Y', errors='coerce')
+# 1) Robust date parsing (fix for 2-digit year like `21-Sep-25`)
+if 'Date' not in df.columns:
+    raise ValueError("CSV is missing required 'Date' column.")
+df['Date'] = parse_date_column(df['Date'])
+
+# Drop rows that failed to parse
 df = df.dropna(subset=['Date'])
+
+if df.empty:
+    raise ValueError("All dates failed to parse—check CSV date format (e.g., %d-%b-%y vs %d-%b-%Y).")
+
+# Exclude the current day
 df = df[df['Date'].dt.date < today]
 
 # Optional window (keep last N days inclusive of end_date)
 df = df[(df['Date'].dt.date >= start_date) & (df['Date'].dt.date <= end_date)]
 
+if df.empty:
+    print("No rows within the requested date window (after excluding today).")
+
+# Ensure required columns
+if 'Usage' not in df.columns:
+    print("WARNING: 'Usage' column missing; defaulting each row to 1.")
+    df['Usage'] = 1
+
+if 'coupon' not in df.columns:
+    raise ValueError("CSV is missing required 'coupon' column.")
+
 # Expand rows by Usage count
 usage = pd.to_numeric(df['Usage'], errors='coerce').fillna(0).astype(int).clip(lower=0)
+if (usage <= 0).all():
+    print("WARNING: All 'Usage' values are 0/invalid; expansion will produce 0 rows.")
 df_expanded = df.loc[df.index.repeat(usage)].reset_index(drop=True)
 
+if df_expanded.empty:
+    print("Expanded data is empty after applying 'Usage'. The output CSV will be empty.")
+
 # Derive columns
-df_expanded['date_str'] = df_expanded['Date'].dt.strftime('%m-%d-%Y')
+if not df_expanded.empty:
+    df_expanded['date_str'] = df_expanded['Date'].dt.strftime('%m-%d-%Y')
+else:
+    df_expanded['date_str'] = pd.Series(dtype=str)
+
 df_expanded['sale_amount'] = 0.0
 df_expanded['revenue'] = 2.0
-df_expanded['coupon_norm'] = df_expanded['coupon'].apply(normalize_coupon)
+df_expanded['coupon_norm'] = df_expanded['coupon'].apply(normalize_coupon) if not df_expanded.empty else pd.Series(dtype=str)
 
 # =======================
 # JOIN AFFILIATE MAPPING (type-aware)
 # =======================
 affiliate_xlsx_path = os.path.join(input_dir, AFFILIATE_XLSX)
 map_df = load_affiliate_mapping_from_xlsx(affiliate_xlsx_path, AFFILIATE_SHEET)
+
 df_joined = df_expanded.merge(map_df, how="left", left_on="coupon_norm", right_on="code_norm")
 
 # Missing affiliate?
@@ -197,4 +245,6 @@ print(
     f"Coupons with no affiliate (set aff={FALLBACK_AFFILIATE_ID}, payout=0): {int(missing_aff_mask.sum())} | "
     f"Type counts -> revenue: {int(mask_rev.sum())}, sale: {int(mask_sale.sum())}, fixed: {int(mask_fixed.sum())}"
 )
-print(f"Date range processed: {output_df['date'].min() if not output_df.empty else 'N/A'} to {output_df['date'].max() if not output_df.empty else 'N/A'}")
+rng_min = output_df['date'].min() if not output_df.empty else 'N/A'
+rng_max = output_df['date'].max() if not output_df.empty else 'N/A'
+print(f"Date range processed: {rng_min} to {rng_max}")

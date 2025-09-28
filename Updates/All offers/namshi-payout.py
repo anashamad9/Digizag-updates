@@ -65,19 +65,20 @@ def normalize_coupon(x: str) -> str:
 
 def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.DataFrame:
     """
-    Returns mapping with: code_norm, affiliate_ID, type_norm, pct_fraction, fixed_amount
-    - Accepts 'ID' or 'affiliate_ID'
-    - Accepts payout in % (for revenue/sale) or fixed numbers (for fixed)
+    Returns mapping with new/old payout values, yielding columns:
+      code_norm, affiliate_ID, type_norm, pct_new, pct_old, fixed_new, fixed_old.
+    Accepts payout as % (for revenue/sale) or fixed amounts (for fixed); if only a
+    single payout column exists it is used for both new/old.
     """
     df_sheet = pd.read_excel(xlsx_path, sheet_name=sheet_name, dtype=str)
     cols_lower = {c.lower().strip(): c for c in df_sheet.columns}
 
     code_col = cols_lower.get("code")
-    aff_col  = cols_lower.get("id") or cols_lower.get("affiliate_id")
+    aff_col = cols_lower.get("id") or cols_lower.get("affiliate_id")
     type_col = cols_lower.get("type")
-    payout_col = (cols_lower.get("payout")
-                  or cols_lower.get("new customer payout")
-                  or cols_lower.get("old customer payout"))
+    payout_col = cols_lower.get("payout")
+    new_col = cols_lower.get("new customer payout")
+    old_col = cols_lower.get("old customer payout")
 
     if not code_col:
         raise ValueError(f"[{sheet_name}] must contain a 'Code' column.")
@@ -85,27 +86,56 @@ def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.Data
         raise ValueError(f"[{sheet_name}] must contain an 'ID' (or 'affiliate_ID') column.")
     if not type_col:
         raise ValueError(f"[{sheet_name}] must contain a 'type' column (revenue/sale/fixed).")
-    if not payout_col:
-        raise ValueError(f"[{sheet_name}] must contain a payout column (e.g., 'payout').")
+    if not (payout_col or new_col or old_col):
+        raise ValueError(
+            f"[{sheet_name}] must contain at least one payout column (e.g., 'payout', 'new customer payout')."
+        )
 
-    payout_raw = df_sheet[payout_col].astype(str).str.replace("%", "", regex=False).str.strip()
-    payout_num = pd.to_numeric(payout_raw, errors="coerce")
+    def extract_numeric(col_name: str) -> pd.Series:
+        if not col_name:
+            return pd.Series([pd.NA] * len(df_sheet), dtype="Float64")
+        raw = df_sheet[col_name].astype(str).str.replace("%", "", regex=False).str.strip()
+        return pd.to_numeric(raw, errors="coerce")
 
-    type_norm = df_sheet[type_col].astype(str).str.strip().str.lower().replace({"": None})
+    payout_any = extract_numeric(payout_col)
+    payout_new_raw = extract_numeric(new_col).fillna(payout_any)
+    payout_old_raw = extract_numeric(old_col).fillna(payout_any)
 
-    # Percent for revenue/sale
-    pct_fraction = payout_num.where(type_norm.isin(["revenue", "sale"])).apply(
-        lambda v: (v / 100.0) if pd.notna(v) and v > 1 else (v if pd.notna(v) else DEFAULT_PCT_IF_MISSING)
-    )
-    # Fixed for 'fixed'
-    fixed_amount = payout_num.where(type_norm.eq("fixed"))
+    type_norm = df_sheet[type_col].astype(str).str.strip().str.lower().replace({"": None}).fillna("revenue")
+
+    def pct_from(values: pd.Series, type_series: pd.Series) -> pd.Series:
+        pct = values.where(type_series.isin(["revenue", "sale"]))
+        return pct.apply(
+            lambda v: (v / 100.0) if pd.notna(v) and v > 1 else (v if pd.notna(v) else pd.NA)
+        )
+
+    def fixed_from(values: pd.Series, type_series: pd.Series) -> pd.Series:
+        return values.where(type_series.eq("fixed"))
+
+    pct_new = pct_from(payout_new_raw, type_norm)
+    pct_old = pct_from(payout_old_raw, type_norm)
+    pct_new = pct_new.fillna(pct_old)
+    pct_old = pct_old.fillna(pct_new)
+
+    pct_new = pd.to_numeric(pct_new, errors='coerce')
+    pct_old = pd.to_numeric(pct_old, errors='coerce')
+
+    fixed_new = fixed_from(payout_new_raw, type_norm)
+    fixed_old = fixed_from(payout_old_raw, type_norm)
+    fixed_new = fixed_new.fillna(fixed_old)
+    fixed_old = fixed_old.fillna(fixed_new)
+
+    fixed_new = pd.to_numeric(fixed_new, errors='coerce')
+    fixed_old = pd.to_numeric(fixed_old, errors='coerce')
 
     out = pd.DataFrame({
         "code_norm": df_sheet[code_col].apply(normalize_coupon),
         "affiliate_ID": df_sheet[aff_col].fillna("").astype(str).str.strip(),
         "type_norm": type_norm,
-        "pct_fraction": pct_fraction,
-        "fixed_amount": fixed_amount
+        "pct_new": pct_new.fillna(DEFAULT_PCT_IF_MISSING),
+        "pct_old": pct_old.fillna(DEFAULT_PCT_IF_MISSING),
+        "fixed_new": fixed_new,
+        "fixed_old": fixed_old,
     }).dropna(subset=["code_norm"])
 
     return out.drop_duplicates(subset=["code_norm"], keep="last")
@@ -148,6 +178,7 @@ ftu['revenue'] = ftu['sale_amount'] * 0.08
 ftu['order_date'] = ftu['Order Date']
 ftu['coupon_code'] = ftu['Coupon Code']
 ftu['Country'] = ftu['Country']
+ftu['customer_type'] = 'new'
 
 # RTU
 rtu_repeat_idx = pd.to_numeric(df['RTU Orders'], errors='coerce').fillna(0).astype(int)
@@ -161,6 +192,7 @@ rtu['revenue'] = rtu['sale_amount'] * 0.025
 rtu['order_date'] = rtu['Order Date']
 rtu['coupon_code'] = rtu['Coupon Code']
 rtu['Country'] = rtu['Country']
+rtu['customer_type'] = 'old'
 
 # Combine
 df_expanded = pd.concat([ftu, rtu], ignore_index=True)
@@ -184,7 +216,16 @@ missing_aff_mask = df_joined['affiliate_ID'].isna() | (df_joined['affiliate_ID']
 # Normalize mapping fields
 df_joined['affiliate_ID']  = df_joined['affiliate_ID'].fillna("").astype(str).str.strip()
 df_joined['type_norm']     = df_joined['type_norm'].fillna("revenue")
-df_joined['pct_fraction']  = df_joined['pct_fraction'].fillna(DEFAULT_PCT_IF_MISSING)
+for col in ['pct_new', 'pct_old']:
+    df_joined[col] = pd.to_numeric(df_joined[col], errors='coerce').fillna(DEFAULT_PCT_IF_MISSING)
+for col in ['fixed_new', 'fixed_old']:
+    df_joined[col] = pd.to_numeric(df_joined[col], errors='coerce')
+
+is_new_customer = df_joined['customer_type'].astype(str).str.lower().eq('new')
+pct_effective = df_joined['pct_new'].where(is_new_customer, df_joined['pct_old'])
+pct_effective = pd.to_numeric(pct_effective, errors='coerce').fillna(DEFAULT_PCT_IF_MISSING)
+fixed_effective = df_joined['fixed_new'].where(is_new_customer, df_joined['fixed_old'])
+fixed_effective = pd.to_numeric(fixed_effective, errors='coerce').fillna(0.0)
 
 # =======================
 # PAYOUT CALC
@@ -195,9 +236,9 @@ mask_rev   = df_joined['type_norm'].str.lower().eq('revenue')
 mask_sale  = df_joined['type_norm'].str.lower().eq('sale')
 mask_fixed = df_joined['type_norm'].str.lower().eq('fixed')
 
-payout.loc[mask_rev]   = df_joined.loc[mask_rev, 'revenue']     * df_joined.loc[mask_rev, 'pct_fraction']
-payout.loc[mask_sale]  = df_joined.loc[mask_sale, 'sale_amount'] * df_joined.loc[mask_sale, 'pct_fraction']
-payout.loc[mask_fixed] = df_joined.loc[mask_fixed, 'fixed_amount'].fillna(0.0)
+payout.loc[mask_rev]   = df_joined.loc[mask_rev, 'revenue']     * pct_effective.loc[mask_rev]
+payout.loc[mask_sale]  = df_joined.loc[mask_sale, 'sale_amount'] * pct_effective.loc[mask_sale]
+payout.loc[mask_fixed] = fixed_effective.loc[mask_fixed]
 
 # Enforce no-match rule
 payout.loc[missing_aff_mask] = 0.0

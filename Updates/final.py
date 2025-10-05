@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 
 # ====== CONFIG ======
 folder_path = "/Users/digizagoperation/Desktop/Digizag/Updates/Output Data"
-ADMIN_CSV   = "Partnership Teams View_Performance Overview_Table (4).csv"
+ADMIN_CSV   = "Partnership Teams View_Performance Overview_Table (6).csv"
 FINAL_CSV   = "finaaaaaaaaaaaaaaaaal.csv"
 FINAL_XLSX  = "finaaaaaaaaaaaaaaaaal.xlsx"   # NEW: styled Excel with red alerts
 

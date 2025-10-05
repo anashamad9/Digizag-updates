@@ -6,7 +6,7 @@ import re
 # =======================
 # CONFIG
 # =======================
-days_back = 4
+days_back = 3
 OFFER_ID = 1189
 STATUS_DEFAULT = "pending"
 DEFAULT_PCT_IF_MISSING = 0.0
@@ -63,6 +63,19 @@ def normalize_coupon(x: str) -> str:
     parts = re.split(r"[;,\s]+", s)
     return parts[0] if parts else s
 
+def _coalesce_columns(df: pd.DataFrame, candidates: list[str]) -> pd.Series:
+    """Return the first non-empty value across the candidate columns for each row."""
+    result = pd.Series(pd.NA, index=df.index, dtype=object)
+    for col in candidates:
+        if col is None or col not in df.columns:
+            continue
+        series = df[col]
+        clean = series.where(series.notna(), pd.NA)
+        clean = clean.where(series.astype(str).str.strip().ne(''), pd.NA)
+        result = result.fillna(clean)
+    return result
+
+
 def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.DataFrame:
     """
     Returns mapping with new/old payout values, yielding columns:
@@ -73,16 +86,36 @@ def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.Data
     df_sheet = pd.read_excel(xlsx_path, sheet_name=sheet_name, dtype=str)
     cols_lower = {c.lower().strip(): c for c in df_sheet.columns}
 
-    code_col = cols_lower.get("code")
-    aff_col = cols_lower.get("id") or cols_lower.get("affiliate_id")
+    code_candidates = [
+        cols_lower.get("code"),
+        cols_lower.get("coupon code"),
+        cols_lower.get("coupon"),
+        cols_lower.get("f"),
+    ]
+    code_candidates.extend([
+        c for c in df_sheet.columns
+        if str(c).strip().lower().startswith("code") and c not in code_candidates
+    ])
+    code_series = _coalesce_columns(df_sheet, [c for c in code_candidates if c])
+
+    aff_candidates = [
+        cols_lower.get("id"),
+        cols_lower.get("affiliate_id"),
+    ]
+    aff_candidates.extend([
+        c for c in df_sheet.columns
+        if str(c).strip().lower().startswith("id") and c not in aff_candidates
+    ])
+    aff_series = _coalesce_columns(df_sheet, [c for c in aff_candidates if c])
+
     type_col = cols_lower.get("type")
     payout_col = cols_lower.get("payout")
     new_col = cols_lower.get("new customer payout")
     old_col = cols_lower.get("old customer payout")
 
-    if not code_col:
+    if code_series.isna().all():
         raise ValueError(f"[{sheet_name}] must contain a 'Code' column.")
-    if not aff_col:
+    if aff_series.isna().all():
         raise ValueError(f"[{sheet_name}] must contain an 'ID' (or 'affiliate_ID') column.")
     if not type_col:
         raise ValueError(f"[{sheet_name}] must contain a 'type' column (revenue/sale/fixed).")
@@ -128,17 +161,37 @@ def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.Data
     fixed_new = pd.to_numeric(fixed_new, errors='coerce')
     fixed_old = pd.to_numeric(fixed_old, errors='coerce')
 
-    out = pd.DataFrame({
-        "code_norm": df_sheet[code_col].apply(normalize_coupon),
-        "affiliate_ID": df_sheet[aff_col].fillna("").astype(str).str.strip(),
-        "type_norm": type_norm,
-        "pct_new": pct_new.fillna(DEFAULT_PCT_IF_MISSING),
-        "pct_old": pct_old.fillna(DEFAULT_PCT_IF_MISSING),
-        "fixed_new": fixed_new,
-        "fixed_old": fixed_old,
-    }).dropna(subset=["code_norm"])
+    mapping_frames: list[pd.DataFrame] = []
 
-    return out.drop_duplicates(subset=["code_norm"], keep="last")
+    def append_mapping(code_col: str, id_candidates: list[str]) -> None:
+        if code_col not in df_sheet.columns:
+            return
+        codes = df_sheet[code_col]
+        ids = _coalesce_columns(df_sheet, id_candidates)
+        frame = pd.DataFrame({
+            "code_norm": codes.apply(normalize_coupon),
+            "affiliate_ID": ids.fillna("").astype(str).str.strip(),
+            "type_norm": type_norm,
+            "pct_new": pct_new.fillna(DEFAULT_PCT_IF_MISSING),
+            "pct_old": pct_old.fillna(DEFAULT_PCT_IF_MISSING),
+            "fixed_new": fixed_new,
+            "fixed_old": fixed_old,
+        })
+        mapping_frames.append(frame)
+
+    append_mapping('F', ['ID'])
+    append_mapping(cols_lower.get('code'), [cols_lower.get('id.1')])
+    append_mapping('Code.1', ['ID.2', 'Unnamed: 19'])
+
+    if not mapping_frames:
+        raise ValueError(f"[{sheet_name}] did not yield any coupon mapping columns.")
+
+    out = pd.concat(mapping_frames, ignore_index=True)
+    out = out.dropna(subset=['code_norm'])
+    out['code_norm'] = out['code_norm'].astype(str).str.strip()
+    out = out[out['code_norm'].str.len() > 0]
+
+    return out.drop_duplicates(subset=['code_norm'], keep='last')
 
 # =======================
 # LOAD REPORT

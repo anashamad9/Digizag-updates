@@ -85,6 +85,67 @@ def normalize_coupon(x: str) -> str:
     parts = re.split(r"[;,\s]+", s)
     return parts[0] if parts else s
 
+def infer_is_new_customer(df: pd.DataFrame) -> pd.Series:
+    """Infer a boolean new-customer flag from common columns; default False when no signal."""
+    if df.empty:
+        return pd.Series(False, index=df.index, dtype=bool)
+
+    candidates = [
+        'customer_type',
+        'customer type',
+        'customer_type',
+        'customer type',
+        'customer segment',
+        'customersegment',
+        'new_vs_old',
+        'new vs old',
+        'new/old',
+        'new old',
+        'new_vs_existing',
+        'new vs existing',
+        'user_type',
+        'user type',
+        'usertype',
+        'type_customer',
+        'type customer',
+        'audience',
+    ]
+
+    new_tokens = {
+        'new', 'newuser', 'newusers', 'newcustomer', 'newcustomers',
+        'ftu', 'first', 'firstorder', 'firsttime', 'acquisition', 'prospect'
+    }
+    old_tokens = {
+        'old', 'olduser', 'oldcustomer', 'existing', 'existinguser', 'existingcustomer',
+        'return', 'returning', 'repeat', 'rtu', 'retention', 'loyal', 'existingusers'
+    }
+
+    columns_map = {str(c).strip().lower(): c for c in df.columns}
+    result = pd.Series(False, index=df.index, dtype=bool)
+    resolved = pd.Series(False, index=df.index, dtype=bool)
+
+    def tokenize(value) -> set:
+        if pd.isna(value):
+            return set()
+        text = ''.join(ch if ch.isalnum() else ' ' for ch in str(value).lower())
+        return {tok for tok in text.split() if tok}
+
+    for key in candidates:
+        actual = columns_map.get(key)
+        if not actual:
+            continue
+        tokens_series = df[actual].apply(tokenize)
+        is_new = tokens_series.apply(lambda toks: bool(toks & new_tokens))
+        is_old = tokens_series.apply(lambda toks: bool(toks & old_tokens))
+        recognized = (is_new | is_old) & ~resolved
+        if recognized.any():
+            result.loc[recognized] = is_new.loc[recognized]
+            resolved.loc[recognized] = True
+        if resolved.all():
+            break
+    return result
+
+
 def col_by_letter(df: pd.DataFrame, letter: str):
     idx = ord(letter.upper()) - ord('A')
     return df.columns[idx] if letter and 0 <= idx < len(df.columns) else None
@@ -100,52 +161,78 @@ def resolve_by_name(df: pd.DataFrame, candidates):
                 return actual
     return None
 
+
 def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.DataFrame:
+    """Return mapping with columns code_norm, affiliate_ID, type_norm, pct_new, pct_old, fixed_new, fixed_old."""
     df_sheet = pd.read_excel(xlsx_path, sheet_name=sheet_name, dtype=str)
-    df_sheet.columns = [str(c).strip() for c in df_sheet.columns]
-    cols_lower = {c.lower().strip(): c for c in df_sheet.columns}
+    cols_lower = {str(c).lower().strip(): c for c in df_sheet.columns}
 
-    def res(cands):
-        for cand in cands:
-            k = cand.lower().strip()
-            if k in cols_lower: return cols_lower[k]
-        for actual_lower, actual in cols_lower.items():
-            for cand in cands:
-                if actual_lower.startswith(cand.lower().strip()): return actual
-        raise ValueError(f"[{sheet_name}] missing any of {cands}. Columns: {list(df_sheet.columns)}")
+    def need(name: str) -> str:
+        col = cols_lower.get(name)
+        if not col:
+            raise ValueError(f"[{sheet_name}] must contain a '{name}' column.")
+        return col
 
-    code_col = res(["Code"])
-    aff_col  = res(["ID", "affiliate_ID"])
-    type_col = res(["type"])
+    code_col = need('code')
+    aff_col = cols_lower.get('id') or cols_lower.get('affiliate_id')
+    type_col = need('type')
+    payout_col = cols_lower.get('payout')
+    new_col = cols_lower.get('new customer payout')
+    old_col = cols_lower.get('old customer payout')
 
-    payout_cols = []
-    for nm in ["payout", "new customer payout", "old customer payout"]:
-        try: payout_cols.append(res([nm]))
-        except ValueError: pass
-    if not payout_cols:
-        raise ValueError(f"[{sheet_name}] needs a payout-like column")
+    if not aff_col:
+        raise ValueError(f"[{sheet_name}] must contain an 'ID' (or 'affiliate_ID') column.")
+    if not (payout_col or new_col or old_col):
+        raise ValueError(f"[{sheet_name}] must contain at least one payout column (e.g., 'payout').")
 
-    payout_num = None
-    for pc in payout_cols:
-        s = pd.to_numeric(df_sheet[pc].astype(str).str.replace("%","",regex=False).str.strip(), errors="coerce")
-        payout_num = s if payout_num is None else payout_num.fillna(s)
+    def extract_numeric(col_name: str) -> pd.Series:
+        if not col_name:
+            return pd.Series([pd.NA] * len(df_sheet), dtype='Float64')
+        raw = df_sheet[col_name].astype(str).str.replace('%', '', regex=False).str.strip()
+        return pd.to_numeric(raw, errors='coerce')
 
-    type_norm = df_sheet[type_col].astype(str).str.strip().str.lower().replace({"": None})
-    pct_fraction = payout_num.where(type_norm.isin(["revenue","sale"])).apply(
-        lambda v: (v/100.0) if pd.notna(v) and v > 1 else (v if pd.notna(v) else DEFAULT_PCT_IF_MISSING)
+    payout_any = extract_numeric(payout_col)
+    payout_new_raw = extract_numeric(new_col).fillna(payout_any)
+    payout_old_raw = extract_numeric(old_col).fillna(payout_any)
+
+    type_norm = (
+        df_sheet[type_col]
+        .astype(str)
+        .str.strip()
+        .str.lower()
+        .replace({'': None})
+        .fillna('revenue')
     )
-    fixed_amount = payout_num.where(type_norm.eq("fixed"))
 
-    aff_series = (df_sheet[aff_col].fillna("").astype(str).str.strip().str.replace(r"\.0$","",regex=True))
+    def pct_from(values: pd.Series) -> pd.Series:
+        pct = values.where(type_norm.isin(['revenue', 'sale']))
+        return pct.apply(lambda v: (v / 100.0) if pd.notna(v) and v > 1 else (v if pd.notna(v) else pd.NA))
+
+    def fixed_from(values: pd.Series) -> pd.Series:
+        return values.where(type_norm.eq('fixed'))
+
+    pct_new = pct_from(payout_new_raw)
+    pct_old = pct_from(payout_old_raw)
+    pct_new = pct_new.fillna(pct_old)
+    pct_old = pct_old.fillna(pct_new)
+
+    fixed_new = fixed_from(payout_new_raw)
+    fixed_old = fixed_from(payout_old_raw)
+    fixed_new = fixed_new.fillna(fixed_old)
+    fixed_old = fixed_old.fillna(fixed_new)
 
     out = pd.DataFrame({
-        "code_norm": df_sheet[code_col].apply(normalize_coupon),
-        "affiliate_ID": aff_series,
-        "type_norm": type_norm,
-        "pct_fraction": pct_fraction,
-        "fixed_amount": fixed_amount,
-    }).dropna(subset=["code_norm"]).drop_duplicates(subset=["code_norm"], keep="last")
-    return out
+        'code_norm': df_sheet[code_col].apply(normalize_coupon),
+        'affiliate_ID': df_sheet[aff_col].fillna('').astype(str).str.strip(),
+        'type_norm': type_norm,
+        'pct_new': pd.to_numeric(pct_new, errors='coerce').fillna(DEFAULT_PCT_IF_MISSING),
+        'pct_old': pd.to_numeric(pct_old, errors='coerce').fillna(DEFAULT_PCT_IF_MISSING),
+        'fixed_new': pd.to_numeric(fixed_new, errors='coerce'),
+        'fixed_old': pd.to_numeric(fixed_old, errors='coerce'),
+    }).dropna(subset=['code_norm'])
+
+    return out.drop_duplicates(subset=['code_norm'], keep='last')
+
 
 def find_needed_columns(df: pd.DataFrame):
     code_col   = col_by_letter(df, CODE_LETTER) or resolve_by_name(df, CODE_NAME_CANDIDATES)
@@ -236,11 +323,11 @@ for sheet_date, sheet_name in eligible:
     df0[orders_col] = pd.to_numeric(df0[orders_col], errors='coerce').fillna(0.0)
     df0[sale_col]   = pd.to_numeric(df0[sale_col], errors='coerce').fillna(0.0)
 
-    # optional in-sheet date filter (if a date col exists, keep rows within the window and up to the sheet date)
+    # optional in-sheet date filter. If a real date column exists, rely on it entirely.
     if date_col:
         df0[date_col] = pd.to_datetime(df0[date_col], errors='coerce')
         df0 = df0.dropna(subset=[date_col])
-        df0 = df0[(df0[date_col].dt.date >= start_date) & (df0[date_col].dt.date <= sheet_date)]
+        df0 = df0[(df0[date_col].dt.date >= start_date) & (df0[date_col].dt.date <= yesterday)]
 
     # your rule: skip zero/empty orders or sale
     df = df0[(df0[orders_col] > 0) & (df0[sale_col] > 0)].copy()
@@ -268,7 +355,15 @@ for sheet_date, sheet_name in eligible:
     # normalize mapping fields
     dfj['affiliate_ID'] = dfj['affiliate_ID'].fillna("").astype(str).str.strip()
     dfj['type_norm'] = dfj['type_norm'].fillna("revenue")
-    dfj['pct_fraction'] = dfj['pct_fraction'].fillna(DEFAULT_PCT_IF_MISSING)
+    for col in ['pct_new', 'pct_old']:
+        dfj[col] = pd.to_numeric(dfj.get(col), errors='coerce').fillna(DEFAULT_PCT_IF_MISSING)
+    for col in ['fixed_new', 'fixed_old']:
+        dfj[col] = pd.to_numeric(dfj.get(col), errors='coerce')
+    is_new_customer = infer_is_new_customer(dfj)
+    pct_effective = dfj['pct_new'].where(is_new_customer, dfj['pct_old'])
+    dfj['pct_fraction'] = pd.to_numeric(pct_effective, errors='coerce').fillna(DEFAULT_PCT_IF_MISSING)
+    fixed_effective = dfj['fixed_new'].where(is_new_customer, dfj['fixed_old'])
+    dfj['fixed_amount'] = pd.to_numeric(fixed_effective, errors='coerce')
 
     # payout
     payout = pd.Series(0.0, index=dfj.index)

@@ -6,7 +6,7 @@ import re
 # =======================
 # CONFIG
 # =======================
-days_back = 4
+days_back = 5
 STATUS_DEFAULT = "pending"
 DEFAULT_PCT_IF_MISSING = 0.0
 FALLBACK_AFFILIATE_ID = "1"
@@ -116,53 +116,35 @@ def _as_pct_fraction(series: pd.Series) -> pd.Series:
     return num.apply(lambda v: (v/100.0) if pd.notna(v) and v > 1 else (v if pd.notna(v) else DEFAULT_PCT_IF_MISSING))
 
 def load_affiliate_mapping_for_offer(xlsx_path: str, sheet_name: str, offer_id: int) -> pd.DataFrame:
-    """
-    Load a single sheet and return a mapping DataFrame with:
-      ['offer','code_norm','affiliate_ID','type_norm','pct_fraction','fixed_amount']
-    - Accepts 'ID' or 'affiliate_ID' for affiliate id.
-    - 'payout' may be % (for revenue/sale) or fixed (for fixed).
-    """
+    """Load coupon → affiliate mapping with payout fraction from 'new customer payout'."""
     df_sheet = pd.read_excel(xlsx_path, sheet_name=sheet_name, dtype=str)
     cols_lower = {str(c).lower().strip(): c for c in df_sheet.columns}
 
-    code_col   = cols_lower.get("code") or cols_lower.get("coupon code") or cols_lower.get("coupon")
-    aff_col    = cols_lower.get("id") or cols_lower.get("affiliate_id")
-    type_col   = cols_lower.get("type") or cols_lower.get("payout type") or cols_lower.get("commission type")
-    payout_col = (cols_lower.get("payout")
-                  or cols_lower.get("new customer payout")
-                  or cols_lower.get("old customer payout")
-                  or cols_lower.get("commission")
-                  or cols_lower.get("rate"))
+    code_col = cols_lower.get("code") or cols_lower.get("coupon code") or cols_lower.get("coupon")
+    aff_col = cols_lower.get("id") or cols_lower.get("affiliate_id")
+    payout_col = cols_lower.get("new customer payout")
 
     if not code_col:
         raise ValueError(f"[{sheet_name}] must contain a 'Code' (or Coupon Code) column.")
     if not aff_col:
         raise ValueError(f"[{sheet_name}] must contain an 'ID' (or 'affiliate_ID') column.")
-    if not type_col:
-        raise ValueError(f"[{sheet_name}] must contain a 'type' column (revenue/sale/fixed).")
     if not payout_col:
-        raise ValueError(f"[{sheet_name}] must contain a payout-like column (e.g., 'payout').")
+        raise ValueError(f"[{sheet_name}] must contain a 'new customer payout' column.")
 
-    payout_num = pd.to_numeric(
+    payout_raw = pd.to_numeric(
         df_sheet[payout_col].astype(str).str.replace("%", "", regex=False).str.strip(),
         errors="coerce"
     )
-    type_norm = (
-        df_sheet[type_col].astype(str).str.strip().str.lower().replace({"": None}).fillna("revenue")
-    )
 
-    pct_fraction = payout_num.where(type_norm.isin(["revenue", "sale"])).apply(
-        lambda v: (v/100.0) if pd.notna(v) and v > 1 else (v if pd.notna(v) else DEFAULT_PCT_IF_MISSING)
+    pct_fraction = payout_raw.apply(
+        lambda v: (v / 100.0) if pd.notna(v) and v > 1 else (v if pd.notna(v) else DEFAULT_PCT_IF_MISSING)
     )
-    fixed_amount = payout_num.where(type_norm.eq("fixed"))
 
     out = pd.DataFrame({
         "offer": offer_id,
         "code_norm": df_sheet[code_col].apply(normalize_coupon),
         "affiliate_ID": df_sheet[aff_col].fillna("").astype(str).str.strip(),
-        "type_norm": type_norm,
         "pct_fraction": pct_fraction.fillna(DEFAULT_PCT_IF_MISSING),
-        "fixed_amount": fixed_amount
     }).dropna(subset=["code_norm"])
 
     out["has_aff"] = out["affiliate_ID"].astype(str).str.len() > 0
@@ -181,7 +163,7 @@ def build_master_affiliate_map(xlsx_path: str, offer_to_sheet_map: dict) -> pd.D
         except Exception as e:
             print(f"Warning: skipped sheet '{sheet}' for offer {offer_id}: {e}")
     if not frames:
-        return pd.DataFrame(columns=["offer","code_norm","affiliate_ID","type_norm","pct_fraction","fixed_amount"])
+        return pd.DataFrame(columns=["offer","code_norm","affiliate_ID","pct_fraction"])
     return pd.concat(frames, ignore_index=True)
 
 # =======================
@@ -214,9 +196,16 @@ df = df.dropna(subset=['offer']).copy()
 df['offer'] = df['offer'].astype(int)
 
 # Track rows that have zero CIR so we know what portion lacks attribution
-df['CIR'] = pd.to_numeric(df['CIR'], errors='coerce')
-zero_cir = df['CIR'].eq(0)
-print(f"Rows with CIR equal to 0 (kept for now): {int(zero_cir.sum())}")
+cir_raw = df['CIR'].astype(str).str.replace('%', '', regex=False).str.strip()
+cir_num = pd.to_numeric(cir_raw, errors='coerce')
+max_cir = cir_num.dropna().max()
+threshold = 0.39 if pd.notna(max_cir) and max_cir <= 1.0 else 39.0
+before_cir = len(df)
+mask_ok = cir_num.isna() | (cir_num <= threshold)
+df = df[mask_ok].copy()
+removed = before_cir - len(df)
+thr_display = f"{int(threshold*100)}%" if threshold < 1 else f"{int(threshold)}%"
+print(f"Rows removed due to CIR > {thr_display}: {removed}")
 
 # Convert metrics we need for the custom payout logic
 df['affiliate_revenue'] = pd.to_numeric(df['Affiliate Revenue'], errors='coerce').fillna(0.0)
@@ -254,78 +243,76 @@ if missing_aff_mask.any():
     print("Unmatched (offer, coupon) samples:", sample_unmatched)
 
 # =======================
-# PAYOUT (custom brand rules)
-# =======================
+# BRAND REVENUE RULES + PAYOUT FROM COUPON SHEET
+df_joined['affiliate_revenue'] = pd.to_numeric(df_joined['affiliate_revenue'], errors='coerce').fillna(0.0)
+df_joined['new_cust_revenue'] = pd.to_numeric(df_joined.get('new_cust_revenue'), errors='coerce').fillna(0.0)
+df_joined['old_cust_revenue'] = pd.to_numeric(df_joined.get('old_cust_revenue'), errors='coerce').fillna(0.0)
+df_joined['new_customers'] = pd.to_numeric(df_joined.get('new_customers'), errors='coerce').fillna(0.0)
+df_joined['old_customers'] = pd.to_numeric(df_joined.get('old_customers'), errors='coerce').fillna(0.0)
+df_joined['affiliate_orders'] = pd.to_numeric(df_joined.get('affiliate_orders'), errors='coerce').fillna(0.0)
+df_joined['market_norm'] = df_joined['market_norm'].astype(str)
+df_joined['pct_fraction'] = pd.to_numeric(df_joined['pct_fraction'], errors='coerce').fillna(DEFAULT_PCT_IF_MISSING)
+
 def _safe_order_count(row: pd.Series) -> float:
     orders = row.get('affiliate_orders', 0.0) or 0.0
     if orders == 0:
-        orders = row.get('new_customers', 0.0) + row.get('old_customers', 0.0)
+        orders = (row.get('new_customers', 0.0) or 0.0) + (row.get('old_customers', 0.0) or 0.0)
     return orders
 
 oman_markets = {"omn", "om", "oman"}
 gcc_markets = {"ksa", "uae", "kwt", "qat", "qatar", "bhr", "bah", "bahrain", "omn", "om", "oman"}
 egypt_markets = {"egy", "eg", "egypt"}
 
-def calculate_offer_payout(row: pd.Series) -> float:
+def calculate_brand_revenue(row: pd.Series) -> float:
     brand = row.get('brand_norm', '')
-    market = row.get('market_norm', '')
-    total_rev = row.get('affiliate_revenue', 0.0)
-    new_rev = row.get('new_cust_revenue', 0.0)
-    new_count = row.get('new_customers', 0.0)
-    old_count = row.get('old_customers', 0.0)
+    market = str(row.get('market_norm', '')).lower()
+    total_rev = row.get('affiliate_revenue', 0.0) or 0.0
+    new_rev = row.get('new_cust_revenue', 0.0) or 0.0
+    new_cnt = row.get('new_customers', 0.0) or 0.0
+    old_cnt = row.get('old_customers', 0.0) or 0.0
 
-    payout_value = 0.0
-
+    value = 0.0
     if brand == 'wes':
-        payout_value = 0.10 * new_rev
+        value = 0.10 * new_rev
     elif brand == 'vs':
-        payout_value = 0.03 * total_rev
+        value = 5.0 * (new_cnt + old_cnt)
     elif brand == 'pk':
-        payout_value = 0.10 * new_rev
+        value = 0.10 * new_rev
     elif brand == 'pb':
-        payout_value = 0.10 * new_rev
+        value = 0.10 * new_rev
     elif brand == 'nb':
-        payout_value = 0.03 * total_rev
+        value = 0.03 * total_rev
     elif brand == 'fl':
         orders = _safe_order_count(row)
-        if market in gcc_markets:
-            payout_value = 6.0 * orders
-        elif market in egypt_markets:
-            payout_value = 5.0 * orders
+        if market in egypt_markets:
+            value = 5.0 * orders
+        elif market in gcc_markets:
+            value = 6.0 * orders
     elif brand == 'mc':
-        payout_value = 4.0 * new_count
+        value = 4.0 * new_cnt
     elif brand == 'hm':
-        payout_value = 8.0 * new_count + 2.0 * old_count
+        value = 8.0 * new_cnt + 2.0 * old_cnt
     elif brand == 'bbw':
         if market in {'ksa', 'kwt'}:
-            payout_value = 5.0 * new_count + 3.0 * old_count
+            value = 5.0 * new_cnt + 3.0 * old_cnt
         elif market == 'uae':
-            payout_value = 6.0 * new_count
+            value = 6.0 * new_cnt
     elif brand == 'aeo':
         if market in oman_markets:
-            payout_value = 4.0 * _safe_order_count(row)
-        elif market != 'qat' and market in gcc_markets:
-            payout_value = 4.0 * new_count + 2.0 * old_count
+            value = 4.0 * _safe_order_count(row)
+        elif market in gcc_markets and market != 'qat':
+            value = 4.0 * new_cnt + 2.0 * old_cnt
+    return float(value)
 
-    return payout_value
+df_joined['revenue_calc'] = df_joined.apply(calculate_brand_revenue, axis=1)
+df_joined['payout'] = (df_joined['revenue_calc'] * df_joined['pct_fraction']).round(2)
 
-df_joined['affiliate_revenue'] = pd.to_numeric(df_joined['affiliate_revenue'], errors='coerce').fillna(0.0)
-df_joined['new_cust_revenue'] = pd.to_numeric(df_joined['new_cust_revenue'], errors='coerce').fillna(0.0)
-df_joined['old_cust_revenue'] = pd.to_numeric(df_joined['old_cust_revenue'], errors='coerce').fillna(0.0)
-df_joined['new_customers'] = pd.to_numeric(df_joined['new_customers'], errors='coerce').fillna(0.0)
-df_joined['old_customers'] = pd.to_numeric(df_joined['old_customers'], errors='coerce').fillna(0.0)
-df_joined['affiliate_orders'] = pd.to_numeric(df_joined['affiliate_orders'], errors='coerce').fillna(0.0)
-df_joined['market_norm'] = df_joined['market_norm'].astype(str)
-
-df_joined['calculated_revenue'] = df_joined.apply(calculate_offer_payout, axis=1)
-
-# Enforce fallback: no coupon match → affiliate_id="1", payout=0
-df_joined.loc[missing_aff_mask, 'calculated_revenue'] = 0.0
+# Fallback for missing affiliate mapping: keep revenue, payout=0 and set default affiliate
+df_joined.loc[missing_aff_mask, 'payout'] = 0.0
 df_joined.loc[missing_aff_mask, 'affiliate_ID'] = FALLBACK_AFFILIATE_ID
 
-df_joined['payout'] = df_joined['calculated_revenue'].round(2)
-df_joined['revenue'] = df_joined['calculated_revenue'].round(2)
-df_joined['sale_amount'] = df_joined['affiliate_revenue'].round(2)
+# Drop any rows with zero revenue as requested
+df_joined = df_joined[df_joined['revenue_calc'] > 0].copy()
 
 # =======================
 # BUILD OUTPUT (NEW STRUCTURE)
@@ -336,8 +323,8 @@ output_df = pd.DataFrame({
     'date': df_joined['Date'].dt.strftime('%m-%d-%Y'),
     'status': STATUS_DEFAULT,
     'payout': df_joined['payout'],
-    'revenue': df_joined['revenue'].round(2),
-    'sale amount': df_joined['sale_amount'].round(2),
+    'revenue': df_joined['revenue_calc'].round(2),
+    'sale amount': df_joined['affiliate_revenue'].round(2),
     'coupon': df_joined['coupon_norm'],
     'geo': df_joined['Market'],
 })

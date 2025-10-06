@@ -7,7 +7,7 @@ from typing import Optional
 # =======================
 # CONFIG
 # =======================
-days_back = 18
+days_back = 40
 OFFER_ID = 1204
 STATUS_DEFAULT = "pending"          # always "pending"
 DEFAULT_PCT_IF_MISSING = 0.0        # fallback fraction for % values (0.30 == 30%)

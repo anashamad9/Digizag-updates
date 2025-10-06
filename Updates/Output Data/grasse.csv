@@ -1,7 +1,4 @@
 offer,affiliate_id,date,status,payout,revenue,sale amount,coupon,geo
-1346,6924,09-05-2025,pending,4.33,5.78,48.13,RR1,no-geo
-1346,6924,09-05-2025,pending,4.33,5.78,48.13,RR1,no-geo
-1346,2345,09-05-2025,pending,7.0,7.78,64.8,RR35,no-geo
 1346,6774,09-07-2025,pending,1.75,2.34,19.48,RR9,no-geo
 1346,6728,09-09-2025,pending,5.83,7.78,64.8,RR4,no-geo
 1346,2345,09-09-2025,pending,7.0,7.78,64.8,RR30,no-geo
@@ -52,3 +49,11 @@ offer,affiliate_id,date,status,payout,revenue,sale amount,coupon,geo
 1346,12932,09-29-2025,pending,5.83,7.78,64.8,RR14,no-geo
 1346,14659,09-29-2025,pending,5.83,7.78,64.8,RR17,no-geo
 1346,189,09-29-2025,pending,5.83,7.78,64.8,RR55,no-geo
+1346,14465,09-30-2025,pending,1.77,2.21,18.4,WALA2025,no-geo
+1346,189,09-30-2025,pending,1.66,2.21,18.4,RR10,no-geo
+1346,189,09-30-2025,pending,1.66,2.21,18.4,RR53,no-geo
+1346,6728,10-01-2025,pending,1.66,2.21,18.4,RR4,no-geo
+1346,189,10-01-2025,pending,3.65,4.86,40.53,RR10,no-geo
+1346,2345,10-01-2025,pending,7.0,7.78,64.8,RR30,no-geo
+1346,189,10-01-2025,pending,1.66,2.21,18.4,RR53,no-geo
+1346,189,10-03-2025,pending,1.66,2.21,18.4,RR55,no-geo

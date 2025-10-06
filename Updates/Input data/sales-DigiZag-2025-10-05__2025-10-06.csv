@@ -1,0 +1,12 @@
+"Puchase Date","Order Number",Status,"Coupon Code",Country,"Grand Total incl Tax","Shipping Amount",Tax,"Cash on Delivery Charges","Store Credit Used","Total Refunded",FINAL_TOTAL,TOTAL_ORDERED_QTY,TOTAL_RETURN_QTY,Type,Commission,Category,COMPANY,"COUPON CODE",Customer_Type
+"2025-10-05 00:52:38",PO-AE-251005-03501,complete,W66,"United Arab Emirates",43.43,2.51,1.95,0.00,0.00,0.00,38.97,5.0000,0.0000,CPS,0.1,Affliate,DigiZag,W66,Existing
+"2025-10-05 07:07:30",PO-KW-251005-03571,delivered,W112,Kuwait,38.68,2.50,0.00,0.00,0.00,0.00,36.18,2.0000,0.0000,CPS,0.1,Affliate,DigiZag,W112,Existing
+"2025-10-05 12:00:47",PO-AE-251005-03676,complete,W20,"United Arab Emirates",453.01,2.51,21.45,0.00,0.00,0.00,429.05,27.0000,0.0000,CPS,0.1,Affliate,DigiZag,W20,Existing
+"2025-10-05 12:13:32",PO-KW-251005-03684,complete,W98,Kuwait,143.39,1.75,0.00,0.00,0.00,0.00,141.64,8.0000,0.0000,CPS,0.1,Affliate,DigiZag,W98,Existing
+"2025-10-05 12:56:34",PO-KW-251005-03697,processing,Waf,Kuwait,57.22,1.75,0.00,0.00,0.00,0.00,55.47,4.0000,0.0000,CPS,.1,Affliate,DigiZag,Waf,Existing
+"2025-10-05 15:08:46",PO-SA-251005-03769,complete,WAF,"Saudi Arabia",84.11,2.46,10.65,0.00,0.00,0.00,71.00,4.0000,0.0000,CPS,.1,Affliate,DigiZag,WAF,Existing
+"2025-10-05 17:57:36",PO-AE-251005-03852,processing,W44,"United Arab Emirates",77.72,2.51,3.58,0.00,0.00,0.00,71.62,13.0000,0.0000,CPS,0.1,Affliate,DigiZag,W44,Existing
+"2025-10-05 18:35:32",PO-AE-251005-03870,complete,X98,"United Arab Emirates",29.98,2.51,1.31,0.00,0.00,0.00,26.16,1.0000,0.0000,CPS,0.1,Affliate,DigiZag,X98,New
+"2025-10-05 19:06:51",PO-SA-251005-03888,partially_shipped,WAF,"Saudi Arabia",55.66,2.46,6.94,0.00,0.00,0.00,46.26,3.0000,0.0000,CPS,.1,Affliate,DigiZag,WAF,New
+"2025-10-05 21:36:41",PO-SA-251005-04015,processing,NNN,"Saudi Arabia",23.52,2.46,2.75,0.00,0.00,0.00,18.31,1.0000,0.0000,CPS,.1,Affliate,DigiZag,NNN,Existing
+"2025-10-06 10:21:36",PO-SA-251006-04208,processing,W99,"Saudi Arabia",196.02,2.46,25.25,0.00,0.00,0.00,168.31,12.0000,0.0000,CPS,0.1,Affliate,DigiZag,W99,Existing

@@ -19,7 +19,7 @@ AFFILIATE_SHEET = "Whites"   # change if your tab name differs
 OUTPUT_CSV = "whites2.csv"
 
 # API window (from your draft)
-JSON_URL = "https://www.whites.net/entity/track_coupons_digizag?get_coupon_data=1&start_date=2025-09-01&end_date=2025-09-31"
+JSON_URL = "https://www.whites.net/entity/track_coupons_digizag?get_coupon_data=1&start_date=2025-07-01&end_date=2026-10-06"
 
 # =======================
 # PATHS

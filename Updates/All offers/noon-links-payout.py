@@ -105,11 +105,17 @@ def to_numeric(series: pd.Series) -> pd.Series:
     return pd.to_numeric(series, errors='coerce')
 
 
-def tier_revenue_for_order_index(idx: int) -> float:
-    """1-based order index across lifetime for an affiliate ID -> revenue dollars."""
-    if idx <= 200:
+def tier_revenue_for_order_value(order_value_aed: float) -> float:
+    """Order value in AED -> fixed revenue dollars.
+
+    Tiers:
+    - <= 200 AED  -> $2.50
+    - <= 400 AED  -> $6.25
+    - >  400 AED  -> $9.00
+    """
+    if order_value_aed <= 200:
         return 2.50
-    if idx <= 400:
+    if order_value_aed <= 400:
         return 6.25
     return 9.00
 
@@ -180,7 +186,7 @@ df_sorted['batch_index'] = df_sorted.groupby('affiliate_ID').cumcount() + 1
 df_sorted['lifetime_index'] = df_sorted.apply(lambda r: int(prev_counts.get(r['affiliate_ID'],0)) + int(r['batch_index']), axis=1)
 
 # Revenue per order based on lifetime index
-df_sorted['revenue_fixed'] = df_sorted['lifetime_index'].apply(tier_revenue_for_order_index)
+df_sorted['revenue_fixed'] = df_sorted['order_value_aed'].apply(tier_revenue_for_order_value)
 
 # Bring back in same shape
 df = df_sorted

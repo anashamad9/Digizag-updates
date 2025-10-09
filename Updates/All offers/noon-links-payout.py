@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 # =======================
 # CONFIG (Noon Links)
 # =======================
-days_back = 4
+days_back = 40
 OFFER_ID = 1355
 STATUS_DEFAULT = "pending"
 FALLBACK_AFFILIATE_ID = "1"

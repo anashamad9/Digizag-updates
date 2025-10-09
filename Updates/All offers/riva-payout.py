@@ -7,7 +7,7 @@ from typing import Optional
 # =======================
 # CONFIG (Riva Fashion)
 # =======================
-days_back = 2                               # previous N days INCLUDING today
+days_back = 6                               # previous N days INCLUDING today
 OFFER_ID = 1183
 STATUS_DEFAULT = "pending"
 DEFAULT_PCT_IF_MISSING = 0.0

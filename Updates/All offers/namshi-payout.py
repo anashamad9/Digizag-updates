@@ -6,7 +6,7 @@ import re
 # =======================
 # CONFIG
 # =======================
-days_back = 3
+days_back = 5
 OFFER_ID = 1189
 STATUS_DEFAULT = "pending"
 DEFAULT_PCT_IF_MISSING = 0.0
@@ -283,6 +283,16 @@ fixed_effective = pd.to_numeric(fixed_effective, errors='coerce').fillna(0.0)
 # =======================
 # PAYOUT CALC
 # =======================
+# Explicit overrides: enforce exact 88% for specific coupons
+# (applies only to percentage-based types: revenue/sale)
+override_codes = {"GBT", "GBK", "GKP"}
+override_mask_pct = (
+    df_joined['coupon_norm'].isin(override_codes)
+    & df_joined['type_norm'].str.lower().isin(['revenue', 'sale'])
+)
+if override_mask_pct.any():
+    pct_effective.loc[override_mask_pct] = 0.88
+
 payout = pd.Series(0.0, index=df_joined.index)
 
 mask_rev   = df_joined['type_norm'].str.lower().eq('revenue')

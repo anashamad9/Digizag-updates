@@ -2,6 +2,7 @@ import pandas as pd
 from datetime import datetime, timedelta
 import os
 import re
+from typing import Optional
 
 # =======================
 # CONFIG
@@ -15,7 +16,10 @@ FALLBACK_AFFILIATE_ID = "1"         # when coupon has no affiliate, use "1" and 
 # Local files
 AFFILIATE_XLSX  = "Offers Coupons.xlsx"    # multi-sheet Excel
 AFFILIATE_SHEET = "Dabdoob"                # <-- coupons sheet name for this offer
-REPORT_PREFIX   = "Orders_Coupons_Report_Digizag"  # dynamic filename start
+# Latest report filename start (e.g., 'DigiZag 1 Sep - 7 Oct 2025 Orders.xlsx')
+# identify latest report whose filename (sans extension) starts with 'digizag' and ends with 'orders'
+REPORT_PREFIX   = "digizag"
+REPORT_SUFFIX   = "orders"
 REPORT_SHEET    = "Sheet1"
 
 # FX helpers (to USD)
@@ -38,34 +42,33 @@ output_file = os.path.join(output_dir, 'dabdoub.csv')  # keeping your filename
 # =======================
 # HELPERS
 # =======================
-def find_matching_xlsx(directory: str, prefix: str) -> str:
+def find_matching_xlsx(directory: str, prefix: str, suffix: Optional[str] = None) -> str:
     """
-    Find an .xlsx in `directory` whose base filename starts with `prefix` (case-insensitive).
+    Find an .xlsx in `directory` whose base filename matches the provided prefix/suffix (case-insensitive).
     - Ignores temporary files like '~$...'
-    - Prefers exact '<prefix>.xlsx' if present
     - Otherwise returns the newest by modified time
     """
-    prefix_lower = prefix.lower()
+    prefix_lower = prefix.lower().strip() if prefix else ""
+    suffix_lower = suffix.lower().strip() if suffix else ""
     candidates = []
     for fname in os.listdir(directory):
         if fname.startswith("~$"):
             continue
         if not fname.lower().endswith(".xlsx"):
             continue
-        base = os.path.splitext(fname)[0].lower()
-        if base.startswith(prefix_lower):
-            candidates.append(os.path.join(directory, fname))
+        base = os.path.splitext(fname)[0].lower().strip()
+        if prefix_lower and not base.startswith(prefix_lower):
+            continue
+        if suffix_lower and not base.endswith(suffix_lower):
+            continue
+        candidates.append(os.path.join(directory, fname))
 
     if not candidates:
         available = [f for f in os.listdir(directory) if f.lower().endswith(".xlsx")]
         raise FileNotFoundError(
-            f"No .xlsx file starting with '{prefix}' found in: {directory}\n"
+            f"No .xlsx file matching prefix='{prefix}' and suffix='{suffix}' found in: {directory}\n"
             f"Available .xlsx files: {available}"
         )
-
-    exact = [p for p in candidates if os.path.basename(p).lower() == (prefix_lower + ".xlsx")]
-    if exact:
-        return exact[0]
 
     return max(candidates, key=os.path.getmtime)
 
@@ -219,7 +222,7 @@ end_date = today
 start_date = end_date - timedelta(days=days_back)
 print(f"Current date: {today}, Start date (days_back={days_back}): {start_date}")
 
-input_file = find_matching_xlsx(input_dir, REPORT_PREFIX)
+input_file = find_matching_xlsx(input_dir, REPORT_PREFIX, REPORT_SUFFIX)
 print(f"Using report file: {input_file}")
 
 df = pd.read_excel(input_file, sheet_name=REPORT_SHEET)
@@ -229,9 +232,10 @@ df['Order Date (Full date)'] = pd.to_datetime(df['Order Date (Full date)'], form
 df = df.dropna(subset=['Order Date (Full date)'])
 
 # Filter: last N days, not Cancelled, exclude today
+cancel_mask = df['Status Of Order'].astype(str).str.contains('cancel', case=False, na=False)
 df_filtered = df[
     (df['Order Date (Full date)'].dt.date >= start_date) &
-    (df['Status Of Order'].astype(str).str.strip().str.lower() != 'cancelled') &
+    (~cancel_mask) &
     (df['Order Date (Full date)'].dt.date < today)
 ].copy()
 

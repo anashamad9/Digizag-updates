@@ -14,8 +14,8 @@ FALLBACK_AFFILIATE_ID = "1"
 GEO = "no-geo"
 
 # Files (dynamic starts-with prefixes)
-FTU_PREFIX       = "FTU"
-RTU_PREFIX       = "RTU"
+FTU_PREFIX       = "FTU 2"
+RTU_PREFIX       = "RTU 2"
 AFFILIATE_XLSX   = "Offers Coupons.xlsx"
 AFFILIATE_SHEET  = "VogaCloset"
 OUTPUT_CSV       = "voga.csv"

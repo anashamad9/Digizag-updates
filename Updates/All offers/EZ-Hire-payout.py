@@ -381,12 +381,8 @@ df["payout"] = payout.round(2)
 # =======================
 df["geo_out"] = "no-geo"
 
-if status_col:
-    status_series = df[status_col].fillna(STATUS_DEFAULT).astype(str).str.strip()
-    status_series = status_series.replace("", STATUS_DEFAULT)
-    df["status_out"] = status_series
-else:
-    df["status_out"] = STATUS_DEFAULT
+# Always force payout export status to the configured default.
+df["status_out"] = STATUS_DEFAULT
 
 offer_vals = OFFER_ID
 

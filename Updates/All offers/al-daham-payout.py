@@ -6,7 +6,7 @@ import re
 # =======================
 # CONFIG (AL DAHAM)
 # =======================
-days_back = 6
+days_back = 12
 OFFER_ID = 1353
 STATUS_DEFAULT = "pending"
 FALLBACK_AFFILIATE_ID = "1"

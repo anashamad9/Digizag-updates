@@ -8,9 +8,7 @@ from datetime import datetime, timedelta
 import numpy as np
 import pandas as pd
 
-# =======================
-# CONFIGURATION
-# =======================
+
 OFFER_ID = 1327
 GEO = "ksa"
 REVENUE_RATE = 0.10          # 10% of sale amount
@@ -22,7 +20,6 @@ INPUT_RESOURCE = "Digizag_Untitled Page_Table (1).csv"
 OUTPUT_FILENAME = "alokozy.csv"
 DATE_FORMAT = "%m-%d-%Y"
 
-# Environment overrides (optional)
 ENV_SOURCE = os.getenv("ALOKOZY_SOURCE")
 ENV_OUTPUT = os.getenv("ALOKOZY_OUTPUT")
 ENV_DAYS_BACK = os.getenv("ALOKOZY_DAYS_BACK")

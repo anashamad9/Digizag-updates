@@ -6,7 +6,7 @@ import re
 # =======================
 # CONFIG
 # =======================
-days_back = 5
+days_back = 9
 OFFER_ID = 1189
 STATUS_DEFAULT = "pending"
 DEFAULT_PCT_IF_MISSING = 0.0
@@ -191,7 +191,23 @@ def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.Data
     out['code_norm'] = out['code_norm'].astype(str).str.strip()
     out = out[out['code_norm'].str.len() > 0]
 
-    return out.drop_duplicates(subset=['code_norm'], keep='last')
+    # Strip placeholder affiliate IDs so blanks can't overwrite real mappings.
+    def _clean_affiliate(value: object) -> str:
+        if pd.isna(value):
+            return ""
+        s = str(value).strip()
+        if not s or s == "-" or s.lower() in {"nan", "none"}:
+            return ""
+        return s
+
+    out['affiliate_ID'] = out['affiliate_ID'].map(_clean_affiliate)
+
+    # Drop later rows that only carry blanks when a code already has a valid affiliate.
+    has_affiliate = out['affiliate_ID'].ne("")
+    coded_with_aff = set(out.loc[has_affiliate, 'code_norm'])
+    out = out[~(~has_affiliate & out['code_norm'].isin(coded_with_aff))]
+
+    return out.drop_duplicates(subset=['code_norm'], keep='first')
 
 # =======================
 # LOAD REPORT

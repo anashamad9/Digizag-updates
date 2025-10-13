@@ -174,20 +174,38 @@ def get_col(df: pd.DataFrame, candidates: List[str]) -> str:
 def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.DataFrame:
     """Return mapping with columns code_norm, affiliate_ID, type_norm, pct_new, pct_old, fixed_new, fixed_old."""
     df_sheet = pd.read_excel(xlsx_path, sheet_name=sheet_name, dtype=str)
-    cols_lower = {str(c).lower().strip(): c for c in df_sheet.columns}
+    cols_norm = {norm_key(c): c for c in df_sheet.columns}
 
-    def need(name: str) -> str:
-        col = cols_lower.get(name)
+    def find_col(candidates):
+        for cand in candidates:
+            col = cols_norm.get(norm_key(cand))
+            if col:
+                return col
+        return None
+
+    def require_col(label: str, candidates) -> str:
+        col = find_col(candidates)
         if not col:
-            raise ValueError(f"[{sheet_name}] must contain a '{name}' column.")
+            cand_list = ", ".join(f"'{c}'" for c in candidates)
+            raise ValueError(f"[{sheet_name}] must contain a {label} column (tried {cand_list}).")
         return col
 
-    code_col = need('code')
-    aff_col = cols_lower.get('id') or cols_lower.get('affiliate_id')
-    type_col = need('type')
-    payout_col = cols_lower.get('payout')
-    new_col = cols_lower.get('new customer payout')
-    old_col = cols_lower.get('old customer payout')
+    code_col = require_col("'code'", [
+        'code',
+        'coupon',
+        'coupon code',
+        'coupon_code',
+        'couponcode',
+        'promo code',
+        'voucher code',
+        'unnamed: 0',
+        'unnamed:0',
+    ])
+    aff_col = find_col(['id', 'affiliate id', 'affiliate_id'])
+    type_col = require_col("'type'", ['type', 'offer type'])
+    payout_col = find_col(['payout', 'default payout'])
+    new_col = find_col(['new customer payout', 'new payout'])
+    old_col = find_col(['old customer payout', 'old payout', 'existing customer payout'])
 
     if not aff_col:
         raise ValueError(f"[{sheet_name}] must contain an 'ID' (or 'affiliate_ID') column.")

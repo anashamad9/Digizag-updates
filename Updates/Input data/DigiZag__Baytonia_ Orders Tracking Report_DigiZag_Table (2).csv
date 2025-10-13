@@ -16,8 +16,8 @@ Date,Order ID,Coupon,Cutomer Type,Comm,Bidding Status,Total
 "Jul 22, 2025",347780,G95,Returning,0.02,No bidding,4925.22
 "Jun 21, 2025",336653,Z60,New,0.05,Bidding,4889.57
 "Oct 8, 2024",254900,G5,Returning,0.02,Bidding,4689.57
-"Aug 5, 2024",236542,Z31,New,0.05,No bidding,4660.87
 "Oct 10, 2024",255710,Z28,New,0.05,Bidding,4660.87
+"Aug 5, 2024",236542,Z31,New,0.05,No bidding,4660.87
 "Sep 3, 2024",242163,G99,New,0.05,No bidding,4611.3
 "Apr 8, 2025",317036,G55,Returning,0.02,No bidding,4603.48
 "Aug 5, 2024",236532,Z26,Returning,0.02,No bidding,4455.65
@@ -27,8 +27,8 @@ Date,Order ID,Coupon,Cutomer Type,Comm,Bidding Status,Total
 "Sep 28, 2024",250740,Z28,New,0.05,No bidding,4106.96
 "Jun 16, 2025",335391,Z88,New,0.05,No bidding,4069.39
 "Jul 16, 2024",232893,Z66,Returning,0.02,No bidding,3933.91
-"Sep 29, 2024",251243,Z28,Returning,0.02,Bidding,3928.7
 "Aug 30, 2024",241138,G3,New,0.05,No bidding,3928.7
+"Sep 29, 2024",251243,Z28,Returning,0.02,Bidding,3928.7
 "Oct 24, 2024",258342,Z26,New,0.05,No bidding,3862.61
 "Nov 30, 2024",267698,Z39,New,0.05,Bidding,3849.57
 "Feb 12, 2025",297558,Z88,Returning,0.05,No bidding,3846.09
@@ -39,8 +39,8 @@ Date,Order ID,Coupon,Cutomer Type,Comm,Bidding Status,Total
 "Aug 16, 2024",238594,Z62,New,0.05,No bidding,3446.96
 "Nov 30, 2024",267625,Z60,New,0.05,No bidding,3445.22
 "Nov 30, 2024",267761,G95,New,0.05,No bidding,3434.78
-"Sep 5, 2024",242810,Z31,New,0.05,Bidding,3355.65
 "Sep 28, 2024",250790,Z28,Returning,0.02,No bidding,3355.65
+"Sep 5, 2024",242810,Z31,New,0.05,Bidding,3355.65
 "Nov 16, 2024",264552,G5,New,0.05,No bidding,3318.26
 "Sep 7, 2024",243475,Z31,New,0.05,No bidding,3286.69
 "Dec 1, 2024",268055,G5,Returning,0.02,No bidding,3273.04
@@ -126,8 +126,8 @@ Date,Order ID,Coupon,Cutomer Type,Comm,Bidding Status,Total
 "Jun 29, 2025",339249,Z88,New,0.05,No bidding,1977.39
 "Aug 15, 2024",238402,G3,New,0.05,No bidding,1969.57
 "Sep 17, 2024",247200,G5,Returning,0.02,No bidding,1967.83
-"Oct 15, 2024",256654,Z28,New,0.05,Bidding,1965.22
 "Oct 14, 2024",256595,z33,Returning,0.02,No bidding,1965.22
+"Oct 15, 2024",256654,Z28,New,0.05,Bidding,1965.22
 "Aug 25, 2024",239748,Z28,Returning,0.02,Bidding,1964.35
 "Sep 20, 2024",248366,Z28,New,0.05,No bidding,1959.13
 "Aug 3, 2024",236149,Z70,New,0.05,No bidding,1904.35
@@ -173,10 +173,10 @@ Date,Order ID,Coupon,Cutomer Type,Comm,Bidding Status,Total
 "Feb 10, 2025",296670,G5,Returning,0.05,Bidding,1649.57
 "Oct 2, 2024",252793,Z27,New,0.05,No bidding,1637.39
 "Aug 26, 2024",239958,Z27,New,0.05,Bidding,1635.65
-"Dec 31, 2024",280084,G4,New,0.05,No bidding,1629.57
 "Jul 11, 2025",343960,G61,New,0.05,No bidding,1629.57
-"Jan 23, 2025",289031,Z9,Returning,0.05,No bidding,1629.57
+"Dec 31, 2024",280084,G4,New,0.05,No bidding,1629.57
 "Apr 16, 2025",318756,G61,Returning,0.02,No bidding,1629.57
+"Jan 23, 2025",289031,Z9,Returning,0.05,No bidding,1629.57
 "Mar 16, 2025",312279,G44,New,0.05,No bidding,1629.57
 "Nov 4, 2024",261338,G4,New,0.05,Bidding,1620.87
 "Oct 23, 2024",258133,G5,New,0.05,No bidding,1617.39
@@ -186,10 +186,10 @@ Date,Order ID,Coupon,Cutomer Type,Comm,Bidding Status,Total
 "Sep 11, 2024",244749,Z31,New,0.05,No bidding,1606.09
 "Jul 19, 2024",233557,Z38,New,0.05,No bidding,1603.48
 "Oct 23, 2024",258029,G15,New,0.05,No bidding,1592.72
+"Feb 16, 2025",299627,Z7,Returning,0.05,No bidding,1582.61
+"Feb 24, 2025",303436,G5,Returning,0.05,No bidding,1582.61
 "Mar 9, 2025",309556,G95,New,0.05,No bidding,1582.61
 "Feb 28, 2025",306112,G5,New,0.05,Bidding,1582.61
-"Feb 24, 2025",303436,G5,Returning,0.05,No bidding,1582.61
-"Feb 16, 2025",299627,Z7,Returning,0.05,No bidding,1582.61
 "Sep 10, 2024",244642,G5,Returning,0.02,No bidding,1581.74
 "Aug 5, 2024",236456,Z26,Returning,0.02,No bidding,1575.57
 "Sep 8, 2024",243861,Z1,New,0.05,No bidding,1569.57
@@ -197,16 +197,16 @@ Date,Order ID,Coupon,Cutomer Type,Comm,Bidding Status,Total
 "Mar 7, 2025",308909,G95,New,0.05,Bidding,1563.48
 "Feb 2, 2025",293134,G5,Returning,0.05,No bidding,1562.61
 "Sep 29, 2025",381969,G61,New,0.05,No bidding,1554.78
-"Apr 30, 2025",322062,G61,New,0.05,No bidding,1542.61
 "Apr 22, 2025",320264,G5,New,0.05,No bidding,1542.61
+"Apr 30, 2025",322062,G61,New,0.05,No bidding,1542.61
 "Jul 26, 2024",234413,Z88,Returning,0.02,No bidding,1542.09
 "Aug 24, 2025",359686,G95,New,0.05,Bidding,1539.13
 "Sep 2, 2024",null,Z28,Returning,0.02,No bidding,1539.13
-"Aug 3, 2024",236142,Z70,New,0.05,No bidding,1533.91
+"Sep 20, 2024",248195,G3,New,0.05,No bidding,1533.91
+"Sep 22, 2024",249004,G5,New,0.05,No bidding,1533.91
 "Aug 7, 2024",236992,Z27,New,0.05,No bidding,1533.91
 "Aug 1, 2024",235548,Z70,New,0.05,Bidding,1533.91
-"Sep 22, 2024",249004,G5,New,0.05,No bidding,1533.91
-"Sep 20, 2024",248195,G3,New,0.05,No bidding,1533.91
+"Aug 3, 2024",236142,Z70,New,0.05,No bidding,1533.91
 "Mar 14, 2025",311406,G5,Returning,0.02,Bidding,1530.43
 "Oct 3, 2024",253093,Z50,New,0.05,No bidding,1529.57
 "Oct 31, 2024",260416,Z31,New,0.05,No bidding,1526.09
@@ -218,13 +218,13 @@ Date,Order ID,Coupon,Cutomer Type,Comm,Bidding Status,Total
 "Dec 30, 2024",280003,G95,New,0.05,No bidding,1508.7
 "Aug 6, 2024",236789,Z77,New,0.05,No bidding,1500
 "Jul 16, 2024",233164,Z3,New,0.05,Bidding,1495.65
-"Aug 2, 2024",235906,Z70,New,0.05,No bidding,1490.43
 "Jul 31, 2024",235523,Z88,New,0.05,No bidding,1490.43
 "Aug 18, 2024",238889,G3,New,0.05,No bidding,1490.43
+"Aug 2, 2024",235906,Z70,New,0.05,No bidding,1490.43
 "Apr 30, 2025",322128,G44,New,0.05,No bidding,1479.13
 "Feb 20, 2025",301512,Z88,Returning,0.05,No bidding,1475.17
-"Nov 2, 2024",260901,Z28,New,0.05,No bidding,1474.78
 "Sep 29, 2024",251220,Z31,New,0.05,No bidding,1474.78
+"Nov 2, 2024",260901,Z28,New,0.05,No bidding,1474.78
 "Oct 26, 2024",258703,Z1,Returning,0.02,No bidding,1473.04
 "Aug 20, 2024",239073,Z36,Returning,0.02,No bidding,1469.93
 "Aug 19, 2024",238961,G99,New,0.05,No bidding,1469.57
@@ -232,9 +232,9 @@ Date,Order ID,Coupon,Cutomer Type,Comm,Bidding Status,Total
 "Nov 12, 2024",263411,Z31,New,0.05,No bidding,1446.96
 "Dec 22, 2024",275604,G5,New,0.05,No bidding,1446.96
 "Aug 22, 2024",239403,Z88,New,0.05,No bidding,1446.96
+"Sep 27, 2024",250505,G5,New,0.05,Bidding,1442.61
 "Sep 23, 2024",249383,G5,Returning,0.02,Bidding,1442.61
 "Sep 6, 2024",242996,G5,Returning,0.02,No bidding,1442.61
-"Sep 27, 2024",250505,G5,New,0.05,Bidding,1442.61
 "Jul 16, 2024",233005,Z3,New,0.05,Bidding,1442.61
 "Jul 9, 2024",232366,Z50,New,0.05,No bidding,1440.87
 "Jul 31, 2024",235414,Z27,New,0.05,No bidding,1438.26
@@ -252,19 +252,21 @@ Date,Order ID,Coupon,Cutomer Type,Comm,Bidding Status,Total
 "Dec 30, 2024",279627,Z88,New,0.05,No bidding,1377.39
 "Dec 9, 2024",270923,G5,Returning,0.02,Bidding,1373.91
 "Aug 1, 2024",235661,Z70,New,0.05,No bidding,1373.04
+"Oct 9, 2025",388725,G61,New,0.05,No bidding,1368.7
 "Dec 10, 2024",271181,G95,New,0.05,No bidding,1368.7
-"Apr 27, 2025",321402,G61,New,0.05,Bidding,1368.7
 "Jun 19, 2025",336202,Z88,New,0.05,Bidding,1368.7
+"Apr 27, 2025",321402,G61,New,0.05,Bidding,1368.7
+"Oct 8, 2025",388269,G61,New,0.05,No bidding,1365.22
 "Aug 31, 2025",363108,G61,New,0.05,No bidding,1360.87
-"Dec 26, 2024",277391,Z48,Returning,0.02,No bidding,1360
 "Nov 8, 2024",262377,G5,New,0.05,No bidding,1360
+"Dec 26, 2024",277391,Z48,Returning,0.02,No bidding,1360
 "Oct 2, 2024",252707,G5,Returning,0.02,No bidding,1359.99
-"Jun 1, 2025",331234,Z50,Returning,0.02,No bidding,1359.13
 "Oct 16, 2024",256852,G5,New,0.05,No bidding,1359.13
+"Jun 1, 2025",331234,Z50,Returning,0.02,No bidding,1359.13
 "Dec 15, 2024",273261,G5,New,0.05,No bidding,1356.52
 "Dec 20, 2024",274938,G15,New,0.05,Bidding,1356.52
-"Sep 2, 2024",null,Z29,New,0.05,No bidding,1355.65
 "Sep 30, 2024",251872,Z60,New,0.05,No bidding,1355.65
+"Sep 2, 2024",null,Z29,New,0.05,No bidding,1355.65
 "Jul 16, 2024",232862,Z40,New,0.05,No bidding,1347.83
 "Dec 30, 2024",279626,G5,New,0.05,Bidding,1347.83
 "Jul 22, 2024",233961,Z70,New,0.05,No bidding,1342.61
@@ -275,16 +277,16 @@ Date,Order ID,Coupon,Cutomer Type,Comm,Bidding Status,Total
 "Aug 19, 2024",238912,Z27,New,0.05,No bidding,1321.74
 "Aug 25, 2024",239773,G66,New,0.05,Bidding,1319.13
 "May 14, 2025",326174,G61,New,0.05,No bidding,1313.04
+"Mar 9, 2025",309601,G5,New,0.05,No bidding,1313.04
 "Mar 12, 2025",310582,G5,New,0.05,No bidding,1313.04
 "Aug 17, 2024",238754,G99,New,0.05,No bidding,1313.04
-"Mar 9, 2025",309601,G5,New,0.05,No bidding,1313.04
 "Oct 4, 2024",253533,Z27,Returning,0.02,Bidding,1303.48
 "Sep 6, 2024",243209,Z33,New,0.05,No bidding,1303.48
 "Feb 5, 2025",294537,G5,Returning,0.05,No bidding,1301.74
 "Jul 28, 2024",234863,G1,Returning,0.02,No bidding,1295.65
-"Jun 10, 2025",333640,Z38,New,0.05,No bidding,1281.74
 "May 3, 2025",323033,G61,New,0.05,No bidding,1281.74
 "Jul 29, 2025",350084,G15,New,0.05,No bidding,1281.74
+"Jun 10, 2025",333640,Z38,New,0.05,No bidding,1281.74
 "Mar 6, 2025",308733,Z66,New,0.05,Bidding,1281.74
 "Nov 11, 2024",263290,G5,New,0.05,No bidding,1273.04
 "Aug 27, 2024",240156,Z35,New,0.05,Bidding,1273.04
@@ -318,8 +320,8 @@ Date,Order ID,Coupon,Cutomer Type,Comm,Bidding Status,Total
 "Oct 17, 2024",256979,G3,New,0.05,No bidding,1154.78
 "Mar 22, 2025",314207,G5,New,0.05,No bidding,1149.57
 "Jan 10, 2025",285058,G5,New,0.05,No bidding,1147.83
-"Mar 14, 2025",311400,G55,New,0.05,No bidding,1146.09
 "Aug 15, 2024",238456,Z28,Returning,0.02,No bidding,1146.09
+"Mar 14, 2025",311400,G55,New,0.05,No bidding,1146.09
 "Feb 23, 2025",303125,G5,Returning,0.02,Bidding,1145.22
 "Aug 10, 2024",237518,Z27,Returning,0.02,No bidding,1143.48
 "Dec 28, 2024",278298,Z48,Returning,0.02,No bidding,1135.65
@@ -328,15 +330,15 @@ Date,Order ID,Coupon,Cutomer Type,Comm,Bidding Status,Total
 "Nov 29, 2024",267276,G15,New,0.05,No bidding,1125.22
 "Oct 15, 2024",256681,Z1,New,0.05,No bidding,1125.22
 "Jan 28, 2025",290706,G5,Returning,0.05,No bidding,1117.31
-"Jan 3, 2025",282136,G5,New,0.05,No bidding,1107.83
 "Jan 9, 2025",284907,G5,New,0.05,No bidding,1107.83
-"Sep 14, 2024",245869,g3,New,0.05,No bidding,1104.35
+"Jan 3, 2025",282136,G5,New,0.05,No bidding,1107.83
 "Aug 28, 2024",240412,G5,New,0.05,No bidding,1104.35
+"Sep 14, 2024",245869,g3,New,0.05,No bidding,1104.35
 "Dec 30, 2024",279929,G5,Returning,0.02,No bidding,1103.48
 "Aug 28, 2024",240653,Z31,New,0.05,No bidding,1100.36
 "Sep 30, 2024",251613,Z88,Returning,0.02,No bidding,1100.31
-"Oct 23, 2024",258091,G5,New,0.05,No bidding,1099.13
 "Jan 3, 2025",282150,Z40,New,0.05,No bidding,1099.13
+"Oct 23, 2024",258091,G5,New,0.05,No bidding,1099.13
 "Nov 18, 2024",264991,G5,New,0.05,Bidding,1097.39
 "Sep 17, 2024",247052,Z26,New,0.05,No bidding,1094.78
 "Aug 3, 2024",236005,Z88,New,0.05,No bidding,1089.1
@@ -350,8 +352,8 @@ Date,Order ID,Coupon,Cutomer Type,Comm,Bidding Status,Total
 "Sep 21, 2024",248636,Z28,Returning,0.02,Bidding,1042.61
 "Jul 17, 2024",233420,Z40,Returning,0.02,Bidding,1033.04
 "Dec 7, 2024",270371,G5,Returning,0.02,No bidding,1026.96
-"Sep 30, 2024",251609,G4,New,0.05,Bidding,1026.09
 "Jul 28, 2024",234831,Z60,New,0.05,No bidding,1026.09
+"Sep 30, 2024",251609,G4,New,0.05,Bidding,1026.09
 "Jan 5, 2025",283204,G5,Returning,0.02,No bidding,1024.64
 "Dec 31, 2024",280208,G5,New,0.05,Bidding,1020.87
 "Sep 18, 2025",373873,G9,New,0.05,No bidding,1017.39
@@ -359,18 +361,18 @@ Date,Order ID,Coupon,Cutomer Type,Comm,Bidding Status,Total
 "Dec 14, 2024",272953,Z7,New,0.05,No bidding,1012.17
 "Jul 30, 2024",235245,Z66,New,0.05,Bidding,1010.43
 "Nov 30, 2024",267641,G5,New,0.05,No bidding,1008.7
-"Sep 10, 2024",244389,G3,New,0.05,No bidding,1007.83
 "Aug 28, 2024",240603,Z27,Returning,0.02,No bidding,1007.83
 "Sep 1, 2024",241557,Z28,New,0.05,No bidding,1007.83
+"Sep 10, 2024",244389,G3,New,0.05,No bidding,1007.83
 "Sep 14, 2024",245988,Z53,New,0.05,No bidding,1001.74
 "Jul 5, 2024",231524,G15,New,0.05,No bidding,989.57
 "Oct 8, 2024",255179,G3,Returning,0.02,No bidding,980.87
 "Aug 19, 2024",238941,G3,New,0.05,No bidding,979.13
 "Sep 27, 2024",250396,Z28,New,0.05,No bidding,974.78
-"Sep 28, 2024",250847,G5,New,0.05,No bidding,969.57
 "Feb 25, 2025",303883,G5,Returning,0.05,Bidding,969.57
-"May 1, 2025",322447,G5,New,0.05,No bidding,968.7
+"Sep 28, 2024",250847,G5,New,0.05,No bidding,969.57
 "Jul 9, 2024",232261,G3,Returning,0.02,No bidding,968.7
+"May 1, 2025",322447,G5,New,0.05,No bidding,968.7
 "Sep 30, 2024",251617,Z27,New,0.05,No bidding,968.7
 "Jul 25, 2024",234359,G15,New,0.05,Bidding,968.57
 "Dec 6, 2024",269748,G15,New,0.05,Bidding,967.83
@@ -380,8 +382,8 @@ Date,Order ID,Coupon,Cutomer Type,Comm,Bidding Status,Total
 "Mar 3, 2025",307395,G5,New,0.05,No bidding,949.57
 "Sep 13, 2024",245693,Z27,New,0.05,No bidding,943.48
 "Dec 11, 2024",271389,G5,New,0.05,No bidding,942.61
-"Mar 3, 2025",307386,G5,New,0.05,Bidding,933.91
 "Feb 18, 2025",300532,Z66,Returning,0.05,Bidding,933.91
+"Mar 3, 2025",307386,G5,New,0.05,Bidding,933.91
 "Jan 29, 2025",291006,Z48,Returning,0.05,No bidding,933.04
 "Oct 30, 2024",260027,Z66,Returning,0.02,No bidding,933.04
 "Nov 12, 2024",263481,Z1,Returning,0.02,No bidding,929.57
@@ -392,16 +394,16 @@ Date,Order ID,Coupon,Cutomer Type,Comm,Bidding Status,Total
 "Sep 24, 2024",249564,Z26,New,0.05,No bidding,925.22
 "Oct 1, 2024",252348,Z31,Returning,0.02,Bidding,925.22
 "Oct 6, 2024",254273,G5,New,0.05,No bidding,925.22
-"Sep 2, 2024",null,G3,New,0.05,No bidding,925.22
 "Oct 1, 2024",252452,Z28,Returning,0.02,Bidding,925.22
+"Sep 2, 2024",null,G3,New,0.05,No bidding,925.22
 "Dec 5, 2024",269291,G5,New,0.05,No bidding,924.35
 "Apr 5, 2025",316460,Z21,New,0.05,No bidding,923.12
 "Oct 14, 2024",256573,Z28,New,0.05,No bidding,921.74
 "Dec 7, 2024",270408,G5,New,0.05,No bidding,920
 "Sep 11, 2024",244978,Z31,Returning,0.02,No bidding,918.26
 "Oct 5, 2024",253976,G5,New,0.05,Bidding,911.3
-"Jul 30, 2024",235174,Z10,New,0.05,No bidding,908.7
 "Jul 17, 2024",233412,Z3,Returning,0.02,No bidding,908.7
+"Jul 30, 2024",235174,Z10,New,0.05,No bidding,908.7
 "Jul 30, 2024",235265,Z66,New,0.05,Bidding,904.64
 "Aug 3, 2024",236091,Z70,Returning,0.02,No bidding,901.74
 "Jun 22, 2025",336930,Z66,New,0.05,No bidding,899.13
@@ -412,39 +414,39 @@ Date,Order ID,Coupon,Cutomer Type,Comm,Bidding Status,Total
 "Apr 13, 2025",318091,G5,New,0.05,No bidding,873.04
 "Sep 12, 2024",245384,Z33,Returning,0.02,Bidding,872.17
 "Mar 6, 2025",308495,G5,New,0.05,No bidding,870.43
-"Sep 3, 2024",241940,G5,New,0.05,No bidding,868.7
 "Aug 4, 2025",352829,G15,Returning,0.02,Bidding,868.7
+"Sep 3, 2024",241940,G5,New,0.05,No bidding,868.7
 "Jan 1, 2025",280745,Z35,New,0.05,Bidding,865.22
 "Sep 16, 2024",246707,Z28,New,0.05,No bidding,854.78
-"Mar 11, 2025",310320,Z66,Returning,0.02,No bidding,849.57
 "Mar 5, 2025",308342,G15,New,0.05,No bidding,849.57
+"Mar 11, 2025",310320,Z66,Returning,0.02,No bidding,849.57
 "Jan 1, 2025",280744,G95,New,0.05,No bidding,846.96
-"Jan 3, 2025",281870,G5,New,0.05,Bidding,846.96
-"Jul 30, 2025",350687,G95,New,0.05,No bidding,846.96
 "May 15, 2025",326509,G61,New,0.05,No bidding,846.96
-"Jul 28, 2025",349814,G95,New,0.05,No bidding,846.96
+"Jul 30, 2025",350687,G95,New,0.05,No bidding,846.96
+"Jan 3, 2025",281870,G5,New,0.05,Bidding,846.96
 "Apr 11, 2025",317581,G5,New,0.05,No bidding,846.96
+"Jul 28, 2025",349814,G95,New,0.05,No bidding,846.96
 "Nov 16, 2024",264340,G5,Returning,0.02,No bidding,845.22
 "Aug 30, 2025",362315,G61,New,0.05,No bidding,843.48
 "Sep 8, 2024",243782,Z28,New,0.05,No bidding,841.87
 "Sep 11, 2024",244804,Z26,New,0.05,No bidding,839.13
 "Oct 29, 2024",259706,G15,New,0.05,No bidding,838.26
-"Sep 17, 2024",247154,Z27,New,0.05,No bidding,838.26
 "Sep 17, 2024",247115,G5,New,0.05,No bidding,838.26
 "Sep 15, 2024",246350,Z26,New,0.05,No bidding,838.26
-"Sep 14, 2024",246177,G3,New,0.05,Bidding,838.26
 "Dec 27, 2024",278110,G5,New,0.05,No bidding,838.26
 "Dec 16, 2024",273692,G5,Returning,0.02,No bidding,838.26
 "Sep 11, 2024",245059,G5,New,0.05,No bidding,838.26
-"Sep 15, 2024",246272,G5,New,0.05,Bidding,838.26
+"Nov 2, 2024",260743,Z66,New,0.05,No bidding,838.26
+"Sep 17, 2024",247154,Z27,New,0.05,No bidding,838.26
 "Sep 7, 2024",243552,G15,New,0.05,No bidding,838.26
+"Sep 15, 2024",246272,G5,New,0.05,Bidding,838.26
 "Nov 10, 2024",262921,G5,Returning,0.02,Bidding,838.26
+"Oct 31, 2024",260394,Z66,New,0.05,No bidding,838.26
 "Nov 11, 2024",263147,Z28,New,0.05,Bidding,838.26
 "Dec 25, 2024",276859,G5,New,0.05,No bidding,838.26
+"Sep 14, 2024",246177,G3,New,0.05,Bidding,838.26
 "Nov 9, 2024",262531,G5,New,0.05,No bidding,838.26
-"Oct 31, 2024",260394,Z66,New,0.05,No bidding,838.26
 "Sep 9, 2024",244101,Z77,New,0.05,No bidding,838.26
-"Nov 2, 2024",260743,Z66,New,0.05,No bidding,838.26
 "Jul 11, 2025",343944,G61,New,0.05,No bidding,836.52
 "Aug 25, 2024",239790,Z88,Returning,0.02,No bidding,832.23
 "Aug 5, 2024",236496,z27,New,0.05,No bidding,829.57
@@ -458,13 +460,13 @@ Date,Order ID,Coupon,Cutomer Type,Comm,Bidding Status,Total
 "Jul 16, 2024",232749,G2,New,0.05,No bidding,806.96
 "Jun 1, 2025",331229,G5,Returning,0.02,No bidding,803.48
 "Mar 14, 2025",311448,G5,New,0.05,No bidding,801.74
-"Nov 8, 2024",262417,Z28,New,0.05,Bidding,800
 "Nov 19, 2024",265234,Z60,New,0.05,No bidding,800
+"Nov 8, 2024",262417,Z28,New,0.05,Bidding,800
 "Aug 18, 2024",238805,Z1,New,0.05,No bidding,799.13
 "Feb 11, 2025",297115,G5,Returning,0.05,No bidding,794.79
-"Aug 7, 2024",236877,Z33,New,0.05,No bidding,794.78
 "Aug 2, 2024",235975,Z27,New,0.05,Bidding,794.78
 "Oct 27, 2024",258994,G5,New,0.05,No bidding,794.78
+"Aug 7, 2024",236877,Z33,New,0.05,No bidding,794.78
 "Feb 28, 2025",305773,G5,New,0.05,Bidding,793.91
 "Oct 7, 2024",254725,Z28,Returning,0.02,No bidding,789.57
 "Aug 7, 2024",236967,Z33,Returning,0.02,Bidding,787.57
@@ -476,20 +478,20 @@ Date,Order ID,Coupon,Cutomer Type,Comm,Bidding Status,Total
 "Aug 25, 2024",239680,Z1,New,0.05,Bidding,777.39
 "Oct 1, 2024",252204,Z33,New,0.05,Bidding,776.52
 "Aug 23, 2024",239449,G5,New,0.05,Bidding,773.91
-"Aug 8, 2024",237241,Z1,Returning,0.02,No bidding,771.3
 "Oct 20, 2024",257506,G5,New,0.05,No bidding,771.3
+"Aug 8, 2024",237241,Z1,Returning,0.02,No bidding,771.3
 "Aug 28, 2024",240473,Z26,New,0.05,Bidding,769.57
 "Jan 28, 2025",290693,Z7,Returning,0.05,No bidding,760
-"Nov 8, 2024",262312,Z52,Returning,0.02,No bidding,760
 "Jul 28, 2025",349674,G44,New,0.05,Bidding,760
+"Nov 8, 2024",262312,Z52,Returning,0.02,No bidding,760
 "Oct 3, 2024",253163,Z28,New,0.05,No bidding,757.39
 "Aug 5, 2025",352995,G61,New,0.05,Bidding,756.52
 "Jul 25, 2024",234323,Z33,New,0.05,No bidding,752.17
-"Nov 28, 2024",267028,Z39,New,0.05,Bidding,751.3
 "Sep 16, 2024",246604,G5,New,0.05,No bidding,751.3
+"Nov 28, 2024",267028,Z39,New,0.05,Bidding,751.3
 "Aug 7, 2024",237019,Z27,New,0.05,No bidding,750.43
-"Nov 2, 2024",260977,Z28,Returning,0.02,No bidding,750.43
 "Oct 23, 2024",258137,Z31,New,0.05,No bidding,750.43
+"Nov 2, 2024",260977,Z28,Returning,0.02,No bidding,750.43
 "Sep 7, 2024",243259,G5,New,0.05,No bidding,747.83
 "Mar 11, 2025",310402,G5,New,0.05,No bidding,747.83
 "Sep 3, 2024",242218,Z27,New,0.05,No bidding,746.96
@@ -508,9 +510,9 @@ Date,Order ID,Coupon,Cutomer Type,Comm,Bidding Status,Total
 "Sep 13, 2024",245501,G5,New,0.05,No bidding,722.61
 "Apr 27, 2025",321153,G5,New,0.05,Bidding,721.74
 "Nov 20, 2024",265293,Z7,New,0.05,No bidding,721.52
-"Nov 9, 2024",262741,Z31,New,0.05,No bidding,719.13
 "Nov 30, 2024",267658,G5,New,0.05,No bidding,719.13
 "Nov 29, 2024",267213,Z39,New,0.05,No bidding,719.13
+"Nov 9, 2024",262741,Z31,New,0.05,No bidding,719.13
 "Dec 22, 2024",275769,G5,Returning,0.02,Bidding,718.26
 "Sep 27, 2025",380247,G9,New,0.05,No bidding,717.39
 "Dec 27, 2024",277897,G1,New,0.05,No bidding,711.3
@@ -519,28 +521,29 @@ Date,Order ID,Coupon,Cutomer Type,Comm,Bidding Status,Total
 "Dec 1, 2024",267958,Z7,Returning,0.02,No bidding,707.83
 "Apr 8, 2025",317053,G61,New,0.05,No bidding,706.96
 "Sep 9, 2024",243965,Z53,New,0.05,Bidding,704.35
-"Nov 20, 2024",265395,Z7,New,0.05,No bidding,699.13
 "Aug 9, 2024",237441,Z27,New,0.05,Bidding,699.13
+"Nov 20, 2024",265395,Z7,New,0.05,No bidding,699.13
 "Sep 10, 2024",244449,Z60,New,0.05,Bidding,694.78
 "Jan 29, 2025",291022,G5,Returning,0.05,No bidding,693.04
 "Feb 13, 2025",297979,G4,Returning,0.05,No bidding,693.04
 "Nov 3, 2024",261086,Z26,Returning,0.02,No bidding,690.43
 "Mar 3, 2025",307352,G5,New,0.05,No bidding,682.61
-"Jul 4, 2025",341286,G61,Returning,0.02,No bidding,679.13
 "Dec 10, 2024",271228,G5,New,0.05,No bidding,679.13
+"Jul 4, 2025",341286,G61,Returning,0.02,No bidding,679.13
 "Sep 23, 2024",249328,Z28,New,0.05,No bidding,674.78
 "Jul 30, 2024",235252,Z70,New,0.05,No bidding,673.91
 "Jul 17, 2024",233390,Z1,New,0.05,Bidding,673.91
 "Jan 1, 2025",281201,G5,New,0.05,No bidding,673.04
-"Jul 7, 2025",342432,G9,New,0.05,Bidding,673.04
 "Sep 12, 2024",245247,G5,New,0.05,No bidding,673.04
-"Dec 11, 2024",271455,G5,Returning,0.02,No bidding,673.04
-"Jun 25, 2025",337561,G61,Returning,0.02,No bidding,673.04
 "Mar 15, 2025",311585,Z75,New,0.05,No bidding,673.04
-"Apr 1, 2025",315749,G5,New,0.05,Bidding,673.04
-"Aug 27, 2024",240097,G5,New,0.05,No bidding,673.04
-"Jul 24, 2025",348426,G61,New,0.05,Bidding,673.04
+"Dec 11, 2024",271455,G5,Returning,0.02,No bidding,673.04
 "Feb 21, 2025",301665,G5,Returning,0.05,Bidding,673.04
+"Jul 24, 2025",348426,G61,New,0.05,Bidding,673.04
+"Apr 1, 2025",315749,G5,New,0.05,Bidding,673.04
+"Jun 25, 2025",337561,G61,Returning,0.02,No bidding,673.04
+"Jul 7, 2025",342432,G9,New,0.05,Bidding,673.04
+"Aug 27, 2024",240097,G5,New,0.05,No bidding,673.04
+"Oct 8, 2025",388268,G61,New,0.05,No bidding,669.57
 "Sep 21, 2025",376136,G5,New,0.05,No bidding,669.57
 "Feb 20, 2025",301417,G5,Returning,0.05,No bidding,665.22
 "Aug 1, 2024",235625,Z70,New,0.05,No bidding,664.35
@@ -588,28 +591,28 @@ Date,Order ID,Coupon,Cutomer Type,Comm,Bidding Status,Total
 "Sep 8, 2024",243768,Z27,New,0.05,Bidding,595.65
 "Dec 15, 2024",273036,G5,New,0.05,No bidding,594.71
 "Nov 11, 2024",263146,G5,New,0.05,Bidding,589.57
-"Aug 17, 2025",357185,G95,Returning,0.02,No bidding,586.09
-"Jun 29, 2025",339061,G5,New,0.05,Bidding,586.09
-"Mar 5, 2025",308029,Z66,Returning,0.02,No bidding,586.09
 "Nov 23, 2024",265909,G95,New,0.05,No bidding,586.09
 "Nov 15, 2024",264049,G95,Returning,0.05,No bidding,586.09
+"Aug 17, 2025",357185,G95,Returning,0.02,No bidding,586.09
+"Jun 29, 2025",339061,G5,New,0.05,Bidding,586.09
+"May 6, 2025",323875,G5,New,0.05,Bidding,586.09
 "Mar 13, 2025",310844,G95,New,0.05,No bidding,586.09
 "Mar 10, 2025",309946,G61,New,0.05,No bidding,586.09
-"May 6, 2025",323875,G5,New,0.05,Bidding,586.09
+"Mar 5, 2025",308029,Z66,Returning,0.02,No bidding,586.09
 "Sep 4, 2025",365335,Z1,New,0.05,Bidding,582.61
 "Aug 12, 2025",355469,Z55,New,0.05,Bidding,582.61
 "Nov 25, 2024",266372,G5,New,0.05,No bidding,581.74
 "Oct 28, 2024",259444,G5,Returning,0.02,No bidding,581.74
 "Aug 10, 2024",237571,Z38,New,0.05,No bidding,578.26
-"Oct 18, 2024",257184,G5,New,0.05,No bidding,577.39
 "Jul 1, 2025",340238,Z55,New,0.05,Bidding,577.39
 "Aug 29, 2024",240854,G3,New,0.05,No bidding,577.39
+"Oct 18, 2024",257184,G5,New,0.05,No bidding,577.39
 "Sep 19, 2024",247935,G5,New,0.05,No bidding,576.52
 "Sep 30, 2024",251799,G3,New,0.05,No bidding,574.37
-"Aug 4, 2024",236387,Z27,New,0.05,Bidding,573.91
-"Mar 23, 2025",314432,G5,Returning,0.02,No bidding,573.91
 "Oct 14, 2024",256525,Z19,New,0.05,No bidding,573.91
+"Mar 23, 2025",314432,G5,Returning,0.02,No bidding,573.91
 "Mar 31, 2025",315570,G61,New,0.05,No bidding,573.91
+"Aug 4, 2024",236387,Z27,New,0.05,Bidding,573.91
 "Sep 19, 2024",247668,Z28,New,0.05,Bidding,573.04
 "Aug 8, 2024",237219,Z53,New,0.05,No bidding,573.04
 "Oct 11, 2024",255850,Z28,New,0.05,No bidding,573.04
@@ -627,8 +630,8 @@ Date,Order ID,Coupon,Cutomer Type,Comm,Bidding Status,Total
 "Jul 24, 2024",234144,Z88,Returning,0.02,No bidding,559.13
 "Jul 28, 2024",234811,Z77,New,0.05,No bidding,555.65
 "Oct 1, 2024",252262,Z27,New,0.05,Bidding,553.91
-"Sep 21, 2025",376062,Z40,New,0.05,Bidding,552.17
 "Jul 29, 2025",350009,Z55,New,0.05,Bidding,552.17
+"Sep 21, 2025",376062,Z40,New,0.05,Bidding,552.17
 "Mar 26, 2025",315024,G5,Returning,0.02,Bidding,551.3
 "Apr 11, 2025",317569,G61,New,0.05,No bidding,551.3
 "Jan 1, 2025",280980,Z35,Returning,0.02,Bidding,550.43
@@ -641,13 +644,13 @@ Date,Order ID,Coupon,Cutomer Type,Comm,Bidding Status,Total
 "Sep 15, 2024",246335,G5,New,0.05,No bidding,539.13
 "Jul 16, 2024",232741,G1,New,0.05,No bidding,539.13
 "May 14, 2025",326122,G5,New,0.05,No bidding,537.39
-"Aug 31, 2024",241329,G5,New,0.05,No bidding,536.52
 "Dec 11, 2024",271495,g4,New,0.05,Bidding,536.52
+"Aug 31, 2024",241329,G5,New,0.05,No bidding,536.52
 "Nov 24, 2024",266083,G5,New,0.05,No bidding,536.52
-"Nov 16, 2024",264415,G5,New,0.05,Bidding,536.52
 "Feb 24, 2025",303389,G95,Returning,0.05,Bidding,536.52
-"Jul 8, 2025",343122,G61,New,0.05,Bidding,533.91
+"Nov 16, 2024",264415,G5,New,0.05,Bidding,536.52
 "Jan 2, 2025",281591,G5,New,0.05,No bidding,533.91
+"Jul 8, 2025",343122,G61,New,0.05,Bidding,533.91
 "Jul 16, 2024",232830,z38,New,0.05,No bidding,533.04
 "Dec 24, 2024",276526,Z39,New,0.05,Bidding,532.17
 "Sep 14, 2024",246045,Z60,New,0.05,No bidding,530.43
@@ -767,12 +770,12 @@ Date,Order ID,Coupon,Cutomer Type,Comm,Bidding Status,Total
 "Sep 18, 2024",247430,G5,New,0.05,Bidding,437.39
 "Aug 9, 2024",237417,Z26,New,0.05,No bidding,436.52
 "Mar 19, 2025",313179,G61,New,0.05,No bidding,436.52
+"Apr 3, 2025",315974,Z40,New,0.05,Bidding,433.91
+"May 11, 2025",325536,G55,New,0.05,Bidding,433.91
 "Jul 2, 2025",340554,G15,New,0.05,No bidding,433.91
 "Jun 28, 2025",338667,G9,New,0.05,Bidding,433.91
-"Apr 3, 2025",315974,Z40,New,0.05,Bidding,433.91
 "Apr 27, 2025",321211,G5,New,0.05,No bidding,433.91
 "Apr 19, 2025",319443,G5,New,0.05,No bidding,433.91
-"May 11, 2025",325536,G55,New,0.05,Bidding,433.91
 "Jul 1, 2025",340199,G15,New,0.05,No bidding,433.91
 "Aug 23, 2024",239430,z33,New,0.05,No bidding,433.04
 "Sep 10, 2024",244416,Z28,New,0.05,Bidding,433.04
@@ -812,15 +815,16 @@ Date,Order ID,Coupon,Cutomer Type,Comm,Bidding Status,Total
 "Nov 29, 2024",267214,G95,New,0.05,No bidding,413.04
 "Jan 27, 2025",289967,G5,Returning,0.05,Bidding,412.17
 "Jan 26, 2025",289764,G5,Returning,0.05,No bidding,412.17
-"Jun 10, 2025",333504,G5,New,0.05,No bidding,412.17
-"Jan 1, 2025",280758,G5,New,0.05,No bidding,412.17
+"Jun 11, 2025",333831,G5,New,0.05,No bidding,412.17
 "Mar 27, 2025",315129,G5,New,0.05,No bidding,412.17
+"Jan 1, 2025",280758,G5,New,0.05,No bidding,412.17
 "Dec 25, 2024",277125,G5,New,0.05,No bidding,412.17
 "Dec 24, 2024",276450,Z39,New,0.05,Bidding,412.17
 "Aug 16, 2024",238556,Z27,New,0.05,No bidding,412.17
 "Dec 17, 2024",274015,G5,New,0.05,No bidding,412.17
 "Dec 7, 2024",270290,G15,Returning,0.02,No bidding,412.17
 "Nov 20, 2024",265329,G95,New,0.05,Bidding,412.17
+"Jun 14, 2025",334708,G5,New,0.05,No bidding,412.17
 "Jul 26, 2025",348994,Z5,New,0.05,No bidding,412.17
 "Nov 6, 2024",261910,G5,New,0.05,Bidding,412.17
 "Nov 2, 2024",261052,g5,New,0.05,No bidding,412.17
@@ -830,24 +834,23 @@ Date,Order ID,Coupon,Cutomer Type,Comm,Bidding Status,Total
 "Apr 29, 2025",321844,G15,Returning,0.02,Bidding,412.17
 "Apr 25, 2025",320784,G5,Returning,0.02,No bidding,412.17
 "Apr 4, 2025",316211,G5,New,0.05,No bidding,412.17
+"Jun 10, 2025",333504,G5,New,0.05,No bidding,412.17
 "Jun 9, 2025",333141,G5,New,0.05,Bidding,412.17
-"Jun 14, 2025",334708,G5,New,0.05,No bidding,412.17
-"Jun 11, 2025",333831,G5,New,0.05,No bidding,412.17
 "Feb 6, 2025",294941,Z7,Returning,0.05,Bidding,411.3
 "May 28, 2025",329901,G61,New,0.05,No bidding,411.3
 "Aug 25, 2024",239766,Z88,New,0.05,No bidding,410.43
-"Dec 31, 2024",280202,G5,New,0.05,No bidding,408.7
 "Oct 1, 2025",383789,Z1,Returning,0.02,No bidding,408.7
+"Dec 31, 2024",280202,G5,New,0.05,No bidding,408.7
+"Jul 31, 2025",350957,G44,New,0.05,No bidding,408.7
 "Sep 18, 2025",373599,Z85,Returning,0.02,No bidding,408.7
 "Aug 6, 2024",236806,Z33,New,0.05,Bidding,408.7
-"Jul 31, 2025",350957,G44,New,0.05,No bidding,408.7
 "Feb 26, 2025",304668,G5,Returning,0.05,No bidding,408.7
 "Sep 22, 2024",248878,z26,New,0.05,No bidding,407.83
-"Sep 4, 2024",242349,Z66,New,0.05,No bidding,407.83
 "Nov 9, 2024",262781,G5,New,0.05,Bidding,407.83
 "Oct 28, 2024",259510,Z31,Returning,0.02,No bidding,407.83
 "Sep 1, 2024",241581,G5,New,0.05,No bidding,407.83
 "Aug 31, 2024",241267,Z27,New,0.05,Bidding,407.83
+"Sep 4, 2024",242349,Z66,New,0.05,No bidding,407.83
 "Sep 28, 2024",250707,Z31,New,0.05,No bidding,407.83
 "Apr 10, 2025",317365,G5,New,0.05,No bidding,406.78
 "Feb 12, 2025",297441,G5,Returning,0.05,No bidding,405.26
@@ -904,8 +907,8 @@ Date,Order ID,Coupon,Cutomer Type,Comm,Bidding Status,Total
 "Sep 8, 2024",243889,G5,New,0.05,No bidding,367.66
 "Sep 8, 2024",243867,Z1,New,0.05,Bidding,365.22
 "Jul 28, 2025",349656,G44,New,0.05,Bidding,363.48
-"Dec 2, 2024",268293,Z7,New,0.05,No bidding,361.74
 "Oct 22, 2024",257932,Z28,New,0.05,Bidding,361.74
+"Dec 2, 2024",268293,Z7,New,0.05,No bidding,361.74
 "Apr 24, 2025",320645,G55,New,0.05,No bidding,361.66
 "Jun 3, 2025",331851,G5,New,0.05,No bidding,361.43
 "Oct 6, 2024",254296,G5,New,0.05,No bidding,357.39
@@ -976,14 +979,12 @@ Date,Order ID,Coupon,Cutomer Type,Comm,Bidding Status,Total
 "Sep 26, 2024",250012,G5,New,0.05,No bidding,319.13
 "Jan 29, 2025",290962,G15,Returning,0.05,Bidding,319.13
 "Jan 10, 2025",285028,G5,Returning,0.02,No bidding,319.13
-"Jul 10, 2025",343862,z55,New,0.05,Bidding,319.13
 "Sep 15, 2024",246515,Z26,New,0.05,No bidding,319.13
 "Dec 31, 2024",280261,G5,New,0.05,No bidding,319.13
 "Sep 14, 2024",246095,G5,New,0.05,No bidding,319.13
 "Dec 8, 2024",270556,Z66,New,0.05,No bidding,319.13
 "Dec 8, 2024",270624,Z33,Returning,0.02,No bidding,319.13
 "Jul 30, 2024",235320,Z70,New,0.05,No bidding,319.13
-"Jul 29, 2025",350252,G61,New,0.05,No bidding,319.13
 "Aug 15, 2025",356591,G61,Returning,0.02,No bidding,319.13
 "Sep 5, 2024",242735,G3,New,0.05,Bidding,319.13
 "Jun 21, 2025",336698,G61,New,0.05,No bidding,319.13
@@ -992,9 +993,11 @@ Date,Order ID,Coupon,Cutomer Type,Comm,Bidding Status,Total
 "May 15, 2025",326397,Z88,Returning,0.02,No bidding,319.13
 "May 11, 2025",325401,G5,New,0.05,Bidding,319.13
 "Apr 28, 2025",321641,G44,New,0.05,Bidding,319.13
+"Jul 10, 2025",343862,z55,New,0.05,Bidding,319.13
 "Apr 10, 2025",317441,G5,New,0.05,Bidding,319.13
 "Apr 5, 2025",316437,G10,New,0.05,No bidding,319.13
 "Mar 17, 2025",312674,G5,New,0.05,Bidding,319.13
+"Jul 29, 2025",350252,G61,New,0.05,No bidding,319.13
 "Aug 3, 2024",236146,G3,Returning,0.02,No bidding,319.13
 "Aug 16, 2024",238617,Z33,Returning,0.02,No bidding,318.26
 "Dec 20, 2024",274927,G5,New,0.05,Bidding,318.26
@@ -1024,9 +1027,9 @@ Date,Order ID,Coupon,Cutomer Type,Comm,Bidding Status,Total
 "Aug 23, 2024",239462,G5,New,0.05,Bidding,300
 "Feb 1, 2025",292498,G4,Returning,0.02,Bidding,297.39
 "Dec 14, 2024",272930,G5,New,0.05,Bidding,296.52
+"Nov 5, 2024",261688,G5,New,0.05,Bidding,296.52
 "May 27, 2025",329622,G5,New,0.05,No bidding,296.52
 "May 25, 2025",329203,G5,New,0.05,No bidding,296.52
-"Nov 5, 2024",261688,G5,New,0.05,Bidding,296.52
 "Oct 13, 2024",256283,Z88,New,0.05,Bidding,296.52
 "Feb 14, 2025",298827,G5,Returning,0.05,Bidding,296.52
 "Jul 18, 2024",233511,Z66,New,0.05,No bidding,295.65
@@ -1139,13 +1142,13 @@ Date,Order ID,Coupon,Cutomer Type,Comm,Bidding Status,Total
 "Oct 26, 2024",258818,Z28,New,0.05,Bidding,243.16
 "Oct 15, 2024",256688,Z31,Returning,0.02,Bidding,243.16
 "Sep 2, 2024",241750,Z28,New,0.05,No bidding,243.03
-"Sep 4, 2024",242240,Z88,New,0.05,No bidding,242.61
 "Sep 10, 2024",244608,G5,New,0.05,No bidding,242.61
 "Sep 7, 2024",243262,Z31,Returning,0.02,No bidding,242.61
 "Sep 7, 2024",243256,Z88,New,0.05,Bidding,242.61
 "Sep 5, 2024",242736,G99,New,0.05,Bidding,242.61
 "Sep 4, 2024",242484,Z31,New,0.05,No bidding,242.61
 "Sep 3, 2024",242010,G5,New,0.05,No bidding,242.61
+"Sep 4, 2024",242240,Z88,New,0.05,No bidding,242.61
 "Aug 30, 2024",241092,Z26,New,0.05,No bidding,242.61
 "Aug 18, 2024",238798,Z27,Returning,0.02,No bidding,241.74
 "Aug 16, 2024",238518,Z27,New,0.05,No bidding,240.99
@@ -1258,6 +1261,7 @@ Date,Order ID,Coupon,Cutomer Type,Comm,Bidding Status,Total
 "Dec 11, 2024",271535,G95,New,0.05,No bidding,164.35
 "Aug 13, 2024",238155,Z27,New,0.05,Bidding,164.35
 "Nov 22, 2024",265696,G5,Returning,0.02,No bidding,164.35
+"Oct 11, 2025",389155,G61,New,0.05,No bidding,164.35
 "Nov 12, 2024",263380,G5,New,0.05,No bidding,164.35
 "Nov 13, 2024",263773,Z26,New,0.05,No bidding,164.35
 "Nov 10, 2024",262998,G4,New,0.05,No bidding,164.35
@@ -1369,6 +1373,7 @@ Date,Order ID,Coupon,Cutomer Type,Comm,Bidding Status,Total
 "Dec 8, 2024",270722,G5,New,0.05,No bidding,123.48
 "Dec 8, 2024",270642,G95,New,0.05,Bidding,123.48
 "Sep 12, 2024",245311,Z28,New,0.05,Bidding,123.48
+"Oct 7, 2025",387770,G95,New,0.05,No bidding,123.48
 "Sep 6, 2024",243230,Z88,New,0.05,No bidding,123.48
 "Jun 20, 2025",336355,Z55,New,0.05,No bidding,123.48
 "May 9, 2025",324715,G5,New,0.05,No bidding,123.48

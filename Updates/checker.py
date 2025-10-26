@@ -6,10 +6,10 @@ from typing import Optional
 import pandas as pd
 
 # ========= CONFIG =========
-# Affiliate (partner) ID to inspect; editable by user.
+# Affiliate (partner) ID to inspect; set to "all" to include every ID.
 TARGET_AFFILIATE_ID = "14465"
 
-# Numeric month to analyze (1-12). Example: 10 for October.
+# Month to analyze (1-12). Use "all" to include every month.
 TARGET_MONTH = 10
 
 # Optional: restrict to a specific year. Set to None to include any year.
@@ -72,8 +72,18 @@ def build_ratio_baseline(df: pd.DataFrame) -> pd.DataFrame:
 
 def filter_scope(df: pd.DataFrame) -> pd.DataFrame:
     """Filter records by affiliate id, month, and optional year."""
-    mask = df["affiliate_id"].astype(str) == str(TARGET_AFFILIATE_ID)
-    mask &= df["date"].dt.month == int(TARGET_MONTH)
+    mask = pd.Series(True, index=df.index)
+
+    target_affiliate = str(TARGET_AFFILIATE_ID).strip().lower()
+    if target_affiliate != "all":
+        mask &= df["affiliate_id"].astype(str) == str(TARGET_AFFILIATE_ID)
+
+    target_month = TARGET_MONTH
+    if isinstance(target_month, str) and target_month.strip().lower() == "all":
+        target_month = None
+    if target_month is not None:
+        mask &= df["date"].dt.month == int(target_month)
+
     if TARGET_YEAR is not None:
         mask &= df["date"].dt.year == int(TARGET_YEAR)
     scoped = df[mask].copy()
@@ -205,10 +215,21 @@ def main() -> None:
     order_details = summarize_orders(scoped, baseline)
     summary = summarize_codes(order_details)
 
+    affiliate_label = (
+        "all affiliates"
+        if str(TARGET_AFFILIATE_ID).strip().lower() == "all"
+        else f"affiliate {TARGET_AFFILIATE_ID}"
+    )
+    month_label = (
+        "all months"
+        if isinstance(TARGET_MONTH, str) and TARGET_MONTH.strip().lower() == "all"
+        else f"month {TARGET_MONTH}"
+    )
+
     if order_details.empty:
         print(
-            f"No records found for affiliate {TARGET_AFFILIATE_ID} "
-            f"in month {TARGET_MONTH}"
+            f"No records found for {affiliate_label} "
+            f"in {month_label}"
             + ("" if TARGET_YEAR is None else f" of {TARGET_YEAR}")
         )
     order_details.to_csv(orders_output_path, index=False)

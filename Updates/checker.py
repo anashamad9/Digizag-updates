@@ -20,6 +20,7 @@ RATIO_TOLERANCE = 0.01  # 1%
 # Filenames
 CHECKER_FILENAME = "checker.csv"
 OUTPUT_FILENAME = "checker_results.csv"
+OUTPUT_ORDERS_FILENAME = "checker_results_orders.csv"
 
 
 def extract_affiliate_id(partner_value: str) -> str:
@@ -37,7 +38,11 @@ def load_checker_dataframe(path: str) -> pd.DataFrame:
         raise FileNotFoundError(f"Checker file not found: {path}")
 
     df = pd.read_csv(path)
-    df.columns = [c.strip() for c in df.columns]
+    cleaned_cols = []
+    for col in df.columns:
+        stripped = str(col).strip()
+        cleaned_cols.append(stripped if stripped else "record_id")
+    df.columns = cleaned_cols
     if " " in df.columns:
         df.rename(columns={" ": "record_id"}, inplace=True)
     df["affiliate_id"] = df["Partner"].apply(extract_affiliate_id)
@@ -131,15 +136,67 @@ def summarize(scoped: pd.DataFrame, baseline: pd.DataFrame) -> pd.DataFrame:
     return summary
 
 
+def summarize_orders(scoped: pd.DataFrame, baseline: pd.DataFrame) -> pd.DataFrame:
+    """Return per-order payout validation with date and record id."""
+    if scoped.empty:
+        return pd.DataFrame(
+            columns=["id", "offer name", "code", "date", "order id", "payout", "revenue", "sale amount", "matched or not"]
+        )
+
+    detail = scoped.copy()
+    detail = detail.merge(
+        baseline,
+        on=["Offer Name", "Code"],
+        how="left",
+        validate="many_to_one",
+    )
+
+    has_revenue = detail["Revenue"] != 0
+    detail.loc[has_revenue, "actual_ratio"] = detail.loc[has_revenue, "Payout"] / detail.loc[has_revenue, "Revenue"]
+    detail.loc[~has_revenue, "actual_ratio"] = pd.NA
+
+    def mark_match(row) -> str:
+        if row["Revenue"] == 0:
+            return "matched" if abs(row["Payout"]) <= 1e-6 else "not matched"
+        if pd.isna(row["expected_ratio"]):
+            return "matched"
+        if pd.isna(row["actual_ratio"]):
+            return "not matched"
+        diff = abs(row["actual_ratio"] - row["expected_ratio"])
+        return "matched" if diff <= RATIO_TOLERANCE else "not matched"
+
+    detail["matched or not"] = detail.apply(mark_match, axis=1)
+
+    result = detail.rename(
+        columns={
+            "affiliate_id": "id",
+            "Offer Name": "offer name",
+            "Code": "code",
+            "Payout": "payout",
+            "Revenue": "revenue",
+            "Sale Amount": "sale amount",
+        }
+    )
+
+    result["order id"] = result.get("record_id")
+    result["date"] = pd.to_datetime(result["date"], errors="coerce").dt.strftime("%Y-%m-%d")
+
+    ordered_cols = ["id", "offer name", "code", "date", "order id", "payout", "revenue", "sale amount", "matched or not"]
+    result = result[ordered_cols].sort_values(["offer name", "date", "order id"]).reset_index(drop=True)
+    return result
+
+
 def main() -> None:
     script_dir = os.path.dirname(os.path.abspath(__file__))
     checker_path = os.path.join(script_dir, "output data", CHECKER_FILENAME)
     output_path = os.path.join(script_dir, "output data", OUTPUT_FILENAME)
+    orders_output_path = os.path.join(script_dir, "output data", OUTPUT_ORDERS_FILENAME)
 
     df = load_checker_dataframe(checker_path)
     baseline = build_ratio_baseline(df)
     scoped = filter_scope(df)
     summary = summarize(scoped, baseline)
+    order_details = summarize_orders(scoped, baseline)
 
     if summary.empty:
         print(
@@ -147,13 +204,12 @@ def main() -> None:
             f"in month {TARGET_MONTH}"
             + ("" if TARGET_YEAR is None else f" of {TARGET_YEAR}")
         )
-        summary = pd.DataFrame(
-            columns=["id", "offer name", "code", "payout", "revenue", "sale amount", "matched or not"]
-        )
     summary.to_csv(output_path, index=False)
+    order_details.to_csv(orders_output_path, index=False)
     if not summary.empty:
         print(summary.to_string(index=False))
     print(f"Saved results to {output_path}")
+    print(f"Saved order-level results to {orders_output_path}")
 
 
 if __name__ == "__main__":

@@ -30,7 +30,7 @@ def extract_affiliate_id(partner_value: str) -> str:
     text = str(partner_value).strip()
     match = re.match(r"(\d+)", text)
     return match.group(1) if match else text
-
+#yoisssssssef
 
 def load_checker_dataframe(path: str) -> pd.DataFrame:
     """Load the checker CSV and normalize essential columns."""

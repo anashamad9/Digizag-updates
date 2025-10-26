@@ -1,3 +1,4 @@
+import math
 import os
 import re
 from typing import Optional
@@ -19,8 +20,8 @@ RATIO_TOLERANCE = 0.01  # 1%
 
 # Filenames
 CHECKER_FILENAME = "checker.csv"
-OUTPUT_FILENAME = "checker_results.csv"
-OUTPUT_ORDERS_FILENAME = "checker_results_orders.csv"
+OUTPUT_ORDERS_FILENAME = "checker_results.csv"
+OUTPUT_SUMMARY_FILENAME = "checker_results_summary.csv"
 
 
 def extract_affiliate_id(partner_value: str) -> str:
@@ -30,8 +31,6 @@ def extract_affiliate_id(partner_value: str) -> str:
     text = str(partner_value).strip()
     match = re.match(r"(\d+)", text)
     return match.group(1) if match else text
-#yoisssssssef
-
 def load_checker_dataframe(path: str) -> pd.DataFrame:
     """Load the checker CSV and normalize essential columns."""
     if not os.path.exists(path):
@@ -81,58 +80,30 @@ def filter_scope(df: pd.DataFrame) -> pd.DataFrame:
     return scoped
 
 
-def summarize(scoped: pd.DataFrame, baseline: pd.DataFrame) -> pd.DataFrame:
-    """Aggregate scoped data and flag payout mismatches."""
-    if scoped.empty:
+def summarize_codes(order_details: pd.DataFrame) -> pd.DataFrame:
+    """Aggregate order-level records back to per-code totals for a quick overview."""
+    if order_details.empty:
         return pd.DataFrame(
             columns=["id", "offer name", "code", "payout", "revenue", "sale amount", "matched or not"]
         )
 
     summary = (
-        scoped.groupby(["affiliate_id", "Offer Name", "Code"], dropna=False)
+        order_details.groupby(["id", "offer name", "code"], dropna=False)
         .agg(
-            payout=("Payout", "sum"),
-            revenue=("Revenue", "sum"),
-            sale_amount=("Sale Amount", "sum"),
+            payout=("payout", "sum"),
+            revenue=("revenue", "sum"),
+            sale_amount=("sale amount", "sum"),
+            all_matched=("matched or not", lambda col: all(val == "matched" for val in col)),
         )
         .reset_index()
     )
 
-    summary = summary.merge(
-        baseline,
-        on=["Offer Name", "Code"],
-        how="left",
-        validate="many_to_one",
-    )
+    summary.rename(columns={"sale_amount": "sale amount"}, inplace=True)
 
-    summary["actual_ratio"] = summary.apply(
-        lambda row: (row["payout"] / row["revenue"]) if row["revenue"] else pd.NA, axis=1
-    )
-
-    def mark_match(row) -> str:
-        if row["revenue"] == 0:
-            return "matched" if abs(row["payout"]) <= 1e-6 else "not matched"
-        if pd.isna(row["expected_ratio"]):
-            return "matched"
-        if pd.isna(row["actual_ratio"]):
-            return "not matched"
-        diff = abs(row["actual_ratio"] - row["expected_ratio"])
-        return "matched" if diff <= RATIO_TOLERANCE else "not matched"
-
-    summary["matched or not"] = summary.apply(mark_match, axis=1)
-
-    summary.rename(
-        columns={
-            "affiliate_id": "id",
-            "Offer Name": "offer name",
-            "Code": "code",
-            "sale_amount": "sale amount",
-        },
-        inplace=True,
-    )
-
-    ordered_cols = ["id", "offer name", "code", "payout", "revenue", "sale amount", "matched or not"]
-    summary = summary[ordered_cols].sort_values(["offer name", "code"]).reset_index(drop=True)
+    summary["matched or not"] = summary.pop("all_matched").map({True: "matched", False: "not matched"})
+    summary = summary[["id", "offer name", "code", "payout", "revenue", "sale amount", "matched or not"]]
+    summary.sort_values(["offer name", "code"], inplace=True)
+    summary.reset_index(drop=True, inplace=True)
     return summary
 
 
@@ -140,7 +111,19 @@ def summarize_orders(scoped: pd.DataFrame, baseline: pd.DataFrame) -> pd.DataFra
     """Return per-order payout validation with date and record id."""
     if scoped.empty:
         return pd.DataFrame(
-            columns=["id", "offer name", "code", "date", "order id", "payout", "revenue", "sale amount", "matched or not"]
+            columns=[
+                "id",
+                "offer name",
+                "code",
+                "date",
+                "order id",
+                "partner",
+                "geo",
+                "payout",
+                "revenue",
+                "sale amount",
+                "matched or not",
+            ]
         )
 
     detail = scoped.copy()
@@ -162,8 +145,14 @@ def summarize_orders(scoped: pd.DataFrame, baseline: pd.DataFrame) -> pd.DataFra
             return "matched"
         if pd.isna(row["actual_ratio"]):
             return "not matched"
-        diff = abs(row["actual_ratio"] - row["expected_ratio"])
-        return "matched" if diff <= RATIO_TOLERANCE else "not matched"
+        if math.isclose(
+            row["actual_ratio"],
+            row["expected_ratio"],
+            rel_tol=0.0,
+            abs_tol=RATIO_TOLERANCE + 1e-9,
+        ):
+            return "matched"
+        return "not matched"
 
     detail["matched or not"] = detail.apply(mark_match, axis=1)
 
@@ -172,6 +161,8 @@ def summarize_orders(scoped: pd.DataFrame, baseline: pd.DataFrame) -> pd.DataFra
             "affiliate_id": "id",
             "Offer Name": "offer name",
             "Code": "code",
+            "Partner": "partner",
+            "Lower_Geo": "geo",
             "Payout": "payout",
             "Revenue": "revenue",
             "Sale Amount": "sale amount",
@@ -180,8 +171,24 @@ def summarize_orders(scoped: pd.DataFrame, baseline: pd.DataFrame) -> pd.DataFra
 
     result["order id"] = result.get("record_id")
     result["date"] = pd.to_datetime(result["date"], errors="coerce").dt.strftime("%Y-%m-%d")
+    result["expected ratio"] = detail["expected_ratio"]
+    result["actual ratio"] = detail["actual_ratio"]
 
-    ordered_cols = ["id", "offer name", "code", "date", "order id", "payout", "revenue", "sale amount", "matched or not"]
+    ordered_cols = [
+        "id",
+        "offer name",
+        "code",
+        "date",
+        "order id",
+        "partner",
+        "geo",
+        "payout",
+        "revenue",
+        "sale amount",
+        "expected ratio",
+        "actual ratio",
+        "matched or not",
+    ]
     result = result[ordered_cols].sort_values(["offer name", "date", "order id"]).reset_index(drop=True)
     return result
 
@@ -189,27 +196,27 @@ def summarize_orders(scoped: pd.DataFrame, baseline: pd.DataFrame) -> pd.DataFra
 def main() -> None:
     script_dir = os.path.dirname(os.path.abspath(__file__))
     checker_path = os.path.join(script_dir, "output data", CHECKER_FILENAME)
-    output_path = os.path.join(script_dir, "output data", OUTPUT_FILENAME)
     orders_output_path = os.path.join(script_dir, "output data", OUTPUT_ORDERS_FILENAME)
+    summary_output_path = os.path.join(script_dir, "output data", OUTPUT_SUMMARY_FILENAME)
 
     df = load_checker_dataframe(checker_path)
     baseline = build_ratio_baseline(df)
     scoped = filter_scope(df)
-    summary = summarize(scoped, baseline)
     order_details = summarize_orders(scoped, baseline)
+    summary = summarize_codes(order_details)
 
-    if summary.empty:
+    if order_details.empty:
         print(
             f"No records found for affiliate {TARGET_AFFILIATE_ID} "
             f"in month {TARGET_MONTH}"
             + ("" if TARGET_YEAR is None else f" of {TARGET_YEAR}")
         )
-    summary.to_csv(output_path, index=False)
     order_details.to_csv(orders_output_path, index=False)
+    summary.to_csv(summary_output_path, index=False)
     if not summary.empty:
         print(summary.to_string(index=False))
-    print(f"Saved results to {output_path}")
     print(f"Saved order-level results to {orders_output_path}")
+    print(f"Saved per-code summary to {summary_output_path}")
 
 
 if __name__ == "__main__":

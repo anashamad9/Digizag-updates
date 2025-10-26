@@ -2,7 +2,6 @@ import pandas as pd
 from datetime import datetime, timedelta
 import os
 import re
-from typing import Optional
 
 # =======================
 # CONFIG
@@ -16,11 +15,11 @@ FALLBACK_AFFILIATE_ID = "1"         # when coupon has no affiliate, use "1" and 
 # Local files
 AFFILIATE_XLSX  = "Offers Coupons.xlsx"    # multi-sheet Excel
 AFFILIATE_SHEET = "Dabdoob"                # <-- coupons sheet name for this offer
-# Latest report filename start (e.g., 'DigiZag 1 Sep - 7 Oct 2025 Orders.xlsx')
-# identify latest report whose filename (sans extension) starts with 'digizag' and ends with 'orders'
-REPORT_PREFIX   = "digizag"
-REPORT_SUFFIX   = "orders"
+# Main report file
+REPORT_FILENAME = "DigiZag All Orders.xlsx"
 REPORT_SHEET    = "Sheet1"
+REPORT_SUBTOTAL_USD_COL = "Subtotal $"   # Column U in the report
+REPORT_FOREIGN_CURRENCY_COL = "Currency"
 
 # FX helpers (to USD)
 USD_PER_SAR = 1 / 3.75
@@ -42,36 +41,6 @@ output_file = os.path.join(output_dir, 'dabdoub.csv')  # keeping your filename
 # =======================
 # HELPERS
 # =======================
-def find_matching_xlsx(directory: str, prefix: str, suffix: Optional[str] = None) -> str:
-    """
-    Find an .xlsx in `directory` whose base filename matches the provided prefix/suffix (case-insensitive).
-    - Ignores temporary files like '~$...'
-    - Otherwise returns the newest by modified time
-    """
-    prefix_lower = prefix.lower().strip() if prefix else ""
-    suffix_lower = suffix.lower().strip() if suffix else ""
-    candidates = []
-    for fname in os.listdir(directory):
-        if fname.startswith("~$"):
-            continue
-        if not fname.lower().endswith(".xlsx"):
-            continue
-        base = os.path.splitext(fname)[0].lower().strip()
-        if prefix_lower and not base.startswith(prefix_lower):
-            continue
-        if suffix_lower and not base.endswith(suffix_lower):
-            continue
-        candidates.append(os.path.join(directory, fname))
-
-    if not candidates:
-        available = [f for f in os.listdir(directory) if f.lower().endswith(".xlsx")]
-        raise FileNotFoundError(
-            f"No .xlsx file matching prefix='{prefix}' and suffix='{suffix}' found in: {directory}\n"
-            f"Available .xlsx files: {available}"
-        )
-
-    return max(candidates, key=os.path.getmtime)
-
 def normalize_coupon(x: str) -> str:
     """Uppercase, trim, and take the first token if multiple codes separated by ; , or whitespace."""
     if pd.isna(x):
@@ -215,14 +184,21 @@ def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.Data
 
 
 # =======================
-# LOAD REPORT (dynamic filename)
+# LOAD REPORT
 # =======================
 today = datetime.now().date()
 end_date = today
 start_date = end_date - timedelta(days=days_back)
 print(f"Current date: {today}, Start date (days_back={days_back}): {start_date}")
 
-input_file = find_matching_xlsx(input_dir, REPORT_PREFIX, REPORT_SUFFIX)
+input_file = os.path.join(input_dir, REPORT_FILENAME)
+if not os.path.exists(input_file):
+    available = [f for f in os.listdir(input_dir) if f.lower().endswith(".xlsx")]
+    raise FileNotFoundError(
+        f"Required report '{REPORT_FILENAME}' not found in {input_dir}. "
+        f"Available .xlsx files: {available}"
+    )
+
 print(f"Using report file: {input_file}")
 
 df = pd.read_excel(input_file, sheet_name=REPORT_SHEET)
@@ -231,11 +207,9 @@ df = pd.read_excel(input_file, sheet_name=REPORT_SHEET)
 df['Order Date (Full date)'] = pd.to_datetime(df['Order Date (Full date)'], format='%d %b, %Y %H:%M:%S', errors='coerce')
 df = df.dropna(subset=['Order Date (Full date)'])
 
-# Filter: last N days, not Cancelled, exclude today
-cancel_mask = df['Status Of Order'].astype(str).str.contains('cancel', case=False, na=False)
+# Filter by date only (include cancelled / partially cancelled as requested), still drop today's orders
 df_filtered = df[
     (df['Order Date (Full date)'].dt.date >= start_date) &
-    (~cancel_mask) &
     (df['Order Date (Full date)'].dt.date < today)
 ].copy()
 
@@ -247,26 +221,88 @@ def compute_sale_amount(country: str, subtotal):
         v = float(subtotal)
     except Exception:
         return 0.0
-    if country == 'Saudi Arabia':
-        return v * USD_PER_SAR
-    elif country == 'UAE':
-        return v * USD_PER_AED
-    elif country == 'Bahrain':
-        return v * USD_PER_BHD
-    elif country == 'Kuwait':
+    country_key = str(country).strip().lower()
+    if country_key in {'kuwait', 'kw', 'kwt'}:
         return v * USD_PER_KWD
-    else:
-        # default to AED rate if unrecognized
+    if country_key in {'bahrain', 'bh', 'bhr'}:
+        return v * USD_PER_BHD
+    if country_key in {'saudi arabia', 'kingdom of saudi arabia', 'ksa'}:
+        return v * USD_PER_SAR
+    if country_key in {'uae', 'united arab emirates', 'ae', 'ua'}:
         return v * USD_PER_AED
+    # Default to UAE logic when country not recognized
+    return v * USD_PER_AED
 
-df_filtered['sale_amount'] = df_filtered.apply(lambda r: compute_sale_amount(str(r.get('Country', '')), r.get('Subtotal')), axis=1)
+df_filtered['country_norm'] = df_filtered['Country'].astype(str).str.strip().str.lower()
+
+def resolve_sale_amount(row) -> float:
+    usd_value = row.get(REPORT_SUBTOTAL_USD_COL)
+    if pd.notna(usd_value):
+        try:
+            return float(str(usd_value).replace(',', '').strip())
+        except (TypeError, ValueError, AttributeError):
+            pass
+    return compute_sale_amount(row.get('country_norm', ''), row.get('Subtotal'))
+
+df_filtered['sale_amount'] = df_filtered.apply(resolve_sale_amount, axis=1)
+
+country_currency_map = {
+    'saudi arabia': 'SAR',
+    'kingdom of saudi arabia': 'SAR',
+    'ksa': 'SAR',
+    'uae': 'AED',
+    'united arab emirates': 'AED',
+    'ae': 'AED',
+    'kuwait': 'KWD',
+    'kw': 'KWD',
+    'kwt': 'KWD',
+    'bahrain': 'BHD',
+    'bh': 'BHD',
+    'bhr': 'BHD',
+}
+
+currency_value_map = {
+    'AED': 'AED',
+    'BHD': 'BHD',
+    'KD': 'KWD',
+    'KWD': 'KWD',
+    'SAR': 'SAR',
+    'SR': 'SAR',
+    '\ue800': 'SAR',
+    '\ue801': 'AED',
+}
+
+def resolve_sale_currency(row) -> str:
+    raw = row.get(REPORT_FOREIGN_CURRENCY_COL)
+    if pd.notna(raw):
+        key = str(raw).strip().upper()
+        mapped = currency_value_map.get(key)
+        if mapped:
+            return mapped
+    return country_currency_map.get(row.get('country_norm', ''), 'UNKNOWN')
+
+df_filtered['sale_currency'] = df_filtered.apply(resolve_sale_currency, axis=1)
 
 # Base revenue 10% of sale_amount
 df_filtered['revenue'] = df_filtered['sale_amount'] * 0.10
 
 # GEO mapping
-geo_mapping = {'Saudi Arabia': 'ksa', 'UAE': 'uae', 'Bahrain': 'bhr', 'Kuwait': 'kwt'}
-df_filtered['geo'] = df_filtered['Country'].map(geo_mapping).fillna('no-geo')
+geo_mapping = {
+    'saudi arabia': 'ksa',
+    'kingdom of saudi arabia': 'ksa',
+    'ksa': 'ksa',
+    'uae': 'uae',
+    'united arab emirates': 'uae',
+    'ae': 'uae',
+    'kuwait': 'kwt',
+    'kw': 'kwt',
+    'kwt': 'kwt',
+    'bahrain': 'bhr',
+    'bh': 'bhr',
+    'bhr': 'bhr',
+}
+df_filtered['geo'] = df_filtered['country_norm'].map(geo_mapping).fillna('no-geo')
+df_filtered = df_filtered.drop(columns=['country_norm'])
 
 # Normalize coupon for joining
 df_filtered['coupon_norm'] = df_filtered['Coupon'].apply(normalize_coupon)
@@ -323,6 +359,7 @@ output_df = pd.DataFrame({
     'payout': df_joined['payout'],
     'revenue': df_joined['revenue'].round(2),
     'sale amount': df_joined['sale_amount'].round(2),
+    'sale currency': df_joined['sale_currency'],
     'coupon': df_joined['coupon_norm'],
     'geo': df_joined['geo'],
 })

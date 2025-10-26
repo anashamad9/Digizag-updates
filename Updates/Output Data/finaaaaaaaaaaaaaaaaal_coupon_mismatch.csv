@@ -1,6 +1,0 @@
-sheet,code,new_customer_raw,old_customer_raw,new_customer_val,old_customer_val,difference,flag
-Levelshoes,KYT,0.85,0.92,0.85,0.92,-0.07000000000000006,DIFFERENT
-Levelshoes,KYF,0.85,0.92,0.85,0.92,-0.07000000000000006,DIFFERENT
-Noon GCC,URPAY1,2.75,2.0,2.75,2.0,0.75,DIFFERENT
-VogaCloset,FXN,0.85,1.0,0.85,1.0,-0.15000000000000002,DIFFERENT
-VogaCloset,OST,0.85,1.0,0.85,1.0,-0.15000000000000002,DIFFERENT

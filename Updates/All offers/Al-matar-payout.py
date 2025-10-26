@@ -295,6 +295,22 @@ def compute_revenue(row):
 
 df_filtered['revenue'] = df_filtered.apply(compute_revenue, axis=1)
 
+SPECIAL_COUPON_WALA = "WALA2025"
+
+def compute_wala_payout(row):
+    """Custom payout for coupon WALA2025 using sale amount tiers."""
+    pt = str(row.get(product_col, "")).strip().lower()
+    sale_amt = float(row.get('sale_amount', 0.0))
+    if "hotel" in pt:
+        return sale_amt * 0.036  # 3.6%
+    if "flight" in pt or "air" in pt:
+        origin, dest = parse_route(row.get(route_col, ""))
+        if origin and dest and origin == dest:
+            return sale_amt * 0.009  # 0.9% domestic
+        return sale_amt * 0.015  # 1.5% international
+    # fallback -> treat as international flight
+    return sale_amt * 0.015
+
 # Normalize coupon for joining
 coupon_col = find_coupon_column(df_filtered)
 if coupon_col:
@@ -334,6 +350,11 @@ payout.loc[mask_sale] = (df_joined.loc[mask_sale, 'sale_amount'] * df_joined.loc
 
 mask_fixed = df_joined['type_norm'].str.lower().eq('fixed')
 payout.loc[mask_fixed] = df_joined.loc[mask_fixed, 'fixed_amount'].fillna(0.0)
+
+mask_wala = df_joined['coupon_norm'].str.upper().eq(SPECIAL_COUPON_WALA)
+if mask_wala.any():
+    special_values = df_joined.loc[mask_wala].apply(compute_wala_payout, axis=1)
+    payout.loc[mask_wala] = special_values
 
 # Fallback: when affiliate_ID is missing -> payout=0 and affiliate_id="1"
 mask_no_aff = df_joined['affiliate_ID'].astype(str).str.strip().eq("")

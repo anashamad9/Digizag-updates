@@ -23,7 +23,7 @@ AFFILIATE_SHEET          = "Rasees"   # change if your tab name differs
 OUTPUT_CSV = "rasees.csv"
 
 # Data source (CSV by default, but JSON endpoints still supported via env override)
-SOURCE_RESOURCE_DEFAULT = "SMART ConverterV2 - Raw_Data (3).csv"
+SOURCE_RESOURCE_DEFAULT = "SMART ConverterV2 - Raw_Data (7).csv"
 SOURCE_RESOURCE = (
     os.getenv("RASEES_SOURCE")
     or os.getenv("RASEES_JSON_URL")

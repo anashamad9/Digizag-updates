@@ -119,7 +119,7 @@ print(f"Using report file: {input_file}")
 
 df = pd.read_csv(input_file)
 if df.empty:
-    df = pd.DataFrame(columns=['Date', 'Coupon Code', 'sale_amount', 'revenue_calc', 'coupon_norm'])
+    df = pd.DataFrame(columns=['Date', 'Coupon Code', 'sale_amount', 'coupon_norm'])
 else:
     df.columns = [str(c).strip() for c in df.columns]
 
@@ -147,7 +147,6 @@ else:
 
     df['coupon_norm'] = df[coupon_col].apply(normalize_coupon)
     df['sale_amount'] = to_numeric(df[amount_col]).fillna(0.0) / SAR_TO_USD_DIVISOR
-    df['revenue_calc'] = df['sale_amount'] * REVENUE_RATE
 
 # =======================
 # AFFILIATE MAPPING JOIN
@@ -168,16 +167,10 @@ if missing_aff_mask.any():
 
 if df_joined.empty:
     df_joined['affiliate_ID'] = FALLBACK_AFFILIATE_ID
-    df_joined['revenue_calc'] = 0.0
     df_joined['sale_amount'] = 0.0
 else:
     df_joined.loc[missing_aff_mask, 'affiliate_ID'] = FALLBACK_AFFILIATE_ID
-    df_joined.loc[missing_aff_mask, 'revenue_calc'] = 0.0
     df_joined.loc[missing_aff_mask, 'sale_amount'] = 0.0
-
-    df_joined['payout'] = df_joined['revenue_calc'].round(2)
-    df_joined['revenue'] = df_joined['revenue_calc'].round(2)
-    df_joined['sale_amount'] = df_joined['sale_amount'].round(2)
 
 # Ensure columns exist when df was empty
 if df_joined.empty:
@@ -190,10 +183,14 @@ if df_joined.empty:
         'Date': []
     })
 else:
-    if 'payout' not in df_joined.columns:
-        df_joined['payout'] = df_joined['revenue_calc'].round(2)
-    if 'revenue' not in df_joined.columns:
-        df_joined['revenue'] = df_joined['revenue_calc'].round(2)
+    pass  # df_joined already populated
+
+sale_amount_series = df_joined.get('sale_amount', pd.Series(index=df_joined.index, dtype=float))
+sale_amount_series = pd.to_numeric(sale_amount_series, errors='coerce').reindex(df_joined.index, fill_value=0.0)
+sale_amount_series = sale_amount_series.fillna(0.0).round(2)
+df_joined['sale_amount'] = sale_amount_series
+df_joined['revenue'] = (sale_amount_series * REVENUE_RATE).round(2)
+df_joined['payout'] = df_joined['revenue']
 
 # =======================
 # BUILD OUTPUT

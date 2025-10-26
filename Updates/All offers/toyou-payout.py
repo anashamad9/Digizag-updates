@@ -11,7 +11,7 @@ STATUS_DEFAULT = "pending"
 DEFAULT_PCT_IF_MISSING = 0.0  # 0.30 == 30%
 
 # Window: [today - days_back, today) — excludes today. Set 1 for "yesterday only".
-days_back = 1
+days_back = 100
 
 REPORT_PREFIX  = "DigiZag Promo External Report_ Digizag External"  # dynamic CSV name start
 AFFILIATE_XLSX = "Offers Coupons.xlsx"

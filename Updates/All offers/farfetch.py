@@ -11,21 +11,49 @@ output_dir = os.path.join(script_dir, '..', 'output data')
 os.makedirs(output_dir, exist_ok=True)
 
 # Load the input CSV file
-input_file = os.path.join(input_dir, 'conversion_item_report_2025-10-11_15_19_49.csv')
+input_file = os.path.join(input_dir, 'jjjd.csv')
 df = pd.read_csv(input_file)
 
-# Process the data, handling missing values
-def calculate_payout(row):
-    publisher_id = row.get('publisher_reference', 0)  # Use publisher_reference (column K)
-    if pd.isna(publisher_id):
-        publisher_id = 0
-    revenue = row.get('item_publisher_commission', 0)
-    if pd.isna(revenue):
-        revenue = 0
-    sale_value = row.get('item_value', 0)
-    if pd.isna(sale_value):
-        sale_value = 0
-    if publisher_id == 12941:
+def safe_number(value, default=0.0):
+    """Return a float representation or fallback to default."""
+    if pd.isna(value):
+        return default
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return default
+
+
+def normalize_publisher_id(value):
+    """Normalize publisher IDs to clean strings without decimal artifacts."""
+    if pd.isna(value):
+        return ''
+    text = str(value).strip()
+    if not text or text.lower() in {'nan', 'none'}:
+        return ''
+    try:
+        return str(int(float(text)))
+    except (TypeError, ValueError):
+        return text
+
+
+def remap_publisher_id(publisher_id):
+    """Map legacy IDs to their current equivalents."""
+    if publisher_id == '14796':
+        return '2345'
+    return publisher_id
+
+
+def calculate_payout(publisher_id, revenue, sale_value):
+    """
+    Calculate payout based on publisher-specific rules.
+    - IDs 2345 (and legacy 14796 remapped above) earn 90% of revenue
+    - ID 12941 earns 80% of revenue
+    - All others default to 3.8% of sale value
+    """
+    if publisher_id == '2345':
+        return revenue * 0.90
+    if publisher_id == '12941':
         return revenue * 0.80
     return sale_value * 0.038
 
@@ -36,18 +64,22 @@ for _, row in df.iterrows():
         continue  # Skip row if conversion_date_time is missing
     dt = datetime.strptime(datetime_str, '%Y-%m-%d %H:%M:%S')
     formatted_date = dt.strftime('%m-%d-%Y')
-    
-    payout = calculate_payout(row)
-    
+
+    publisher_id_raw = normalize_publisher_id(row.get('publisher_reference', ''))
+    publisher_id_clean = remap_publisher_id(publisher_id_raw)
+    revenue = safe_number(row.get('item_publisher_commission', 0))
+    sale_value = safe_number(row.get('item_value', 0))
+    payout = calculate_payout(publisher_id_clean, revenue, sale_value)
+
     output_data.append({
         'offer id': 1276,
-        'affiliate id': row.get('publisher_reference', ''),  # Match column K (publisher_reference)
+        'affiliate id': publisher_id_clean,
         'datetime': formatted_date,
         'status': 'pending',
         'payout': payout,
-        'revenue': row.get('item_publisher_commission', 0),  # Match column AC
-        'sale amount': row.get('item_value', 0),
-        'affiliate info': 'link',
+        'revenue': revenue,  # Match column AC
+        'sale amount': sale_value,
+        'coupon': '14796',
         'geo': row.get('country', 'Unknown')  # Default to 'Unknown' if missing
     })
 

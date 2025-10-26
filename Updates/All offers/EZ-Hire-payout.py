@@ -5,47 +5,47 @@ from typing import Optional, Tuple
 
 import pandas as pd
 
-# =======================
-# CONFIG — EDIT HERE
-# =======================
+
+
+
 OFFER_ID = 1352
 STATUS_DEFAULT = "pending"
 FALLBACK_AFFILIATE_ID = "1"
 DEFAULT_PCT_IF_MISSING = 0.0
 
-REPORT_PREFIX = "Bookings With Publisher Promo"   # matches "Bookings With Publisher Promo (8).xlsx"
-COUPONS_PREFIX = "Offers Coupons"                  # matches "Offers Coupons (8).xlsx" etc.
-AFFILIATE_SHEET = "EZ Hire"                        # exact sheet name for coupon → affiliate mapping
+REPORT_PREFIX = "Bookings With Publisher Promo"   
+COUPONS_PREFIX = "Offers Coupons"                  
+AFFILIATE_SHEET = "EZ Hire"                        
 
 OUTPUT_CSV = "ez-hire.csv"
 
-FX_DIVISOR = 3.67                                   # AED → USD
+FX_DIVISOR = 3.67
 BOOKING_TYPE_RATES = {
     "monthly": 0.02,
     "weekly": 0.0325,
     "daily": 0.03,
 }
 
-# =======================
-# PATHS
-# =======================
+
+
+
 script_dir = os.path.dirname(os.path.abspath(__file__))
 input_dir = os.path.join(script_dir, '..', 'input data')
 output_dir = os.path.join(script_dir, '..', 'output data')
 os.makedirs(output_dir, exist_ok=True)
 
-# =======================
-# DATE WINDOW (last 3 days, excl. today)
-# =======================
+
+
+
 days_back = 3
 today = datetime.now().date()
 end_date = today
 start_date = end_date - timedelta(days=days_back)
 print(f"Window: {start_date} ≤ date < {end_date}  (days_back={days_back}, excl. today)")
 
-# =======================
-# HELPERS
-# =======================
+
+
+
 def find_matching_file(directory: str, prefix: str, exts=(".csv", ".xlsx", ".xls")) -> str:
     """Return exact match '<prefix>.<ext>' if present, else newest file whose base starts with prefix."""
     prefix_lower = prefix.lower()
@@ -65,7 +65,6 @@ def find_matching_file(directory: str, prefix: str, exts=(".csv", ".xlsx", ".xls
             f"No file starting with '{prefix}' found in: {directory}\n"
             f"Available: {avail}"
         )
-    # prefer exact
     for ext in exts:
         exact = os.path.join(directory, prefix + ext)
         if os.path.exists(exact):

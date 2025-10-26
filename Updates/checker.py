@@ -3,12 +3,11 @@ import os
 import re
 from typing import Optional
 
-import numpy as np
 import pandas as pd
 
 # ========= CONFIG =========
 # Affiliate (partner) ID to inspect; set to "all" to include every ID.
-TARGET_AFFILIATE_ID = "all"
+TARGET_AFFILIATE_ID = "14465"
 
 # Month to analyze (1-12). Use "all" to include every month.
 TARGET_MONTH = 10
@@ -16,36 +15,13 @@ TARGET_MONTH = 10
 # Optional: restrict to a specific year. Set to None to include any year.
 TARGET_YEAR: Optional[int] = None
 
-# Allowed deviation (as a fraction) when comparing ratio-based payouts.
+# Allowed deviation (as a fraction) when comparing actual vs expected ratio.
 RATIO_TOLERANCE = 0.01  # 1%
-
-# Absolute tolerance when comparing fixed payouts.
-FIXED_PAYOUT_TOLERANCE = 0.5  # currency units
 
 # Filenames
 CHECKER_FILENAME = "checker.csv"
 OUTPUT_ORDERS_FILENAME = "checker_results.csv"
 OUTPUT_SUMMARY_FILENAME = "checker_results_summary.csv"
-
-
-def as_float(value) -> float:
-    """Best-effort conversion to float; returns NaN on failure."""
-    try:
-        return float(value)
-    except (TypeError, ValueError):
-        return float("nan")
-
-
-def format_method_label(raw: str) -> str:
-    """Normalize aggregated method strings."""
-    if not raw:
-        return ""
-    methods = [m for m in raw.split("|") if m]
-    if not methods:
-        return ""
-    if len(methods) == 1:
-        return methods[0]
-    return "mixed (" + ", ".join(methods) + ")"
 
 
 def extract_affiliate_id(partner_value: str) -> str:
@@ -63,13 +39,17 @@ def load_checker_dataframe(path: str) -> pd.DataFrame:
         raise FileNotFoundError(f"Checker file not found: {path}")
 
     df = pd.read_csv(path)
+
+    # Normalize header names and ensure blank header becomes record_id
     cleaned_cols = []
     for col in df.columns:
         stripped = str(col).strip()
         cleaned_cols.append(stripped if stripped else "record_id")
     df.columns = cleaned_cols
+
     if " " in df.columns:
         df.rename(columns={" ": "record_id"}, inplace=True)
+
     df["affiliate_id"] = df["Partner"].apply(extract_affiliate_id)
     df["date"] = pd.to_datetime(df["Date"], errors="coerce")
 
@@ -83,47 +63,18 @@ def load_checker_dataframe(path: str) -> pd.DataFrame:
 
 
 def build_ratio_baseline(df: pd.DataFrame) -> pd.DataFrame:
-    """Compute typical payout behaviour per offer+code for revenue, sale, and fixed payouts."""
-    records = []
-    if df.empty:
-        return pd.DataFrame(
-            columns=[
-                "Offer Name",
-                "Code",
-                "expected_ratio_revenue",
-                "expected_ratio_sale",
-                "expected_payout_fixed",
-            ]
-        )
+    """Compute the median payout/revenue ratio per offer+code across the dataset."""
+    valid = df[df["ratio"].notna()].copy()
+    if valid.empty:
+        return pd.DataFrame(columns=["Offer Name", "Code", "expected_ratio"])
 
-    grouped = df.groupby(["Offer Name", "Code"], dropna=False)
-    for (offer, code), group in grouped:
-        revenue_rows = group[group["Revenue"] > 0]
-        sale_rows = group[group["Sale Amount"] > 0]
-
-        expected_ratio_revenue = (
-            (revenue_rows["Payout"] / revenue_rows["Revenue"]).median()
-            if not revenue_rows.empty
-            else float("nan")
-        )
-        expected_ratio_sale = (
-            (sale_rows["Payout"] / sale_rows["Sale Amount"]).median()
-            if not sale_rows.empty
-            else float("nan")
-        )
-        expected_payout_fixed = group["Payout"].median() if not group.empty else float("nan")
-
-        records.append(
-            {
-                "Offer Name": offer,
-                "Code": code,
-                "expected_ratio_revenue": expected_ratio_revenue,
-                "expected_ratio_sale": expected_ratio_sale,
-                "expected_payout_fixed": expected_payout_fixed,
-            }
-        )
-
-    return pd.DataFrame.from_records(records)
+    grouped = (
+        valid.groupby(["Offer Name", "Code"])["ratio"]
+        .median()
+        .reset_index()
+        .rename(columns={"ratio": "expected_ratio"})
+    )
+    return grouped
 
 
 def filter_scope(df: pd.DataFrame) -> pd.DataFrame:
@@ -142,76 +93,13 @@ def filter_scope(df: pd.DataFrame) -> pd.DataFrame:
 
     if TARGET_YEAR is not None:
         mask &= df["date"].dt.year == int(TARGET_YEAR)
+
     scoped = df[mask].copy()
     return scoped
 
 
-def summarize_codes(order_details: pd.DataFrame) -> pd.DataFrame:
-    """Aggregate order-level records back to per-code totals for a quick overview."""
-    if order_details.empty:
-        return pd.DataFrame(
-            columns=[
-                "id",
-                "offer name",
-                "code",
-                "payout",
-                "revenue",
-                "sale amount",
-                "expected ratio revenue",
-                "expected ratio sale",
-                "expected payout fixed",
-                "match method",
-                "matched or not",
-            ]
-        )
-
-    grouped = order_details.groupby(["id", "offer name", "code"], dropna=False)
-    summary = grouped.agg(
-        payout=("payout", "sum"),
-        revenue=("revenue", "sum"),
-        sale_amount=("sale amount", "sum"),
-        expected_ratio_revenue=("expected ratio revenue", "first"),
-        expected_ratio_sale=("expected ratio sale", "first"),
-        expected_payout_fixed=("expected payout fixed", "first"),
-        all_matched=("matched or not", lambda col: all(val == "matched" for val in col)),
-        method_concat=("match method", lambda col: "|".join(sorted({m for m in col if m and m != "none"}))),
-    ).reset_index()
-
-    summary.rename(
-        columns={
-            "sale_amount": "sale amount",
-            "expected_ratio_revenue": "expected ratio revenue",
-            "expected_ratio_sale": "expected ratio sale",
-            "expected_payout_fixed": "expected payout fixed",
-        },
-        inplace=True,
-    )
-
-    summary["matched or not"] = summary.pop("all_matched").map({True: "matched", False: "not matched"})
-    summary["match method"] = summary.pop("method_concat").apply(format_method_label)
-
-    summary = summary[
-        [
-            "id",
-            "offer name",
-            "code",
-            "payout",
-            "revenue",
-            "sale amount",
-            "expected ratio revenue",
-            "expected ratio sale",
-            "expected payout fixed",
-            "match method",
-            "matched or not",
-        ]
-    ]
-    summary.sort_values(["offer name", "code"], inplace=True)
-    summary.reset_index(drop=True, inplace=True)
-    return summary
-
-
 def summarize_orders(scoped: pd.DataFrame, baseline: pd.DataFrame) -> pd.DataFrame:
-    """Return per-order payout validation with payout method recognition."""
+    """Return per-order payout validation with date and record id."""
     if scoped.empty:
         return pd.DataFrame(
             columns=[
@@ -225,12 +113,8 @@ def summarize_orders(scoped: pd.DataFrame, baseline: pd.DataFrame) -> pd.DataFra
                 "payout",
                 "revenue",
                 "sale amount",
-                "expected ratio revenue",
-                "actual ratio revenue",
-                "expected ratio sale",
-                "actual ratio sale",
-                "expected payout fixed",
-                "match method",
+                "expected ratio",
+                "actual ratio",
                 "matched or not",
             ]
         )
@@ -243,76 +127,33 @@ def summarize_orders(scoped: pd.DataFrame, baseline: pd.DataFrame) -> pd.DataFra
         validate="many_to_one",
     )
 
-    detail["actual_ratio_revenue"] = np.where(
-        detail["Revenue"] > 0,
-        detail["Payout"] / detail["Revenue"],
-        np.nan,
-    )
-    detail["actual_ratio_revenue"] = detail["actual_ratio_revenue"].replace([np.inf, -np.inf], np.nan)
+    has_revenue = detail["Revenue"] != 0
+    detail.loc[has_revenue, "actual_ratio"] = detail.loc[has_revenue, "Payout"] / detail.loc[has_revenue, "Revenue"]
+    detail.loc[~has_revenue, "actual_ratio"] = pd.NA
 
-    detail["actual_ratio_sale"] = np.where(
-        detail["Sale Amount"] > 0,
-        detail["Payout"] / detail["Sale Amount"],
-        np.nan,
-    )
-    detail["actual_ratio_sale"] = detail["actual_ratio_sale"].replace([np.inf, -np.inf], np.nan)
+    def mark_match(row) -> str:
+        payout = row["Payout"]
+        revenue = row["Revenue"]
+        expected = row["expected_ratio"]
+        actual = row["actual_ratio"]
 
-    def evaluate_match(row):
-        payout = as_float(row["Payout"])
-        revenue = as_float(row["Revenue"])
-        sale_amount = as_float(row["Sale Amount"])
+        if revenue == 0:
+            return "matched" if abs(payout) <= 1e-6 else "not matched"
+        if pd.isna(expected):
+            return "matched"
+        if pd.isna(actual):
+            return "not matched"
 
-        actual_ratio_revenue = as_float(row["actual_ratio_revenue"])
-        expected_ratio_revenue = as_float(row["expected_ratio_revenue"])
-
-        actual_ratio_sale = as_float(row["actual_ratio_sale"])
-        expected_ratio_sale = as_float(row["expected_ratio_sale"])
-
-        expected_fixed = as_float(row["expected_payout_fixed"])
-
-        if (
-            not math.isnan(actual_ratio_revenue)
-            and not math.isnan(expected_ratio_revenue)
-            and math.isclose(
-                actual_ratio_revenue,
-                expected_ratio_revenue,
-                rel_tol=0.0,
-                abs_tol=RATIO_TOLERANCE + 1e-9,
-            )
+        if math.isclose(
+            actual,
+            expected,
+            rel_tol=0.0,
+            abs_tol=RATIO_TOLERANCE + 1e-9,
         ):
-            return "matched", "revenue"
+            return "matched"
+        return "not matched"
 
-        if (
-            not math.isnan(actual_ratio_sale)
-            and not math.isnan(expected_ratio_sale)
-            and math.isclose(
-                actual_ratio_sale,
-                expected_ratio_sale,
-                rel_tol=0.0,
-                abs_tol=RATIO_TOLERANCE + 1e-9,
-            )
-        ):
-            return "matched", "sale"
-
-        if (
-            not math.isnan(expected_fixed)
-            and math.isclose(
-                payout,
-                expected_fixed,
-                rel_tol=0.0,
-                abs_tol=FIXED_PAYOUT_TOLERANCE,
-            )
-        ):
-            return "matched", "fixed"
-
-        if payout == 0 and revenue == 0 and sale_amount == 0:
-            return "matched", "zero"
-
-        return "not matched", "none"
-
-    evaluated = detail.apply(lambda row: evaluate_match(row), axis=1)
-    detail["matched or not"] = evaluated.map(lambda x: x[0])
-    detail["match method"] = evaluated.map(lambda x: x[1])
+    detail["matched or not"] = detail.apply(mark_match, axis=1)
 
     result = detail.rename(
         columns={
@@ -329,11 +170,8 @@ def summarize_orders(scoped: pd.DataFrame, baseline: pd.DataFrame) -> pd.DataFra
 
     result["order id"] = result.get("record_id")
     result["date"] = pd.to_datetime(result["date"], errors="coerce").dt.strftime("%Y-%m-%d")
-    result["expected ratio revenue"] = detail["expected_ratio_revenue"]
-    result["actual ratio revenue"] = detail["actual_ratio_revenue"]
-    result["expected ratio sale"] = detail["expected_ratio_sale"]
-    result["actual ratio sale"] = detail["actual_ratio_sale"]
-    result["expected payout fixed"] = detail["expected_payout_fixed"]
+    result["expected ratio"] = detail["expected_ratio"]
+    result["actual ratio"] = detail["actual_ratio"]
 
     ordered_cols = [
         "id",
@@ -346,16 +184,39 @@ def summarize_orders(scoped: pd.DataFrame, baseline: pd.DataFrame) -> pd.DataFra
         "payout",
         "revenue",
         "sale amount",
-        "expected ratio revenue",
-        "actual ratio revenue",
-        "expected ratio sale",
-        "actual ratio sale",
-        "expected payout fixed",
-        "match method",
+        "expected ratio",
+        "actual ratio",
         "matched or not",
     ]
     result = result[ordered_cols].sort_values(["offer name", "date", "order id"]).reset_index(drop=True)
     return result
+
+
+def summarize_codes(order_details: pd.DataFrame) -> pd.DataFrame:
+    """Aggregate order-level records back to per-code totals for a quick overview."""
+    if order_details.empty:
+        return pd.DataFrame(
+            columns=["id", "offer name", "code", "payout", "revenue", "sale amount", "matched or not"]
+        )
+
+    summary = (
+        order_details.groupby(["id", "offer name", "code"], dropna=False)
+        .agg(
+            payout=("payout", "sum"),
+            revenue=("revenue", "sum"),
+            sale_amount=("sale amount", "sum"),
+            all_matched=("matched or not", lambda col: all(val == "matched" for val in col)),
+        )
+        .reset_index()
+    )
+
+    summary.rename(columns={"sale_amount": "sale amount"}, inplace=True)
+
+    summary["matched or not"] = summary.pop("all_matched").map({True: "matched", False: "not matched"})
+    summary = summary[["id", "offer name", "code", "payout", "revenue", "sale amount", "matched or not"]]
+    summary.sort_values(["offer name", "code"], inplace=True)
+    summary.reset_index(drop=True, inplace=True)
+    return summary
 
 
 def main() -> None:
@@ -387,10 +248,13 @@ def main() -> None:
             f"in {month_label}"
             + ("" if TARGET_YEAR is None else f" of {TARGET_YEAR}")
         )
+
     order_details.to_csv(orders_output_path, index=False)
     summary.to_csv(summary_output_path, index=False)
+
     if not summary.empty:
         print(summary.to_string(index=False))
+
     print(f"Saved order-level results to {orders_output_path}")
     print(f"Saved per-code summary to {summary_output_path}")
 

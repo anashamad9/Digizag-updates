@@ -7,7 +7,7 @@ import pandas as pd
 
 # ========= CONFIG =========
 # Affiliate (partner) ID to inspect; set to "all" to include every ID.
-TARGET_AFFILIATE_ID = "14465"
+TARGET_AFFILIATE_ID = "all"
 
 # Month to analyze (1-12). Use "all" to include every month.
 TARGET_MONTH = 10

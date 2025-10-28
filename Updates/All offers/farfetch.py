@@ -11,7 +11,7 @@ output_dir = os.path.join(script_dir, '..', 'output data')
 os.makedirs(output_dir, exist_ok=True)
 
 # Load the input CSV file
-input_file = os.path.join(input_dir, 'jjjd.csv')
+input_file = os.path.join(input_dir, 'conversion_item_report_2025-10-28_11_23_06.csv')
 df = pd.read_csv(input_file)
 
 def safe_number(value, default=0.0):
@@ -70,6 +70,7 @@ for _, row in df.iterrows():
     revenue = safe_number(row.get('item_publisher_commission', 0))
     sale_value = safe_number(row.get('item_value', 0))
     payout = calculate_payout(publisher_id_clean, revenue, sale_value)
+    coupon_value = '14796' if publisher_id_clean == '2345' else 'link'
 
     output_data.append({
         'offer id': 1276,
@@ -79,7 +80,7 @@ for _, row in df.iterrows():
         'payout': payout,
         'revenue': revenue,  # Match column AC
         'sale amount': sale_value,
-        'coupon': '14796',
+        'coupon': coupon_value,
         'geo': row.get('country', 'Unknown')  # Default to 'Unknown' if missing
     })
 

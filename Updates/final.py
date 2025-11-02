@@ -9,7 +9,21 @@ FINAL_CSV   = "finaaaaaaaaaaaaaaaaal.csv"
 FINAL_XLSX  = "finaaaaaaaaaaaaaaaaal.xlsx"   # NEW: styled Excel with red alerts
 
 # Offers allowed to include up to current_date (exceptions from your old logic)
-EXCEPTION_OFFERS = {1183, 1282, 910, 1166, 1189}
+EXCEPTION_OFFERS = {
+    910,   # Voga
+    1166,  # Noon GCC
+    1183,  # Riva
+    1189,  # Namshi
+    1282,  # Noon Egypt
+    1283,  # Adidas
+    1334,  # Dr. Nutrition
+    1341,  # Reef
+    1342,  # Osma
+    1345,  # Whites
+    # Al Shaye3 family offers (Victoria Secret, Pottery Barn, etc.)
+    1130, 1131, 1132, 1133, 1146,
+    1160, 1161, 1176, 1208, 1250,
+}
 
 # ====== LOAD LAST UPDATE MAP ======
 admin_path = os.path.join(folder_path, ADMIN_CSV)

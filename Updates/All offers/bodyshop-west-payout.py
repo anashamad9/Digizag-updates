@@ -21,6 +21,18 @@ OUTPUT_CSV      = "thebodyshop.csv"
 KSA_PREFIX = "KSA"
 UAE_PREFIX = "UAE"
 
+# Column aliases for newer Shopify exports
+COLUMN_ALIASES = {
+    'Day': 'Purchase Date (Date)',
+    'Date': 'Purchase Date (Date)',
+    'Discount code': 'Coupon Code',
+    'coupon': 'Coupon Code',
+    'Coupon': 'Coupon Code',
+    'Net sales': 'Grand Total (Base)',
+    'Net Sales': 'Grand Total (Base)',
+    'Grand Total': 'Grand Total (Base)',
+}
+
 # =======================
 # PATHS
 # =======================
@@ -142,6 +154,16 @@ def infer_is_new_customer(df: pd.DataFrame) -> pd.Series:
 
 
 
+def standardize_export_columns(df: pd.DataFrame) -> pd.DataFrame:
+    """Normalize header variations from the latest partner exports."""
+
+    rename_map = {src: dst for src, dst in COLUMN_ALIASES.items() if src in df.columns}
+    if rename_map:
+        df = df.rename(columns=rename_map)
+
+    return df
+
+
 def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.DataFrame:
     """Return mapping with columns code_norm, affiliate_ID, type_norm, pct_new, pct_old, fixed_new, fixed_old."""
     df_sheet = pd.read_excel(xlsx_path, sheet_name=sheet_name, dtype=str)
@@ -224,6 +246,9 @@ print(f"Using UAE file: {uae_path}")
 
 ksa_df = pd.read_csv(ksa_path)
 uae_df = pd.read_csv(uae_path)
+
+ksa_df = standardize_export_columns(ksa_df.copy())
+uae_df = standardize_export_columns(uae_df.copy())
 
 # Tag geo BEFORE concatenation (index-safe)
 ksa_df  = ksa_df.copy()

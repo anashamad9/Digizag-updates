@@ -37,7 +37,7 @@ os.makedirs(output_dir, exist_ok=True)
 
 
 
-days_back = 3
+days_back = 300
 today = datetime.now().date()
 end_date = today
 start_date = end_date - timedelta(days=days_back)

@@ -321,8 +321,6 @@ else:
     df["geo_norm"] = GEO
 
 df["revenue"] = df["sale_amount"] * 0.05
-mask_dd = df["coupon_norm"].str.startswith("DD")
-df.loc[mask_dd, "revenue"] = df.loc[mask_dd, "sale_amount"] * 0.07
 
 if df.empty:
     raise ValueError("No rows found after filtering window/status and sale amount processing.")

@@ -219,17 +219,19 @@ def resolve_required_columns(df: pd.DataFrame):
     aed_net      = get("aed_net_amount", "aed net amount", "aed_net")
     country      = get("country")
     coupon       = get("aff_coupon", "coupon", "coupon code", "affiliate coupon")
+    fp_or_mp     = get("fp_or_mp", "fp or mp")
 
     missing = [nm for nm, col in {
         "created_date": created_date,
         "AED_net_amount": aed_net,
-        "aff_coupon": coupon
+        "aff_coupon": coupon,
+        "FP_or_MP": fp_or_mp,
     }.items() if not col]
 
     if missing:
         raise KeyError(f"Missing required columns: {missing}. Found: {list(df.columns)}")
 
-    return created_date, aed_net, country, coupon
+    return created_date, aed_net, country, coupon, fp_or_mp
 
 # =======================
 # DATE WINDOW
@@ -248,7 +250,7 @@ print(f"Using report file: {os.path.basename(report_path)}")
 # LOAD REPORT
 # =======================
 df_raw = pd.read_csv(report_path)
-created_date_col, aed_net_col, country_col, coupon_col = resolve_required_columns(df_raw)
+created_date_col, aed_net_col, country_col, coupon_col, fp_or_mp_col = resolve_required_columns(df_raw)
 
 # Convert 'created_date'
 df_raw[created_date_col] = pd.to_datetime(df_raw[created_date_col], format='%b %d, %Y', errors='coerce')
@@ -276,8 +278,17 @@ print(f"Rows after filtering date range: {len(df_filtered)}")
 # sale_amount (AED -> USD)
 df_filtered['sale_amount'] = pd.to_numeric(df_filtered[aed_net_col], errors='coerce').fillna(0.0) / 3.67
 
-# revenue 6% of sale_amount
-df_filtered['revenue'] = df_filtered['sale_amount'] * 0.06
+# revenue rate: 8% for MP, 10% for FP (defaults to 0 when missing)
+rate_map = {"MP": 0.08, "FP": 0.10}
+rate_series = (
+    df_filtered[fp_or_mp_col]
+    .astype(str)
+    .str.strip()
+    .str.upper()
+    .map(rate_map)
+    .fillna(0.0)
+)
+df_filtered['revenue'] = df_filtered['sale_amount'] * rate_series
 
 # coupon normalization
 df_filtered['coupon_norm'] = df_filtered[coupon_col].apply(normalize_coupon)

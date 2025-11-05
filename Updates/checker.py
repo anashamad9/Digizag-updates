@@ -10,7 +10,7 @@ import pandas as pd
 TARGET_AFFILIATE_ID = "all"
 
 # Month to analyze (1-12). Use "all" to include every month.
-TARGET_MONTH = 10
+TARGET_MONTH = 11
 
 # Optional: restrict to a specific year. Set to None to include any year.
 TARGET_YEAR: Optional[int] = None

@@ -17,9 +17,9 @@ AFFILIATE_XLSX   = "Offers Coupons.xlsx"   # multi-sheet Excel you uploaded
 AFFILIATE_SHEET  = "Bloomingdales"         # <-- sheet for this offer
 REPORT_PREFIX    = "BLM _ DigiZag Report_Page 1_Table"  # dynamic CSV name start
 
-# Currency conversion & base commission (your current logic)
+# Currency conversion & commission rates
 USD_PER_AED = 1 / 3.67
-BASE_REVENUE_RATE = 0.06  # 6% of sale_amount
+FP_MP_RATE = {"MP": 0.08, "FP": 0.10}
 
 # Country → geo mapping
 COUNTRY_TO_GEO = {"AE": "uae", "KW": "kwt"}
@@ -240,7 +240,15 @@ print(f"Rows after filtering date range: {len(df_filtered)}")
 # DERIVED FIELDS
 # =======================
 df_filtered['sale_amount'] = (df_filtered['AED_net_amount'] * USD_PER_AED)
-df_filtered['revenue'] = df_filtered['sale_amount'] * BASE_REVENUE_RATE
+rate_series = (
+    df_filtered['FP_or_MP']
+    .astype(str)
+    .str.strip()
+    .str.upper()
+    .map(FP_MP_RATE)
+    .fillna(0.0)
+)
+df_filtered['revenue'] = df_filtered['sale_amount'] * rate_series
 
 # Country → geo
 COUNTRY_TO_GEO = {"AE": "uae", "KW": "kwt"}  # keep near usage

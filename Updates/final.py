@@ -11,11 +11,16 @@ FINAL_XLSX  = "finaaaaaaaaaaaaaaaaal.xlsx"   # NEW: styled Excel with red alerts
 # Offers allowed to include up to current_date (exceptions from your old logic)
 EXCEPTION_OFFERS = {
     910,   # Voga
+    1101,  # Sun & Sand
+    1159,  # Level Shoes
     1166,  # Noon GCC
     1183,  # Riva
     1189,  # Namshi
+    1256,  # Airalo
+    1276,  # Farfetch
     1282,  # Noon Egypt
     1283,  # Adidas
+    1325,  # 6th Street
     1334,  # Dr. Nutrition
     1341,  # Reef
     1342,  # Osma

@@ -6,33 +6,101 @@ import re
 # =======================
 # CONFIG
 # =======================
-days_back = 30
-OFFER_ID = 1256
-GEO = "no-geo"
+OFFER_ID = 1159
 STATUS_DEFAULT = "pending"
-DEFAULT_PCT_IF_MISSING = 0.0  # fraction fallback when percent missing (0.30 == 30%)
+FALLBACK_AFFILIATE_ID = "1"
+DEFAULT_PCT_IF_MISSING = 0.0
 
-# Local files
-AFFILIATE_XLSX  = "Offers Coupons.xlsx"   # multi-sheet Excel you uploaded
-AFFILIATE_SHEET = "AirAlo"                # <-- sheet for this offer
-REPORT_PREFIX   = "8682-AdvancedActionListi"  # any .xlsx starting with this will match
+# How many days back to include (EXCLUDES today)
+DAYS_BACK = 60
+
+# Currency: set divisor to 1.0 if sale amounts are already USD
+AED_TO_USD_DIVISOR = 3.67
+
+# Files
+AFFILIATE_XLSX   = "Offers Coupons.xlsx"
+AFFILIATE_SHEET  = "Levelshoes"
+OUTPUT_CSV       = "levelshoes.csv"
 
 # =======================
 # PATHS
 # =======================
 script_dir = os.path.dirname(os.path.abspath(__file__))
-input_dir = os.path.join(script_dir, '..', 'input data')
-output_dir = os.path.join(script_dir, '..', 'output data')
+updates_dir = os.path.dirname(os.path.dirname(script_dir))
+input_dir  = os.path.join(updates_dir, 'Input data')
+output_dir = os.path.join(updates_dir, 'output data')
 os.makedirs(output_dir, exist_ok=True)
 
-affiliate_xlsx_path = os.path.join(input_dir, AFFILIATE_XLSX)
-output_file = os.path.join(output_dir, 'airalo.csv')
+aff_map_path  = os.path.join(input_dir, AFFILIATE_XLSX)
+output_path   = os.path.join(output_dir, OUTPUT_CSV)
+
+# =======================
+# DATE WINDOW
+# =======================
+today = datetime.now().date()
+start_date = today - timedelta(days=DAYS_BACK)
+print(f"Today: {today} | Start date (days_back={DAYS_BACK}): {start_date}")
+
+# =======================
+# FIND LATEST SOURCE FILE (conversion_item_report_YYYY-MM-DD_HH_MM_SS*.csv)
+# =======================
+# Accepts optional suffix before .csv, e.g., "(1)"
+NAME_RE = re.compile(
+    r"^conversion_item_report_(\d{4}-\d{2}-\d{2})_(\d{2})_(\d{2})_(\d{2}).*\.csv$",
+    re.IGNORECASE
+)
+
+def extract_stamp(fname: str):
+    """
+    Return a datetime from the filename if it matches the expected pattern,
+    else None.
+    """
+    m = NAME_RE.match(fname)
+    if not m:
+        return None
+    date_s, hh, mm, ss = m.groups()
+    try:
+        return datetime.strptime(f"{date_s} {hh}:{mm}:{ss}", "%Y-%m-%d %H:%M:%S")
+    except Exception:
+        return None
+
+candidates = []
+for f in os.listdir(input_dir):
+    if not f.lower().endswith(".csv"):
+        continue
+    if NAME_RE.match(f):
+        candidates.append(f)
+
+if not candidates:
+    avail = [f for f in os.listdir(input_dir) if f.lower().endswith(".csv")]
+    raise FileNotFoundError(
+        "No 'conversion_item_report_YYYY-MM-DD_HH_MM_SS*.csv' file found in input data folder.\n"
+        f"Available CSVs: {avail}"
+    )
+
+# Prefer by embedded timestamp; fallback to mtime if none parse
+stamped = [(extract_stamp(f), f) for f in candidates]
+stamped = [t for t in stamped if t[0] is not None]
+if stamped:
+    stamped.sort(key=lambda t: t[0])
+    latest_file = stamped[-1][1]
+else:
+    latest_file = max(candidates, key=lambda f: os.path.getmtime(os.path.join(input_dir, f)))
+
+source_path = os.path.join(input_dir, latest_file)
+print(f"Using input file: {latest_file}")
 
 # =======================
 # HELPERS
 # =======================
+def xl_col_to_index(col_letters: str) -> int:
+    col_letters = col_letters.strip().upper()
+    n = 0
+    for ch in col_letters:
+        n = n * 26 + (ord(ch) - ord('A') + 1)
+    return n - 1
+
 def normalize_coupon(x: str) -> str:
-    """Uppercase, trim, and take the first token if multiple codes separated by ; , or whitespace."""
     if pd.isna(x):
         return ""
     s = str(x).strip().upper()
@@ -47,6 +115,8 @@ def infer_is_new_customer(df: pd.DataFrame) -> pd.Series:
     candidates = [
         'customer_type',
         'customer type',
+        'cust_type',
+        'cust type',
         'customer_type',
         'customer type',
         'customer segment',
@@ -173,74 +243,55 @@ def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.Data
     return out.drop_duplicates(subset=['code_norm'], keep='last')
 
 
-def find_matching_xlsx(directory: str, prefix: str) -> str:
-    """
-    Find an .xlsx in `directory` whose base filename starts with `prefix` (case-insensitive).
-    - Ignores temporary files like '~$...'
-    - Prefers exact '<prefix>.xlsx' if present
-    - Otherwise returns the newest by modified time
-    """
-    prefix_lower = prefix.lower()
-    candidates = []
-    for fname in os.listdir(directory):
-        if fname.startswith("~$"):
-            continue
-        if not fname.lower().endswith(".xlsx"):
-            continue
-        base = os.path.splitext(fname)[0].lower()
-        if base.startswith(prefix_lower):
-            candidates.append(os.path.join(directory, fname))
+# =======================
+# LOAD SOURCE (columns by Excel letters: E=date, W=sale, X=user type, AJ=coupon)
+# =======================
+df_raw = pd.read_csv(source_path, header=0)
 
-    if not candidates:
-        available = [f for f in os.listdir(directory) if f.lower().endswith(".xlsx")]
-        raise FileNotFoundError(
-            f"No .xlsx file starting with '{prefix}' found in: {directory}\n"
-            f"Available .xlsx files: {available}"
-        )
+col_date_idx   = xl_col_to_index("E")
+col_sale_idx   = xl_col_to_index("W")
+col_type_idx   = xl_col_to_index("X")
+col_coupon_idx = xl_col_to_index("AJ")
 
-    exact = [p for p in candidates if os.path.basename(p).lower() == (prefix_lower + ".xlsx")]
-    if exact:
-        return exact[0]
+max_needed = max(col_date_idx, col_sale_idx, col_type_idx, col_coupon_idx)
+if df_raw.shape[1] <= max_needed:
+    raise IndexError(
+        f"CSV has {df_raw.shape[1]} columns, need ≥ {max_needed+1} to access E/W/X/AJ."
+    )
 
-    return max(candidates, key=os.path.getmtime)
+df = pd.DataFrame({
+    "date_raw":   df_raw.iloc[:, col_date_idx],
+    "sale_raw":   df_raw.iloc[:, col_sale_idx],
+    "cust_type":  df_raw.iloc[:, col_type_idx],
+    "coupon_raw": df_raw.iloc[:, col_coupon_idx],
+})
 
 # =======================
-# LOAD MAIN REPORT
+# DERIVED FIELDS & DATE FILTER
 # =======================
-print(f"Current date: {datetime.now().date()}, Start date (days_back={days_back}): {(datetime.now().date() - timedelta(days=days_back))}")
+df["date"] = pd.to_datetime(df["date_raw"], errors="coerce")
+df = df.dropna(subset=["date"]).copy()
 
-# Find the changing-named report file dynamically
-input_file = find_matching_xlsx(input_dir, REPORT_PREFIX)
+# Filter to last DAYS_BACK days, excluding today
+df = df[(df["date"].dt.date >= start_date) & (df["date"].dt.date < today)].copy()
 
-df = pd.read_excel(input_file)
+# Sale amount (AED -> USD if needed)
+df["sale_amount"] = pd.to_numeric(df["sale_raw"], errors="coerce").fillna(0.0) / AED_TO_USD_DIVISOR
 
-# Parse Action Date to datetime
-df['Action Date'] = pd.to_datetime(df['Action Date'], errors='coerce')
-df = df.dropna(subset=['Action Date'])
+def is_new(val) -> bool:
+    return "new" in str(val).strip().lower()
 
-end_date = datetime.now().date()
-start_date = end_date - timedelta(days=days_back)
-today = datetime.now().date()
+# Revenue rule: 10% new, 5% old
+df["revenue"] = df.apply(lambda r: r["sale_amount"] * (0.10 if is_new(r["cust_type"]) else 0.05), axis=1)
 
-# Filter for last 'days_back' days, excluding today
-df_filtered = df[(df['Action Date'].dt.date >= start_date) & (df['Action Date'].dt.date < today)].copy()
-
-# Calculate sale amount (Sale Amount / 3.67)
-df_filtered['sale_amount'] = df_filtered['Sale Amount'] / 3.67
-
-# Calculate revenue (10% of sale amount)
-df_filtered['revenue'] = df_filtered['sale_amount'] * 0.10
-
-# Normalize coupon for joining (Promo Code)
-df_filtered['coupon_norm'] = df_filtered['Promo Code'].apply(normalize_coupon)
+df["coupon_norm"] = df["coupon_raw"].apply(normalize_coupon)
 
 # =======================
 # JOIN AFFILIATE MAPPING (type-aware)
 # =======================
-map_df = load_affiliate_mapping_from_xlsx(affiliate_xlsx_path, AFFILIATE_SHEET)
-df_joined = df_filtered.merge(map_df, how="left", left_on="coupon_norm", right_on="code_norm")
+map_df = load_affiliate_mapping_from_xlsx(aff_map_path, AFFILIATE_SHEET)
+df_joined = df.merge(map_df, how="left", left_on="coupon_norm", right_on="code_norm")
 
-# Ensure required fields exist
 df_joined['affiliate_ID'] = df_joined['affiliate_ID'].fillna("").astype(str).str.strip()
 df_joined['type_norm'] = df_joined['type_norm'].fillna("revenue")
 for col in ['pct_new', 'pct_old']:
@@ -253,51 +304,40 @@ df_joined['pct_fraction'] = pd.to_numeric(pct_effective, errors='coerce').fillna
 fixed_effective = df_joined['fixed_new'].where(is_new_customer, df_joined['fixed_old'])
 df_joined['fixed_amount'] = pd.to_numeric(fixed_effective, errors='coerce')
 
-# =======================
-# COMPUTE PAYOUT BASED ON TYPE
-# =======================
+missing_aff = df_joined["affiliate_ID"].isna() | (df_joined["affiliate_ID"].astype(str).str.strip() == "")
+
+# Compute payout by type
 payout = pd.Series(0.0, index=df_joined.index)
+mask_rev   = df_joined["type_norm"].str.lower().eq("revenue")
+mask_sale  = df_joined["type_norm"].str.lower().eq("sale")
+mask_fixed = df_joined["type_norm"].str.lower().eq("fixed")
 
-# revenue-based %
-mask_rev = df_joined['type_norm'].str.lower().eq('revenue')
-payout.loc[mask_rev] = (df_joined.loc[mask_rev, 'revenue'] * df_joined.loc[mask_rev, 'pct_fraction'])
+payout.loc[mask_rev]   = df_joined.loc[mask_rev,   "revenue"]     * df_joined.loc[mask_rev,   "pct_fraction"].fillna(DEFAULT_PCT_IF_MISSING)
+payout.loc[mask_sale]  = df_joined.loc[mask_sale,  "sale_amount"] * df_joined.loc[mask_sale,  "pct_fraction"].fillna(DEFAULT_PCT_IF_MISSING)
+payout.loc[mask_fixed] = df_joined.loc[mask_fixed, "fixed_amount"].fillna(0.0)
 
-# sale-based %
-mask_sale = df_joined['type_norm'].str.lower().eq('sale')
-payout.loc[mask_sale] = (df_joined.loc[mask_sale, 'sale_amount'] * df_joined.loc[mask_sale, 'pct_fraction'])
-
-# fixed amount
-mask_fixed = df_joined['type_norm'].str.lower().eq('fixed')
-payout.loc[mask_fixed] = df_joined.loc[mask_fixed, 'fixed_amount'].fillna(0.0)
-
-# Force payout = 0 when affiliate_id is missing/empty
-mask_no_aff = (df_joined['affiliate_ID'] == "")
-payout.loc[mask_no_aff] = 0.0
-
-df_joined['payout'] = payout.round(2)
+# Fallback when no affiliate match
+payout.loc[missing_aff] = 0.0
+df_joined.loc[missing_aff, "affiliate_ID"] = FALLBACK_AFFILIATE_ID
+df_joined["payout"] = payout.round(2)
 
 # =======================
-# BUILD FINAL OUTPUT (NEW STRUCTURE)
+# OUTPUT (unified structure)
 # =======================
 output_df = pd.DataFrame({
-    'offer': OFFER_ID,
-    'affiliate_id': df_joined['affiliate_ID'],
-    'date': df_joined['Action Date'].dt.strftime('%m-%d-%Y'),
-    'status': STATUS_DEFAULT,
-    'payout': df_joined['payout'],
-    'revenue': df_joined['revenue'].round(2),
-    'sale amount': df_joined['sale_amount'].round(2),
-    'coupon': df_joined['coupon_norm'],
-    'geo': GEO,
+    "offer": OFFER_ID,
+    "affiliate_id": df_joined["affiliate_ID"],
+    "date": df_joined["date"].dt.strftime("%m-%d-%Y"),
+    "status": STATUS_DEFAULT,
+    "payout": df_joined["payout"],
+    "revenue": df_joined["revenue"].round(2),
+    "sale amount": df_joined["sale_amount"].round(2),
+    "coupon": df_joined["coupon_norm"],
+    "geo": "no-geo",
 })
 
-# Save
-output_df.to_csv(output_file, index=False)
+output_df.to_csv(output_path, index=False)
 
-print(f"Using report file: {input_file}")
-print(f"Saved: {output_file}")
-print(
-    f"Rows: {len(output_df)} | "
-    f"Coupons without affiliate_id (payout forced to 0): {int(mask_no_aff.sum())} | "
-    f"Type counts -> revenue: {int(mask_rev.sum())}, sale: {int(mask_sale.sum())}, fixed: {int(mask_fixed.sum())}"
-)
+print(f"Saved: {output_path}")
+print(f"Rows: {len(output_df)} | Fallback affiliate rows: {int(missing_aff.sum())}")
+print(f"Window: {start_date} ≤ date < {today}")

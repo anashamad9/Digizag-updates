@@ -6,7 +6,7 @@ import re
 # =======================
 # CONFIG
 # =======================
-days_back = 80
+days_back = 40
 OFFER_ID = 1329
 STATUS_DEFAULT = "pending"          # always "pending"
 DEFAULT_PCT_IF_MISSING = 0.0        # fraction fallback when percent missing (0.30 == 30%)
@@ -19,13 +19,6 @@ AFFILIATE_SHEET = "Dabdoob"                # <-- coupons sheet name for this off
 REPORT_FILENAME = "DigiZag All Orders.xlsx"
 REPORT_SHEET    = "Sheet1"
 REPORT_SUBTOTAL_USD_COL = "Subtotal $"   # Column U in the report
-REPORT_FOREIGN_CURRENCY_COL = "Currency"
-
-# FX helpers (to USD)
-USD_PER_SAR = 1 / 3.75
-USD_PER_AED = 1 / 3.67
-USD_PER_BHD = 2.65
-USD_PER_KWD = 3.26
 
 # =======================
 # PATHS
@@ -216,23 +209,6 @@ df_filtered = df[
 # =======================
 # DERIVED FIELDS (sale_amount & revenue)
 # =======================
-def compute_sale_amount(country: str, subtotal):
-    try:
-        v = float(subtotal)
-    except Exception:
-        return 0.0
-    country_key = str(country).strip().lower()
-    if country_key in {'kuwait', 'kw', 'kwt'}:
-        return v * USD_PER_KWD
-    if country_key in {'bahrain', 'bh', 'bhr'}:
-        return v * USD_PER_BHD
-    if country_key in {'saudi arabia', 'kingdom of saudi arabia', 'ksa'}:
-        return v * USD_PER_SAR
-    if country_key in {'uae', 'united arab emirates', 'ae', 'ua'}:
-        return v * USD_PER_AED
-    # Default to UAE logic when country not recognized
-    return v * USD_PER_AED
-
 df_filtered['country_norm'] = df_filtered['Country'].astype(str).str.strip().str.lower()
 
 def resolve_sale_amount(row) -> float:
@@ -242,46 +218,14 @@ def resolve_sale_amount(row) -> float:
             return float(str(usd_value).replace(',', '').strip())
         except (TypeError, ValueError, AttributeError):
             pass
-    return compute_sale_amount(row.get('country_norm', ''), row.get('Subtotal'))
+    subtotal = row.get('Subtotal')
+    try:
+        return float(str(subtotal).replace(',', '').strip())
+    except (TypeError, ValueError, AttributeError):
+        return 0.0
 
 df_filtered['sale_amount'] = df_filtered.apply(resolve_sale_amount, axis=1)
-
-country_currency_map = {
-    'saudi arabia': 'SAR',
-    'kingdom of saudi arabia': 'SAR',
-    'ksa': 'SAR',
-    'uae': 'AED',
-    'united arab emirates': 'AED',
-    'ae': 'AED',
-    'kuwait': 'KWD',
-    'kw': 'KWD',
-    'kwt': 'KWD',
-    'bahrain': 'BHD',
-    'bh': 'BHD',
-    'bhr': 'BHD',
-}
-
-currency_value_map = {
-    'AED': 'AED',
-    'BHD': 'BHD',
-    'KD': 'KWD',
-    'KWD': 'KWD',
-    'SAR': 'SAR',
-    'SR': 'SAR',
-    '\ue800': 'SAR',
-    '\ue801': 'AED',
-}
-
-def resolve_sale_currency(row) -> str:
-    raw = row.get(REPORT_FOREIGN_CURRENCY_COL)
-    if pd.notna(raw):
-        key = str(raw).strip().upper()
-        mapped = currency_value_map.get(key)
-        if mapped:
-            return mapped
-    return country_currency_map.get(row.get('country_norm', ''), 'UNKNOWN')
-
-df_filtered['sale_currency'] = df_filtered.apply(resolve_sale_currency, axis=1)
+df_filtered['sale_currency'] = 'USD'
 
 # Base revenue 10% of sale_amount
 df_filtered['revenue'] = df_filtered['sale_amount'] * 0.10

@@ -208,8 +208,9 @@ def find_matching_report_file(directory: str, prefix: str) -> str:
 # PATHS
 # =======================
 script_dir = os.path.dirname(os.path.abspath(__file__))
-input_dir = os.path.join(script_dir, '..', 'input data')
-output_dir = os.path.join(script_dir, '..', 'output data')
+updates_dir = os.path.dirname(os.path.dirname(script_dir))
+input_dir = os.path.join(updates_dir, 'Input data')
+output_dir = os.path.join(updates_dir, 'output data')
 os.makedirs(output_dir, exist_ok=True)
 
 # Find the changing-named report file dynamically
@@ -317,9 +318,6 @@ output_df = pd.DataFrame({
 # =======================
 # SAVE
 # =======================
-output_dir = os.path.join(script_dir, '..', 'output data')
-os.makedirs(output_dir, exist_ok=True)
-output_file = os.path.join(output_dir, OUTPUT_CSV)
 output_df.to_csv(output_file, index=False)
 
 print(f"Using report file: {input_file}")

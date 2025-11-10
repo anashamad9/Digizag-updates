@@ -1,42 +1,39 @@
 import pandas as pd
-import requests
+from datetime import datetime, timedelta
 import os
 import re
 
 # =======================
 # CONFIG
 # =======================
-OFFER_ID = 1345
+days_back = 30
+OFFER_ID = 1256
+GEO = "no-geo"
 STATUS_DEFAULT = "pending"
-DEFAULT_PCT_IF_MISSING = 0.0
-FALLBACK_AFFILIATE_ID = "1"
+DEFAULT_PCT_IF_MISSING = 0.0  # fraction fallback when percent missing (0.30 == 30%)
 
-# Coupons mapping source
-AFFILIATE_XLSX  = "Offers Coupons.xlsx"
-AFFILIATE_SHEET = "Whites"   # change if your tab name differs
-
-# Output
-OUTPUT_CSV = "whites2.csv"
-
-# API window (from your draft)
-JSON_URL = "https://www.whites.net/entity/track_coupons_digizag?get_coupon_data=1&start_date=2025-07-01&end_date=2026-10-06"
+# Local files
+AFFILIATE_XLSX  = "Offers Coupons.xlsx"   # multi-sheet Excel you uploaded
+AFFILIATE_SHEET = "AirAlo"                # <-- sheet for this offer
+REPORT_PREFIX   = "8682-AdvancedActionListi"  # any .xlsx starting with this will match
 
 # =======================
 # PATHS
 # =======================
 script_dir = os.path.dirname(os.path.abspath(__file__))
-input_dir  = os.path.join(script_dir, '..', 'input data')
-output_dir = os.path.join(script_dir, '..', 'output data')
+updates_dir = os.path.dirname(os.path.dirname(script_dir))
+input_dir = os.path.join(updates_dir, 'Input data')
+output_dir = os.path.join(updates_dir, 'output data')
 os.makedirs(output_dir, exist_ok=True)
 
 affiliate_xlsx_path = os.path.join(input_dir, AFFILIATE_XLSX)
-output_file = os.path.join(output_dir, OUTPUT_CSV)
+output_file = os.path.join(output_dir, 'airalo.csv')
 
 # =======================
 # HELPERS
 # =======================
 def normalize_coupon(x: str) -> str:
-    """Uppercase, trim, and take first token if multiple codes separated by ; , or whitespace."""
+    """Uppercase, trim, and take the first token if multiple codes separated by ; , or whitespace."""
     if pd.isna(x):
         return ""
     s = str(x).strip().upper()
@@ -177,85 +174,76 @@ def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.Data
     return out.drop_duplicates(subset=['code_norm'], keep='last')
 
 
-def normalize_whites_json_to_df(payload_json) -> pd.DataFrame:
+def find_matching_xlsx(directory: str, prefix: str) -> str:
     """
-    The API returns an object that includes a 'data' field with rows.
-    This function robustly flattens it to a DataFrame with expected columns:
-    ['order_date','final_amount','coupon_code', ...]
+    Find an .xlsx in `directory` whose base filename starts with `prefix` (case-insensitive).
+    - Ignores temporary files like '~$...'
+    - Prefers exact '<prefix>.xlsx' if present
+    - Otherwise returns the newest by modified time
     """
-    # Try direct normalize
-    root = pd.json_normalize(payload_json)
+    prefix_lower = prefix.lower()
+    candidates = []
+    for fname in os.listdir(directory):
+        if fname.startswith("~$"):
+            continue
+        if not fname.lower().endswith(".xlsx"):
+            continue
+        base = os.path.splitext(fname)[0].lower()
+        if base.startswith(prefix_lower):
+            candidates.append(os.path.join(directory, fname))
 
-    # If 'data' column exists and contains the rows, explode it
-    if 'data' in root.columns:
-        # Ensure it's a list-like per row
-        series = root['data']
-        # Flatten lists of dicts
-        exploded = series.explode().dropna()
-        df_rows = pd.json_normalize(exploded)
-    else:
-        # Some responses may already be a list of records
-        if isinstance(payload_json, list):
-            df_rows = pd.json_normalize(payload_json)
-        else:
-            # fallback: use root as-is
-            df_rows = root
+    if not candidates:
+        available = [f for f in os.listdir(directory) if f.lower().endswith(".xlsx")]
+        raise FileNotFoundError(
+            f"No .xlsx file starting with '{prefix}' found in: {directory}\n"
+            f"Available .xlsx files: {available}"
+        )
 
-    # Standardize expected columns if nested
-    # Try common alternatives
-    rename_map = {}
-    for c in list(df_rows.columns):
-        low = c.lower().strip()
-        if low.endswith('order_date') or low == 'order_date':
-            rename_map[c] = 'order_date'
-        elif low.endswith('final_amount') or low == 'final_amount':
-            rename_map[c] = 'final_amount'
-        elif low.endswith('coupon_code') or low == 'coupon_code' or low == 'coupon':
-            rename_map[c] = 'coupon_code'
-    if rename_map:
-        df_rows = df_rows.rename(columns=rename_map)
+    exact = [p for p in candidates if os.path.basename(p).lower() == (prefix_lower + ".xlsx")]
+    if exact:
+        return exact[0]
 
-    return df_rows
+    return max(candidates, key=os.path.getmtime)
 
 # =======================
-# FETCH & FLATTEN JSON
+# LOAD MAIN REPORT
 # =======================
-resp = requests.get(JSON_URL, timeout=60)
-if resp.status_code != 200:
-    raise Exception(f"Failed to fetch data from {JSON_URL}, status code: {resp.status_code}")
-payload = resp.json()
+print(f"Current date: {datetime.now().date()}, Start date (days_back={days_back}): {(datetime.now().date() - timedelta(days=days_back))}")
 
-df = normalize_whites_json_to_df(payload)
+# Find the changing-named report file dynamically
+input_file = find_matching_xlsx(input_dir, REPORT_PREFIX)
 
-# Ensure required columns exist
-required_cols = ['order_date', 'final_amount', 'coupon_code']
-missing = [c for c in required_cols if c not in df.columns]
-if missing:
-    raise ValueError(f"Missing expected columns from API after normalization: {missing}")
+df = pd.read_excel(input_file)
 
-# =======================
-# DERIVED FIELDS
-# =======================
-# Convert currency (assumed SAR -> USD via 3.75) and compute revenue (10%)
-df['final_amount'] = pd.to_numeric(df['final_amount'], errors='coerce').fillna(0.0)
-df['sale_amount']  = df['final_amount'] / 3.75
-df['revenue']      = df['sale_amount'] * 0.10
+# Parse Action Date to datetime
+df['Action Date'] = pd.to_datetime(df['Action Date'], errors='coerce')
+df = df.dropna(subset=['Action Date'])
 
-# Coupon normalization for join
-df['coupon_norm'] = df['coupon_code'].apply(normalize_coupon)
+end_date = datetime.now().date()
+start_date = end_date - timedelta(days=days_back)
+today = datetime.now().date()
+
+# Filter for last 'days_back' days, excluding today
+df_filtered = df[(df['Action Date'].dt.date >= start_date) & (df['Action Date'].dt.date < today)].copy()
+
+# Calculate sale amount (Sale Amount / 3.67)
+df_filtered['sale_amount'] = df_filtered['Sale Amount'] / 3.67
+
+# Calculate revenue (10% of sale amount)
+df_filtered['revenue'] = df_filtered['sale_amount'] * 0.10
+
+# Normalize coupon for joining (Promo Code)
+df_filtered['coupon_norm'] = df_filtered['Promo Code'].apply(normalize_coupon)
 
 # =======================
 # JOIN AFFILIATE MAPPING (type-aware)
 # =======================
 map_df = load_affiliate_mapping_from_xlsx(affiliate_xlsx_path, AFFILIATE_SHEET)
-df_joined = df.merge(map_df, how="left", left_on="coupon_norm", right_on="code_norm")
+df_joined = df_filtered.merge(map_df, how="left", left_on="coupon_norm", right_on="code_norm")
 
-# Missing affiliate?
-missing_aff_mask = df_joined['affiliate_ID'].isna() | (df_joined['affiliate_ID'].astype(str).str.strip() == "")
-
-# Normalize mapping fields
-df_joined['affiliate_ID'] = df_joined['affiliate_ID'].fillna('').astype(str).str.strip()
-df_joined['type_norm'] = df_joined['type_norm'].fillna('revenue')
+# Ensure required fields exist
+df_joined['affiliate_ID'] = df_joined['affiliate_ID'].fillna("").astype(str).str.strip()
+df_joined['type_norm'] = df_joined['type_norm'].fillna("revenue")
 for col in ['pct_new', 'pct_old']:
     df_joined[col] = pd.to_numeric(df_joined.get(col), errors='coerce').fillna(DEFAULT_PCT_IF_MISSING)
 for col in ['fixed_new', 'fixed_old']:
@@ -265,48 +253,52 @@ pct_effective = df_joined['pct_new'].where(is_new_customer, df_joined['pct_old']
 df_joined['pct_fraction'] = pd.to_numeric(pct_effective, errors='coerce').fillna(DEFAULT_PCT_IF_MISSING)
 fixed_effective = df_joined['fixed_new'].where(is_new_customer, df_joined['fixed_old'])
 df_joined['fixed_amount'] = pd.to_numeric(fixed_effective, errors='coerce')
+
+# =======================
+# COMPUTE PAYOUT BASED ON TYPE
+# =======================
 payout = pd.Series(0.0, index=df_joined.index)
 
-mask_rev   = df_joined['type_norm'].str.lower().eq('revenue')
-mask_sale  = df_joined['type_norm'].str.lower().eq('sale')
-mask_fixed = df_joined['type_norm'].str.lower().eq('fixed')
+# revenue-based %
+mask_rev = df_joined['type_norm'].str.lower().eq('revenue')
+payout.loc[mask_rev] = (df_joined.loc[mask_rev, 'revenue'] * df_joined.loc[mask_rev, 'pct_fraction'])
 
-payout.loc[mask_rev]   = df_joined.loc[mask_rev,   'revenue']     * df_joined.loc[mask_rev,   'pct_fraction']
-payout.loc[mask_sale]  = df_joined.loc[mask_sale,  'sale_amount'] * df_joined.loc[mask_sale,  'pct_fraction']
+# sale-based %
+mask_sale = df_joined['type_norm'].str.lower().eq('sale')
+payout.loc[mask_sale] = (df_joined.loc[mask_sale, 'sale_amount'] * df_joined.loc[mask_sale, 'pct_fraction'])
+
+# fixed amount
+mask_fixed = df_joined['type_norm'].str.lower().eq('fixed')
 payout.loc[mask_fixed] = df_joined.loc[mask_fixed, 'fixed_amount'].fillna(0.0)
 
-# Enforce: if no affiliate match, set affiliate_id="1", payout=0
-payout.loc[missing_aff_mask] = 0.0
-df_joined.loc[missing_aff_mask, 'affiliate_ID'] = FALLBACK_AFFILIATE_ID
+# Force payout = 0 when affiliate_id is missing/empty
+mask_no_aff = (df_joined['affiliate_ID'] == "")
+payout.loc[mask_no_aff] = 0.0
 
 df_joined['payout'] = payout.round(2)
 
 # =======================
-# BUILD OUTPUT (NEW STRUCTURE)
+# BUILD FINAL OUTPUT (NEW STRUCTURE)
 # =======================
 output_df = pd.DataFrame({
     'offer': OFFER_ID,
     'affiliate_id': df_joined['affiliate_ID'],
-    'date': pd.to_datetime(df_joined['order_date'], errors='coerce').dt.strftime('%m-%d-%Y'),
+    'date': df_joined['Action Date'].dt.strftime('%m-%d-%Y'),
     'status': STATUS_DEFAULT,
     'payout': df_joined['payout'],
     'revenue': df_joined['revenue'].round(2),
     'sale amount': df_joined['sale_amount'].round(2),
     'coupon': df_joined['coupon_norm'],
-    'geo': 'ksa',
+    'geo': GEO,
 })
 
-# =======================
-# SAVE
-# =======================
+# Save
 output_df.to_csv(output_file, index=False)
 
+print(f"Using report file: {input_file}")
 print(f"Saved: {output_file}")
 print(
     f"Rows: {len(output_df)} | "
-    f"No-affiliate coupons (set aff={FALLBACK_AFFILIATE_ID}, payout=0): {int(missing_aff_mask.sum())}"
+    f"Coupons without affiliate_id (payout forced to 0): {int(mask_no_aff.sum())} | "
+    f"Type counts -> revenue: {int(mask_rev.sum())}, sale: {int(mask_sale.sum())}, fixed: {int(mask_fixed.sum())}"
 )
-if not output_df.empty:
-    print(f"Date range processed: {output_df['date'].min()} to {output_df['date'].max()}")
-else:
-    print("No rows after processing.")

@@ -30,8 +30,9 @@ BOOKING_TYPE_RATES = {
 
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
-input_dir = os.path.join(script_dir, '..', 'input data')
-output_dir = os.path.join(script_dir, '..', 'output data')
+updates_dir = os.path.dirname(os.path.dirname(script_dir))
+input_dir = os.path.join(updates_dir, 'Input data')
+output_dir = os.path.join(updates_dir, 'output data')
 os.makedirs(output_dir, exist_ok=True)
 
 

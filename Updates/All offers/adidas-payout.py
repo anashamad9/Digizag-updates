@@ -84,18 +84,24 @@ def infer_is_new_customer(df: pd.DataFrame) -> pd.Series:
     resolved = pd.Series(False, index=df.index, dtype=bool)
 
     def tokenize(value) -> set:
+        """Remove non alpha-numeric characters."""
         if pd.isna(value):
             return set()
-        text = ''.join(ch if ch.isalnum() else ' ' for ch in str(value).lower())
+        # Why replace non-alphanumeric with space when new_tokens and old_tokens strings don't have spaces?
+        text = ''.join(ch if ch.isalnum() else ' ' for ch in str(value).lower()) 
         return {tok for tok in text.split() if tok}
 
-    for key in candidates:
+    for key in candidates: # Check if candidates match actual dataframe columns.
         actual = columns_map.get(key)
         if not actual:
             continue
         tokens_series = df[actual].apply(tokenize)
-        is_new = tokens_series.apply(lambda toks: bool(toks & new_tokens))
+        
+        # Checking if tokenenized data matches tokens in sets.
+        is_new = tokens_series.apply(lambda toks: bool(toks & new_tokens))  
         is_old = tokens_series.apply(lambda toks: bool(toks & old_tokens))
+
+        # Checking to see if data of column matches presumed data of sets 
         recognized = (is_new | is_old) & ~resolved
         if recognized.any():
             result.loc[recognized] = is_new.loc[recognized]
@@ -107,7 +113,7 @@ def infer_is_new_customer(df: pd.DataFrame) -> pd.Series:
 
 def pick_payout_column(cols_lower_map):
     """Priority for payout column: payout > new customer payout > old customer payout."""
-    for candidate in ["payout", "new customer payout", "old customer payout"]:
+    for candidate in ["payout", "new customer payout", "old customer payout"]: # Prioritizes newer column.
         if candidate in cols_lower_map:
             return cols_lower_map[candidate]
     return None
@@ -122,7 +128,7 @@ def load_affiliate_mapping_from_xlsx(xlsx_path: str, offer_id: int) -> pd.DataFr
     df_sheet = pd.read_excel(xlsx_path, sheet_name=sheet_name, dtype=str)
     cols_lower = {str(c).lower().strip(): c for c in df_sheet.columns}
 
-    def need(name: str) -> str:
+    def need(name: str) -> str: 
         col = cols_lower.get(name)
         if not col:
             raise ValueError(f"[{sheet_name}] must contain a '{name}' column.")
@@ -150,7 +156,7 @@ def load_affiliate_mapping_from_xlsx(xlsx_path: str, offer_id: int) -> pd.DataFr
     payout_new_raw = extract_numeric(new_col).fillna(payout_any)
     payout_old_raw = extract_numeric(old_col).fillna(payout_any)
 
-    type_norm = (
+    type_norm = ( # Normalize type col data.
         df_sheet[type_col]
         .astype(str)
         .str.strip()
@@ -159,7 +165,7 @@ def load_affiliate_mapping_from_xlsx(xlsx_path: str, offer_id: int) -> pd.DataFr
         .fillna('revenue')
     )
 
-    def pct_from(values: pd.Series) -> pd.Series:
+    def pct_from(values: pd.Series) -> pd.Series: # Get payout percentage
         pct = values.where(type_norm.isin(['revenue', 'sale']))
         return pct.apply(lambda v: (v / 100.0) if pd.notna(v) and v > 1 else (v if pd.notna(v) else pd.NA))
 
@@ -176,7 +182,7 @@ def load_affiliate_mapping_from_xlsx(xlsx_path: str, offer_id: int) -> pd.DataFr
     fixed_new = fixed_new.fillna(fixed_old)
     fixed_old = fixed_old.fillna(fixed_new)
 
-    out = pd.DataFrame({
+    out = pd.DataFrame({ 
         'code_norm': df_sheet[code_col].apply(normalize_coupon),
         'affiliate_ID': df_sheet[aff_col].fillna('').astype(str).str.strip(),
         'type_norm': type_norm,
@@ -207,7 +213,7 @@ def find_matching_csv(directory: str, prefix: str) -> str:
         if base.startswith(prefix_lower):
             candidates.append(os.path.join(directory, fname))
 
-    if not candidates:
+    if not candidates: # Lists every file in the input folder.
         available = [f for f in os.listdir(directory) if f.lower().endswith(".csv")]
         raise FileNotFoundError(
             f"No .csv file starting with '{prefix}' found in: {directory}\n"
@@ -215,9 +221,12 @@ def find_matching_csv(directory: str, prefix: str) -> str:
         )
 
     exact = [p for p in candidates if os.path.basename(p).lower() == (prefix_lower + ".csv")]
+    # Returns if there is a file with exact name as prefix
     if exact:
         return exact[0]
 
+
+    # Otherwise, returns most recent file.
     return max(candidates, key=os.path.getmtime)
 
 # Find the changing-named report file dynamically
@@ -246,9 +255,9 @@ df_filtered = df[
 # Split rows with # of Items > 1 into per-item rows
 split_rows = []
 for _, row in df_filtered.iterrows():
-    items = int(row['# of Items']) if pd.notnull(row['# of Items']) else 1
-    total_sales = float(row['Sales']) if pd.notnull(row['Sales']) else 0.0
-    sales_per_item = (total_sales / items) if items > 0 else 0.0
+    items = int(row['# of Items']) if pd.notnull(row['# of Items']) else 1 # If null assign 'items' with 1
+    total_sales = float(row['Sales']) if pd.notnull(row['Sales']) else 0.0 # If null assign 'sales' with 0
+    sales_per_item = (total_sales / items) if items > 0 else 0.0 # TODO: redundant ternary operation ('items' is inherently > 0)
     for _ in range(items):
         split_rows.append({
             'Order Coupon Code(s)': row.get('Order Coupon Code(s)', ''),

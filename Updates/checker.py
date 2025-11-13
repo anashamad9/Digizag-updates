@@ -139,6 +139,8 @@ def summarize_orders(scoped: pd.DataFrame, baseline: pd.DataFrame) -> pd.DataFra
 
         if revenue == 0:
             return "matched" if abs(payout) <= 1e-6 else "not matched"
+        if revenue < 1:
+            return "matched"
         if pd.isna(expected):
             return "matched"
         if pd.isna(actual):

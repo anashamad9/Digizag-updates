@@ -5,7 +5,6 @@ from typing import Optional
 
 import pandas as pd
 
-# ========= CONFIG =========
 # Affiliate (partner) ID to inspect; set to "all" to include every ID.
 TARGET_AFFILIATE_ID = "all"
 

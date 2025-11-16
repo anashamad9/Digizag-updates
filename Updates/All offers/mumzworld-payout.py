@@ -18,7 +18,8 @@ FALLBACK_AFFILIATE_ID = "1"
 # Local files
 AFFILIATE_XLSX   = "Offers Coupons.xlsx"
 AFFILIATE_SHEET  = "Mumzworld"
-REPORT_PREFIX    = "DigiZag Dashboard_Commission Dashboard_Table"  # suffix like " (1).csv" is OK
+# Latest dashboard export lives under this prefix (suffix like " (1).csv" still OK)
+REPORT_PREFIX    = "DigiZag Dashboard - Marketing_Commission Dashboard_Table"
 OUTPUT_CSV       = "mumzworld.csv"
 
 # =======================

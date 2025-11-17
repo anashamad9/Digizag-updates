@@ -2,6 +2,8 @@ import pandas as pd
 import os
 from datetime import datetime
 
+AED_TO_USD_DIVISOR = 3.67
+
 # Define directory paths relative to the script location
 script_dir = os.path.dirname(os.path.abspath(__file__))
 updates_dir = os.path.dirname(os.path.dirname(script_dir))
@@ -68,15 +70,15 @@ for _, row in df.iterrows():
 
     publisher_id_raw = normalize_publisher_id(row.get('publisher_reference', ''))
     publisher_id_clean = remap_publisher_id(publisher_id_raw)
-    revenue = safe_number(row.get('item_publisher_commission', 0))
-    sale_value = safe_number(row.get('item_value', 0))
+    revenue = safe_number(row.get('item_publisher_commission', 0)) / AED_TO_USD_DIVISOR
+    sale_value = safe_number(row.get('item_value', 0)) / AED_TO_USD_DIVISOR
     payout = calculate_payout(publisher_id_clean, revenue, sale_value)
     coupon_value = '14796' if publisher_id_clean == '2345' else 'link'
 
     output_data.append({
-        'offer id': 1276,
-        'affiliate id': publisher_id_clean,
-        'datetime': formatted_date,
+        'offer': 1276,
+        'affiliate_id': publisher_id_clean,
+        'date': formatted_date,
         'status': 'pending',
         'payout': payout,
         'revenue': revenue,  # Match column AC

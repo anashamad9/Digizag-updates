@@ -248,15 +248,16 @@ def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.Data
 # =======================
 df_raw = pd.read_csv(source_path, header=0)
 
-col_date_idx   = xl_col_to_index("E")
-col_sale_idx   = xl_col_to_index("W")
-col_type_idx   = xl_col_to_index("X")
-col_coupon_idx = xl_col_to_index("AJ")
+col_date_idx      = xl_col_to_index("E")
+col_sale_idx      = xl_col_to_index("W")
+col_type_idx      = xl_col_to_index("X")
+col_coupon_idx    = xl_col_to_index("AJ")
+col_publisher_idx = xl_col_to_index("B")
 
-max_needed = max(col_date_idx, col_sale_idx, col_type_idx, col_coupon_idx)
+max_needed = max(col_date_idx, col_sale_idx, col_type_idx, col_coupon_idx, col_publisher_idx)
 if df_raw.shape[1] <= max_needed:
     raise IndexError(
-        f"CSV has {df_raw.shape[1]} columns, need ≥ {max_needed+1} to access E/W/X/AJ."
+        f"CSV has {df_raw.shape[1]} columns, need ≥ {max_needed+1} to access B/E/W/X/AJ."
     )
 
 df = pd.DataFrame({
@@ -264,6 +265,7 @@ df = pd.DataFrame({
     "sale_raw":   df_raw.iloc[:, col_sale_idx],
     "cust_type":  df_raw.iloc[:, col_type_idx],
     "coupon_raw": df_raw.iloc[:, col_coupon_idx],
+    "publisher_id": df_raw.iloc[:, col_publisher_idx],
 })
 
 # =======================
@@ -280,6 +282,8 @@ df["sale_amount"] = pd.to_numeric(df["sale_raw"], errors="coerce").fillna(0.0) /
 
 def is_new(val) -> bool:
     return "new" in str(val).strip().lower()
+
+df["publisher_id"] = df["publisher_id"].fillna("").astype(str).str.strip()
 
 # Revenue rule: 10% new, 5% old
 df["revenue"] = df.apply(lambda r: r["sale_amount"] * (0.10 if is_new(r["cust_type"]) else 0.05), axis=1)
@@ -304,6 +308,10 @@ df_joined['pct_fraction'] = pd.to_numeric(pct_effective, errors='coerce').fillna
 fixed_effective = df_joined['fixed_new'].where(is_new_customer, df_joined['fixed_old'])
 df_joined['fixed_amount'] = pd.to_numeric(fixed_effective, errors='coerce')
 
+df_joined['publisher_id'] = df_joined['publisher_id'].fillna("").astype(str).str.strip()
+blank_publishers = int(df_joined['publisher_id'].eq("").sum())
+if blank_publishers:
+    print(f"Rows missing publisher_id (relying on voucher mapping): {blank_publishers}")
 missing_aff = df_joined["affiliate_ID"].isna() | (df_joined["affiliate_ID"].astype(str).str.strip() == "")
 
 # Compute payout by type

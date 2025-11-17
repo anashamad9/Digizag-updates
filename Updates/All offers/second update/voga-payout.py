@@ -2,6 +2,7 @@ import pandas as pd
 from datetime import datetime, timedelta
 import os
 import re
+import zipfile
 
 # =======================
 # CONFIG
@@ -44,35 +45,51 @@ print(f"Window: {start_date} ≤ date < {end_exclusive} (last {days_back} day(s)
 # =======================
 # HELPERS
 # =======================
-def find_matching_csv(directory: str, prefix: str) -> str:
+def find_matching_zip(directory: str, prefix: str) -> str:
     """
-    Find a .csv in `directory` whose base filename starts with `prefix` (case-insensitive).
-    - Ignores temporary files like '~$...'
-    - Prefers exact '<prefix>.csv' if present
-    - Otherwise returns the newest by modified time
+    Find a .zip in `directory` whose base filename starts with `prefix` (case-insensitive).
+    Returns newest zip (preferring exact '<prefix>.zip' when present).
     """
     prefix_lower = prefix.lower()
     candidates = []
     for fname in os.listdir(directory):
         if fname.startswith("~$"):
             continue
-        if not fname.lower().endswith(".csv"):
+        if not fname.lower().endswith(".zip"):
             continue
         base = os.path.splitext(fname)[0].lower()
         if base.startswith(prefix_lower):
             candidates.append(os.path.join(directory, fname))
 
     if not candidates:
-        available = [f for f in os.listdir(directory) if f.lower().endswith(".csv")]
+        available = [f for f in os.listdir(directory) if f.lower().endswith(".zip")]
         raise FileNotFoundError(
-            f"No .csv file starting with '{prefix}' found in: {directory}\n"
-            f"Available .csv files: {available}"
+            f"No .zip file starting with '{prefix}' found in: {directory}\n"
+            f"Available .zip files: {available}"
         )
 
-    exact = [p for p in candidates if os.path.basename(p).lower() == (prefix_lower + ".csv")]
+    exact = [p for p in candidates if os.path.basename(p).lower() == (prefix_lower + ".zip")]
     if exact:
         return exact[0]
     return max(candidates, key=os.path.getmtime)
+
+def read_first_csv_from_zip(zip_path: str, prefix_hint: str) -> pd.DataFrame:
+    """
+    Read the first CSV from the zip file.
+    Preference order:
+      1. CSV whose base name starts with prefix_hint
+      2. Any CSV (alphabetical)
+    """
+    with zipfile.ZipFile(zip_path) as zf:
+        csv_names = [n for n in zf.namelist() if not n.endswith("/") and n.lower().endswith(".csv")]
+        if not csv_names:
+            raise FileNotFoundError(f"{zip_path} does not contain a .csv file")
+
+        prefix_lower = prefix_hint.lower()
+        pref = [n for n in csv_names if os.path.splitext(os.path.basename(n))[0].lower().startswith(prefix_lower)]
+        target = pref[0] if pref else sorted(csv_names)[0]
+        with zf.open(target) as fh:
+            return pd.read_csv(fh)
 
 def normalize_coupon(x: str) -> str:
     """Trim/uppercase. If multiple codes separated by ; , or whitespace, take the first token."""
@@ -167,14 +184,14 @@ def prep_and_expand(df: pd.DataFrame, pct: float, user_tag: str) -> pd.DataFrame
 # =======================
 # LOAD & PREP FTU / RTU
 # =======================
-# Dynamically select the changing report CSVs
-ftu_path = find_matching_csv(input_dir, FTU_PREFIX)
-rtu_path = find_matching_csv(input_dir, RTU_PREFIX)
-print(f"Using FTU file: {ftu_path}")
-print(f"Using RTU file: {rtu_path}")
+# Dynamically select the changing report ZIPs
+ftu_zip = find_matching_zip(input_dir, FTU_PREFIX)
+rtu_zip = find_matching_zip(input_dir, RTU_PREFIX)
+print(f"Using FTU zip: {ftu_zip}")
+print(f"Using RTU zip: {rtu_zip}")
 
-df_ftu = pd.read_csv(ftu_path)
-df_rtu = pd.read_csv(rtu_path)
+df_ftu = read_first_csv_from_zip(ftu_zip, FTU_PREFIX)
+df_rtu = read_first_csv_from_zip(rtu_zip, RTU_PREFIX)
 
 # Adjust these base platform revenue rates if needed
 ftu_exp = prep_and_expand(df_ftu, pct=0.20, user_tag="FTU")  # 20% FTU

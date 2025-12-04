@@ -3,26 +3,26 @@ import os
 from datetime import datetime, timedelta
 
 # ====== CONFIG ======
-folder_path = "/Users/digizagoperation/Desktop/Digizag/Updates/Output Data"
+folder_path = "/Users/lenovo/Documents/GitHub/Digizag-updates/Updates/Output Data"
 ADMIN_CSV   = "Partnership Teams View_Performance Overview_Table (31).csv"
 FINAL_CSV   = "finaaaaaaaaaaaaaaaaal.csv"
 FINAL_XLSX  = "finaaaaaaaaaaaaaaaaal.xlsx"   # NEW: styled Excel with red alerts
 
 # Offers allowed to include up to current_date (exceptions from your old logic)
-EXCEPTION_OFFERS = {
-    910,   # Vogacloset
-    1101,  # Sun & Sand
-    1159,  # Level Shoes
-    1166,  # Noon (GCC)
-    1183,  # Riva Fashion
-    1189,  # Namshi
-    1256,  # Airalo
-    1276,  # Farfetch
-    1282,  # Noon Egypt
-    1325,  # 6th Street
-    1345,  # Whites Pharmacy
-    1352,  # EZ Hire
-}
+# EXCEPTION_OFFERS = {
+#     910,   # Vogacloset
+#     1101,  # Sun & Sand
+#     1159,  # Level Shoes
+#     1166,  # Noon (GCC)
+#     1183,  # Riva Fashion
+#     1189,  # Namshi
+#     1256,  # Airalo
+#     1276,  # Farfetch
+#     1282,  # Noon Egypt
+#     1325,  # 6th Street
+#     1345,  # Whites Pharmacy
+#     1352,  # EZ Hire
+# }
 
 # ====== LOAD LAST UPDATE MAP ======
 admin_path = os.path.join(folder_path, ADMIN_CSV)
@@ -104,10 +104,10 @@ def should_keep_row(row_date, offer_id):
     if pd.isna(row_date) or pd.isna(last_update_dt) or offer_id is None:
         return False
 
-    if offer_id in EXCEPTION_OFFERS:
-        return (row_date >= (last_update_dt)) and (row_date <= current_date)
-    else:
-        return (row_date >= (last_update_dt + pd.Timedelta(days=1))) and (row_date <= prev_day)
+    # if offer_id in EXCEPTION_OFFERS:
+    #     return (row_date >= (last_update_dt)) and (row_date <= current_date)
+    # else:
+    return (row_date >= (last_update_dt + pd.Timedelta(days=1))) and (row_date <= prev_day)
 
 # ====== GATHER FILES ======
 all_dataframes = []

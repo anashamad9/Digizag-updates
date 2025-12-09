@@ -140,14 +140,14 @@ def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.Data
     aff_col = cols_lower.get('id') or cols_lower.get('affiliate_id')
     type_col = need('type')
     payout_col = cols_lower.get('payout')
-    # new_col = cols_lower.get('new customer payout')
-    # old_col = cols_lower.get('old customer payout')
+    new_col = cols_lower.get('new customer payout')
+    old_col = cols_lower.get('old customer payout')
 
-    rev_col = cols_lower.get('total revenue')
+    # rev_col = cols_lower.get('total revenue')
 
     if not aff_col:
         raise ValueError(f"[{sheet_name}] must contain an 'ID' (or 'affiliate_ID') column.")
-    if not (payout_col or rev_col):
+    if not (payout_col or new_col or old_col):
         raise ValueError(f"[{sheet_name}] must contain at least one payout column (e.g., 'payout').")
 
     def extract_numeric(col_name: str) -> pd.Series:
@@ -157,9 +157,9 @@ def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.Data
         return pd.to_numeric(raw, errors='coerce')
 
     payout_any = extract_numeric(payout_col)
-    # payout_new_raw = extract_numeric(new_col).fillna(payout_any)
-    # payout_old_raw = extract_numeric(old_col).fillna(payout_any)
-    payout_raw = extract_numeric(rev_col).fillna(payout_any)
+    payout_new_raw = extract_numeric(new_col).fillna(payout_any)
+    payout_old_raw = extract_numeric(old_col).fillna(payout_any)
+    # payout_raw = extract_numeric(rev_col).fillna(payout_any)
 
     type_norm = (
         df_sheet[type_col]
@@ -177,18 +177,18 @@ def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.Data
     def fixed_from(values: pd.Series) -> pd.Series:
         return values.where(type_norm.eq('fixed'))
 
-    # pct_new = pct_from(payout_new_raw)
-    # pct_old = pct_from(payout_old_raw)
-    pct_old = pct_from(payout_raw)
+    pct_new = pct_from(payout_new_raw)
+    pct_old = pct_from(payout_old_raw)
+    # pct_old = pct_from(payout_raw)
     pct_new = pct_new.fillna(pct_old)
     pct_old = pct_old.fillna(pct_new)
 
-    # fixed_new = fixed_from(payout_new_raw)
-    # fixed_old = fixed_from(payout_old_raw)
-    # fixed_new = fixed_new.fillna(fixed_old)
-    # fixed_old = fixed_old.fillna(fixed_new)
+    fixed_new = fixed_from(payout_new_raw)
+    fixed_old = fixed_from(payout_old_raw)
+    fixed_new = fixed_new.fillna(fixed_old)
+    fixed_old = fixed_old.fillna(fixed_new)
 
-    fixed = fixed_from(payout_raw)
+    # fixed = fixed_from(payout_raw)
 
     out = pd.DataFrame({
         'code_norm': df_sheet[code_col].apply(normalize_coupon),
@@ -196,9 +196,9 @@ def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.Data
         'type_norm': type_norm,
         'pct_new': pd.to_numeric(pct_new, errors='coerce').fillna(DEFAULT_PCT_IF_MISSING),
         'pct_old': pd.to_numeric(pct_old, errors='coerce').fillna(DEFAULT_PCT_IF_MISSING),
-        # 'fixed_new': pd.to_numeric(fixed_new, errors='coerce'),
-        # 'fixed_old': pd.to_numeric(fixed_old, errors='coerce'),
-        'fixed': pd.to_numeric(fixed, errors='coerce')
+        'fixed_new': pd.to_numeric(fixed_new, errors='coerce'),
+        'fixed_old': pd.to_numeric(fixed_old, errors='coerce'),
+        # 'fixed': pd.to_numeric(fixed, errors='coerce')
     }).dropna(subset=['code_norm'])
 
     return out.drop_duplicates(subset=['code_norm'], keep='last')
@@ -286,21 +286,20 @@ for _, row in df.iterrows():
     #         })
     
     try:
-        total_new_rev = float(row['Total Revenue'])
+        total_rev = float(row['Total Revenue'])
     except Exception:
-        total_new_rev = 0.0
-    sale_per = (total_new_rev / orders) if orders else 0.0
+        total_rev = 0.0
+    sale_per = (total_rev / orders) if orders else 0.0
     for _ in range(orders):
         expanded.append({
             'order_date': order_date,
             'country': row.get('Country'),
-            'user_type': 'New',
+            'user_type': row.get('new_vs_ret'),
             'sale_amount': sale_per,
             'coupon_code': coupon_raw,
             # platform revenue (per your earlier logic)
-            'revenue': sale_per * (0.08 if row['new_vs_ret'] == 'new' else 0.03)
+            'revenue': sale_per * (0.08 if row['new_vs_ret'] == 'New' else 0.03)
         })
-
 
 df_expanded = pd.DataFrame(expanded)
 if df_expanded.empty:

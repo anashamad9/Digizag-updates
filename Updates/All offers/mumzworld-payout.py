@@ -19,7 +19,7 @@ FALLBACK_AFFILIATE_ID = "1"
 AFFILIATE_XLSX   = "Offers Coupons.xlsx"
 AFFILIATE_SHEET  = "Mumzworld"
 # Latest dashboard export lives under this prefix (suffix like " (1).csv" still OK)
-REPORT_PREFIX    = "DigiZag Dashboard - Marketing_Commission Dashboard_Table"
+REPORT_PREFIX    = "Mumz Agency Dashboard - Marketing_Untitled Page_Table (1)"
 OUTPUT_CSV       = "mumzworld.csv"
 
 # =======================
@@ -76,6 +76,8 @@ def infer_is_new_customer(df: pd.DataFrame) -> pd.Series:
         'type_customer',
         'type customer',
         'audience',
+        'new_vs_ret',
+        'new vs ret'
     ]
 
     new_tokens = {
@@ -110,6 +112,7 @@ def infer_is_new_customer(df: pd.DataFrame) -> pd.Series:
             resolved.loc[recognized] = True
         if resolved.all():
             break
+
     return result
 
 
@@ -226,53 +229,71 @@ print(f"Using input file: {os.path.basename(input_file)}")
 
 df = pd.read_csv(input_file)
 
-# Ensure Date_ordered is datetime & within the window (exclude today)
-df['Date_ordered'] = pd.to_datetime(df['Date_ordered'], format='%b %d, %Y', errors='coerce')
-df = df.dropna(subset=['Date_ordered'])
-df = df[(df['Date_ordered'].dt.date >= start_date) & (df['Date_ordered'].dt.date < end_date)]
+# Ensure Date ordered is datetime & within the window (exclude today)
+df['Date ordered'] = pd.to_datetime(df['Date ordered'], format='%b %d, %Y', errors='coerce')
+df = df.dropna(subset=['Date ordered'])
+df = df[(df['Date ordered'].dt.date >= start_date) & (df['Date ordered'].dt.date < end_date)]
 
 # Expand rows by # Orders New/Repeat and compute per-order sale_amount + platform revenue
 expanded = []
 for _, row in df.iterrows():
-    new_orders    = int(row.get('# Orders New Customers', 0) or 0)
-    repeat_orders = int(row.get('# Orders Repeat Customers', 0) or 0)
-    order_date    = row['Date_ordered']  # keep datetime
-    coupon_raw    = row.get('follower_code')
+    # new_orders    = int(row.get('# Orders New Customers', 0) or 0)
+    # repeat_orders = int(row.get('# Orders Repeat Customers', 0) or 0)
+    orders = int(row.get('Total Orders', 0) or 0)
+    order_date    = row['Date ordered']  # keep datetime
+    coupon_raw    = row.get('Coupon code')
 
-    # New
-    if new_orders > 0 and pd.notnull(row.get('New Cust Revenue')):
-        try:
-            total_new_rev = float(row['New Cust Revenue'])
-        except Exception:
-            total_new_rev = 0.0
-        sale_per = (total_new_rev / new_orders) if new_orders else 0.0
-        for _ in range(new_orders):
-            expanded.append({
-                'order_date': order_date,
-                'country': row.get('Country'),
-                'user_type': 'New',
-                'sale_amount': sale_per,
-                'coupon_code': coupon_raw,
-                # platform revenue (per your earlier logic)
-                'revenue': sale_per * 0.08
-            })
+    # # New
+    # if new_orders > 0 and pd.notnull(row.get('New Cust Revenue')):
+    #     try:
+    #         total_new_rev = float(row['New Cust Revenue'])
+    #     except Exception:
+    #         total_new_rev = 0.0
+    #     sale_per = (total_new_rev / new_orders) if new_orders else 0.0
+    #     for _ in range(new_orders):
+    #         expanded.append({
+    #             'order_date': order_date,
+    #             'country': row.get('Country'),
+    #             'user_type': 'New',
+    #             'sale_amount': sale_per,
+    #             'coupon_code': coupon_raw,
+    #             # platform revenue (per your earlier logic)
+    #             'revenue': sale_per * 0.08
+    #         })
 
-    # Repeat
-    if repeat_orders > 0 and pd.notnull(row.get('Repeat Cust Revenue')):
-        try:
-            total_rep_rev = float(row['Repeat Cust Revenue'])
-        except Exception:
-            total_rep_rev = 0.0
-        sale_per = (total_rep_rev / repeat_orders) if repeat_orders else 0.0
-        for _ in range(repeat_orders):
-            expanded.append({
-                'order_date': order_date,
-                'country': row.get('Country'),
-                'user_type': 'Repeat',
-                'sale_amount': sale_per,
-                'coupon_code': coupon_raw,
-                'revenue': sale_per * 0.03
-            })
+    # # Repeat
+    # if repeat_orders > 0 and pd.notnull(row.get('Repeat Cust Revenue')):
+    #     try:
+    #         total_rep_rev = float(row['Repeat Cust Revenue'])
+    #     except Exception:
+    #         total_rep_rev = 0.0
+    #     sale_per = (total_rep_rev / repeat_orders) if repeat_orders else 0.0
+    #     for _ in range(repeat_orders):
+    #         expanded.append({
+    #             'order_date': order_date,
+    #             'country': row.get('Country'),
+    #             'user_type': 'Repeat',
+    #             'sale_amount': sale_per,
+    #             'coupon_code': coupon_raw,
+    #             'revenue': sale_per * 0.03
+    #         })
+    
+    try:
+        total_new_rev = float(row['New Cust Revenue'])
+    except Exception:
+        total_new_rev = 0.0
+    sale_per = (total_new_rev / orders) if orders else 0.0
+    for _ in range(orders):
+        expanded.append({
+            'order_date': order_date,
+            'country': row.get('Country'),
+            'user_type': 'New',
+            'sale_amount': sale_per,
+            'coupon_code': coupon_raw,
+            # platform revenue (per your earlier logic)
+            'revenue': sale_per * (0.08 if row['new_vs_ret'] == 'new' else 0.03)
+        })
+
 
 df_expanded = pd.DataFrame(expanded)
 if df_expanded.empty:

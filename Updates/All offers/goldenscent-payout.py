@@ -217,7 +217,7 @@ final_df = pd.DataFrame({
     'status': "Pending",
     'payout': new_df['Payout'],
     'revenue': new_df['Revenue'],
-    'sale_amount': new_df['Sale Amount'],
+    'sale_amount': 0.0,
     'coupon': new_df['Code'],
     'geo': GEO
 })

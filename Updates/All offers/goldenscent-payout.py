@@ -6,15 +6,13 @@ import unicodedata
 # =======================
 # CONFIG
 # =======================
-# Choose how many days back to include (rows from [today - days_back, today), i.e., exclude today)
-days_back = 30
 
 OFFER_ID = 1333
 STATUS_DEFAULT = "pending"
 DEFAULT_PCT_IF_MISSING = 0.0
 FALLBACK_AFFILIATE_ID = "1"
 GEO = 'ksa'
-
+USD_TO_SAR = 3.75
 
 # Local files
 AFFILIATE_XLSX   = "Offers Coupons.xlsx"
@@ -157,7 +155,7 @@ input_file = find_latest_csv_by_prefix(input_dir, REPORT_PREFIX)
 aff_file = load_affiliate_mapping_from_xlsx(affiliate_xlsx_path, AFFILIATE_SHEET)
 
 df = pd.read_csv(input_file)
-unwanted = ['Revenue (SAR)', 'Delivered Orders', 'PayOut - Gross Orders', 'PayOut - Del.Orders', 'Rev For New Cust.', 'Rev For Repeat Cust.', 'Agency Name', 'App URL']
+unwanted = ['Delivered Orders', 'PayOut - Gross Orders', 'PayOut - Del.Orders', 'Rev For New Cust.', 'Rev For Repeat Cust.', 'Agency Name', 'App URL']
 
 df.drop(unwanted, axis=1, inplace=True)
 
@@ -167,11 +165,15 @@ df['Old Customers (Del. Orders)'] = df['Gross Orders'] - df['New Customers (Del.
 
 df['Coupon Code'] = df['Coupon Code'].apply(normalize_coupon)
 
+df['Revenue (SAR)'] = df['Revenue (SAR)'] / USD_TO_SAR
+df['Revenue (SAR)'] = df['Revenue (SAR)'].apply(round, 2)
+
 new_df = pd.DataFrame({
     "Offer": pd.Series(OFFER_ID, dtype=str),
     "Code": pd.Series([], dtype=str),
     "Date": pd.NA,
-    "Revenue": pd.Series([], dtype=float)
+    "Revenue": pd.Series([], dtype=float),
+    "Sale Amount": pd.Series([], dtype=float)
 })
 
 # print(new_df)
@@ -184,11 +186,13 @@ for _, row in df.iterrows():
 
     new_orders = row.get("New Customers (Del. Orders)")
     old_orders = row.get("Old Customers (Del. Orders)")
+    sale_amount = row.get("Revenue (SAR)") / (new_orders + old_orders)
 
     for new_sale in range(new_orders):
         new_df.loc[i, 'Offer'] = OFFER_ID
         new_df.loc[i, 'Code'] = row.get('Coupon Code')
         new_df.loc[i, 'Revenue'] = 10
+        new_df.loc[i, 'Sale Amount'] = sale_amount
 
         i+=1
 
@@ -196,6 +200,7 @@ for _, row in df.iterrows():
         new_df.loc[i, 'Offer'] = OFFER_ID
         new_df.loc[i, 'Code'] = row.get('Coupon Code')
         new_df.loc[i, 'Revenue'] = 5
+        new_df.loc[i, 'Sale Amount'] = sale_amount
 
         i+=1
 
@@ -206,14 +211,15 @@ new_df = new_df.merge(aff_file, how="left", left_on="Code", right_on = "code_nor
 new_df['Payout'] = new_df['Revenue'] * new_df['pct_new']
 
 final_df = pd.DataFrame({
-    'Offer': OFFER_ID,
-    'Code': new_df['Code'],
-    'Date': pd.NA,
-    'Revenue': new_df['Revenue'],
-    'Affiliate_ID': new_df['affiliate_ID'],
-    'Payout': new_df['Payout'],
-    'Status': "Pending",
-    'Geo': GEO
+    'offer': OFFER_ID,
+    'affiliate_id': new_df['affiliate_ID'],
+    'date': pd.NA,
+    'status': "Pending",
+    'payout': new_df['Payout'],
+    'revenue': new_df['Revenue'],
+    'sale_amount': new_df['Sale Amount'],
+    'coupon': new_df['Code'],
+    'geo': GEO
 })
 
 print(final_df.head(100))

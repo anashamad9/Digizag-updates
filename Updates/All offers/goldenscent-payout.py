@@ -1,5 +1,4 @@
 import pandas as pd
-from datetime import datetime, timedelta
 import os
 import re
 import unicodedata
@@ -190,25 +189,25 @@ for _, row in df.iterrows():
     new_orders = row.get("New Customers (Del. Orders)")
     old_orders = row.get("Old Customers (Del. Orders)")
 
-    for new_sale in range(new_orders):
+    for new_sale in range(new_orders): #Create new rows by iterating amount of new orders
         new_df.loc[i, 'Offer'] = OFFER_ID
         new_df.loc[i, 'Code'] = row.get('Coupon Code')
         new_df.loc[i, 'Revenue'] = 10
 
         i+=1
 
-    for old_sale in range(old_orders):
+    for old_sale in range(old_orders): #Create new rows by iterating amount of old orders
         new_df.loc[i, 'Offer'] = OFFER_ID
         new_df.loc[i, 'Code'] = row.get('Coupon Code')
         new_df.loc[i, 'Revenue'] = 5
 
         i+=1
 
-del df
+del df #Saving memory
 
 new_df = new_df.merge(aff_file, how="left", left_on="Code", right_on = "code_norm")
 
-new_df['Payout'] = new_df['Revenue'] * new_df['pct_new']
+new_df['Payout'] = new_df['Revenue'] * new_df['pct_new'] #Always use new payout percentage (right?)
 
 final_df = pd.DataFrame({
     'offer': OFFER_ID,
@@ -222,6 +221,6 @@ final_df = pd.DataFrame({
     'geo': GEO
 })
 
-print(final_df.head(100))
+print(final_df.head(100)) 
 
 final_df.to_csv(output_file, index = False)

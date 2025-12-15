@@ -228,7 +228,9 @@ print(f"Total rows before filtering: {before}")
 print(f"Rows with invalid dates dropped: {before - len(df)}")
 
 # Filter accepted & date range (inclusive of end_date)
-df_filtered = df[df['status'].astype(str).str.upper() == 'ACCEPTED'].copy()
+# df_filtered = df[df['status'].astype(str).str.upper() == 'ACCEPTED'].copy()
+df_filtered = df.copy()
+del df
 df_filtered = df_filtered[
     (df_filtered['Voucher_applied_date'].dt.date >= start_date) &
     (df_filtered['Voucher_applied_date'].dt.date <= end_date)

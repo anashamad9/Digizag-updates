@@ -92,7 +92,7 @@ def standardize_columns(df):
 
     return df
 
-def should_keep_row(row_date, offer_id):
+def should_keep_row(row_date, offer_id, revenue):
     """
     Apply date filtering based on Last Update.
     - Default: keep rows where (last_update + 1 day) <= row_date <= prev_day
@@ -100,8 +100,9 @@ def should_keep_row(row_date, offer_id):
     """
     last_update_raw = update_dict.get(offer_id, '01-01-2025')
     last_update_dt = pd.to_datetime(last_update_raw, format='%b %d, %Y', errors='coerce')
+    # last_revenue = update_dict.get('revenue')
 
-    if pd.isna(row_date) or pd.isna(last_update_dt) or offer_id is None:
+    if pd.isna(row_date) or pd.isna(last_update_dt) or offer_id is None or (revenue == 0):
         return False
 
     # if offer_id in EXCEPTION_OFFERS:
@@ -133,7 +134,7 @@ for filename in os.listdir(folder_path):
 
     # Filter by last update logic
     df_filtered = df[df.apply(
-        lambda r: should_keep_row(r['date'], int(r['offer']) if pd.notna(r['offer']) else None),
+        lambda r: should_keep_row(r['date'], int(r['offer']) if pd.notna(r['offer']) else None, r.get("revenue")),
         axis=1
     )].copy()
 

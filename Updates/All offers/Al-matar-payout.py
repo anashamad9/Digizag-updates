@@ -266,7 +266,7 @@ today = end_date
 df_filtered = df[(df[date_col].dt.date >= start_date) & (df[date_col].dt.date < today)].copy()
 
 # Keep only success rows in status (column C)
-df_filtered = df_filtered[df_filtered[status_col].astype(str).str.lower().str.strip().eq("success")].copy()
+# df_filtered = df_filtered[df_filtered[status_col].astype(str).str.lower().str.strip().eq("success")].copy()
 
 # Sale amount from "Revenue - BE (SAR)" divided by 3.67
 low = {c.lower().strip(): c for c in df_filtered.columns}

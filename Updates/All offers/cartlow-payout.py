@@ -263,7 +263,7 @@ df = df.dropna(subset=['Order Date'])
 # Filter: last N days, not Cancelled, exclude today
 df_filtered = df[
     (df['Order Date'].dt.date >= start_date) &
-    (~df['Order Status'].astype(str).str.contains('Cancelled', case=False, na=False)) &
+    # (~df['Order Status'].astype(str).str.contains('Cancelled', case=False, na=False)) &
     (df['Order Date'].dt.date < today)
 ].copy()
 

@@ -18,7 +18,6 @@ AFFILIATE_XLSX   = "Offers Coupons.xlsx"
 AFFILIATE_SHEET  = "Golden Scent"
 # Latest dashboard export lives under this prefix (suffix like " (1).csv" still OK)
 REPORT_PREFIX    = "Influencer_Agent"
-OUTPUT_CSV       = "goldenscent.csv"
 
 # =======================
 # PATHS
@@ -29,11 +28,13 @@ output_dir = os.path.join(script_dir, '..', 'output data')
 os.makedirs(output_dir, exist_ok=True)
 
 affiliate_xlsx_path = os.path.join(input_dir, AFFILIATE_XLSX)
-output_file         = os.path.join(output_dir, OUTPUT_CSV)
 
 day = input("Day: ")
 month = input("Month: ")
 year = input("Year: ")
+
+OUTPUT_CSV       = f"goldenscent_{month}_{day}_{year}.csv"
+output_file         = os.path.join(output_dir, OUTPUT_CSV)
 
 date = pd.to_datetime(f"{month}/{day}/{year}")
 
@@ -73,6 +74,7 @@ def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.Data
     payout_col = cols_lower.get('payout')
     new_col = cols_lower.get('new customer payout')
     old_col = cols_lower.get('old customer payout')
+    geo = cols_lower.get('geo')
 
     # rev_col = cols_lower.get('total revenue')
 
@@ -129,6 +131,7 @@ def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.Data
         'pct_old': pd.to_numeric(pct_old, errors='coerce').fillna(DEFAULT_PCT_IF_MISSING),
         'fixed_new': pd.to_numeric(fixed_new, errors='coerce'),
         'fixed_old': pd.to_numeric(fixed_old, errors='coerce'),
+        'geo': df_sheet[geo].apply(str.lower)
         # 'fixed': pd.to_numeric(fixed, errors='coerce')
     }).dropna(subset=['code_norm'])
 
@@ -207,6 +210,8 @@ del df #Saving memory
 
 new_df = new_df.merge(aff_file, how="left", left_on="Code", right_on = "code_norm")
 
+print(new_df.columns)
+
 new_df['Payout'] = new_df['Revenue'] * new_df['pct_new'] #Always use new payout percentage (right?)
 
 final_df = pd.DataFrame({
@@ -218,7 +223,7 @@ final_df = pd.DataFrame({
     'revenue': new_df['Revenue'],
     'sale_amount': 0.0,
     'coupon': new_df['Code'],
-    'geo': GEO
+    'geo': new_df['geo']
 })
 
 print(final_df.head(100)) 

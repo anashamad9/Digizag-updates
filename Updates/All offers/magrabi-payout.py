@@ -276,7 +276,7 @@ print(f"Total rows before filtering: {before}")
 print(f"Rows with invalid dates dropped: {before - len(df)}")
 
 # Filter out cancelled + date range (exclude today to match common pattern)
-df = df[df[status_col].astype(str).str.strip().str.lower() != 'cancelled']
+# df = df[df[status_col].astype(str).str.strip().str.lower() != 'cancelled']
 df_filtered = df[
     (df['__date_parsed'].dt.date >= start_date) &
     (df['__date_parsed'].dt.date < today)

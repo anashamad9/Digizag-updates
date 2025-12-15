@@ -314,6 +314,8 @@ def load_source(resource: str) -> pd.DataFrame:
 source_resource = SOURCE_RESOURCE or SOURCE_RESOURCE_DEFAULT
 df = load_source(source_resource if SOURCE_RESOURCE else source_path_default)
 
+print(df.columns)
+
 if 'offer_id' in df.columns:
     df = df[df['offer_id'].astype(str).str.strip() == str(OFFER_ID)]
 

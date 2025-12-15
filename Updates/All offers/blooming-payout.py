@@ -239,7 +239,7 @@ print(f"Rows after filtering date range: {len(df_filtered)}")
 # =======================
 # DERIVED FIELDS
 # =======================
-df_filtered['sale_amount'] = (df_filtered['AED_net_amount'] * USD_PER_AED)
+df_filtered['sale_amount'] = (df_filtered['AED_gross_amount'] * USD_PER_AED)
 rate_series = (
     df_filtered['FP_or_MP']
     .astype(str)

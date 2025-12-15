@@ -216,7 +216,7 @@ def resolve_required_columns(df: pd.DataFrame):
         return None
 
     created_date = get("created_date", "created date", "created")
-    aed_net      = get("aed_net_amount", "aed net amount", "aed_net")
+    aed_net      = get("aed_gross_amount", "aed gross amount", "aed_gross")
     country      = get("country")
     coupon       = get("aff_coupon", "coupon", "coupon code", "affiliate coupon")
     fp_or_mp     = get("fp_or_mp", "fp or mp")

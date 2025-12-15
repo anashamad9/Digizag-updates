@@ -32,6 +32,12 @@ os.makedirs(output_dir, exist_ok=True)
 affiliate_xlsx_path = os.path.join(input_dir, AFFILIATE_XLSX)
 output_file         = os.path.join(output_dir, OUTPUT_CSV)
 
+day = input("Day: ")
+month = input("Month: ")
+year = input("Year: ")
+
+date = pd.to_datetime(f"{month}/{day}/{year}")
+
 # =======================
 # HELPERS
 # =======================
@@ -155,7 +161,7 @@ input_file = find_latest_csv_by_prefix(input_dir, REPORT_PREFIX)
 aff_file = load_affiliate_mapping_from_xlsx(affiliate_xlsx_path, AFFILIATE_SHEET)
 
 df = pd.read_csv(input_file)
-unwanted = ['Delivered Orders', 'PayOut - Gross Orders', 'PayOut - Del.Orders', 'Rev For New Cust.', 'Rev For Repeat Cust.', 'Agency Name', 'App URL']
+unwanted = ["Revenue (SAR)", 'Delivered Orders', 'PayOut - Gross Orders', 'PayOut - Del.Orders', 'Rev For New Cust.', 'Rev For Repeat Cust.', 'Agency Name', 'App URL']
 
 df.drop(unwanted, axis=1, inplace=True)
 
@@ -165,15 +171,12 @@ df['Old Customers (Del. Orders)'] = df['Gross Orders'] - df['New Customers (Del.
 
 df['Coupon Code'] = df['Coupon Code'].apply(normalize_coupon)
 
-df['Revenue (SAR)'] = df['Revenue (SAR)'] / USD_TO_SAR
-df['Revenue (SAR)'] = df['Revenue (SAR)'].apply(round, 2)
 
 new_df = pd.DataFrame({
     "Offer": pd.Series(OFFER_ID, dtype=str),
     "Code": pd.Series([], dtype=str),
     "Date": pd.NA,
-    "Revenue": pd.Series([], dtype=float),
-    "Sale Amount": pd.Series([], dtype=float)
+    "Revenue": pd.Series([], dtype=float)
 })
 
 # print(new_df)
@@ -186,13 +189,11 @@ for _, row in df.iterrows():
 
     new_orders = row.get("New Customers (Del. Orders)")
     old_orders = row.get("Old Customers (Del. Orders)")
-    sale_amount = row.get("Revenue (SAR)") / (new_orders + old_orders)
 
     for new_sale in range(new_orders):
         new_df.loc[i, 'Offer'] = OFFER_ID
         new_df.loc[i, 'Code'] = row.get('Coupon Code')
         new_df.loc[i, 'Revenue'] = 10
-        new_df.loc[i, 'Sale Amount'] = sale_amount
 
         i+=1
 
@@ -200,7 +201,6 @@ for _, row in df.iterrows():
         new_df.loc[i, 'Offer'] = OFFER_ID
         new_df.loc[i, 'Code'] = row.get('Coupon Code')
         new_df.loc[i, 'Revenue'] = 5
-        new_df.loc[i, 'Sale Amount'] = sale_amount
 
         i+=1
 
@@ -213,7 +213,7 @@ new_df['Payout'] = new_df['Revenue'] * new_df['pct_new']
 final_df = pd.DataFrame({
     'offer': OFFER_ID,
     'affiliate_id': new_df['affiliate_ID'],
-    'date': pd.NA,
+    'date': date,
     'status': "Pending",
     'payout': new_df['Payout'],
     'revenue': new_df['Revenue'],

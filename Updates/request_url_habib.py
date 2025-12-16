@@ -231,6 +231,6 @@ refined = pd.DataFrame({})
 for d_frame in refined_data:
     refined = pd.concat([refined, d_frame], axis=0)
 
-refined.reset_index(inplace=True)
+refined.reset_index(inplace=True, drop=True)
 
 print(refined)

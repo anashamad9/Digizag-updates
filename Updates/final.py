@@ -102,7 +102,7 @@ def should_keep_row(row_date, offer_id, revenue):
     last_update_dt = pd.to_datetime(last_update_raw, format='%b %d, %Y', errors='coerce')
     # last_revenue = update_dict.get('revenue')
 
-    if pd.isna(row_date) or pd.isna(last_update_dt) or offer_id is None or (revenue == 0):
+    if pd.isna(row_date) or pd.isna(last_update_dt) or offer_id is None or (revenue == 0) or pd.isna(revenue):
         return False
 
     # if offer_id in EXCEPTION_OFFERS:

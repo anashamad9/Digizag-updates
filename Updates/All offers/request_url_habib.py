@@ -391,11 +391,12 @@ for d_frame in refined_data:
 
 refined.reset_index(inplace=True, drop=True)
 
-del_row = list(redundancy_df.loc[:,'Order ID'])
+del_row = redundancy_df.loc[:,'Order ID']
 
-flags = pd.Series(list(map(lambda x: not x in del_row, refined.loc[:,'Order ID'])))
+del_row = del_row.apply(str)
+del_row = del_row.apply(str.strip)
 
-refined = refined[flags]
+refined = refined[~refined['Order ID'].isin(del_row)]
 
 refined.reset_index(inplace=True, drop=True)
 

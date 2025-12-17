@@ -21,6 +21,8 @@ HEADERS_POST = {
     "Accept": "application/json, text/javascript, */*; q=0.01"
 }
 
+OFFER_ID = 1363
+
 day = input('DAY: ')
 month = input('MONTH: ')
 year = input('YEAR: ')
@@ -28,6 +30,7 @@ year = input('YEAR: ')
 SHEET_NAME = "ALHABIB Bedding"
 AFFILIATE_XLSX = "Offers Coupons.xlsx"
 DEFAULT_PCT_IF_MISSING = 0.0
+DEFAULT_AFF_ID_IF_MISSING = '1'
 
 OUTPUT_CSV = f"habib_{month}_{day}_{year}.csv"
 REDUNDANCY_CSV = "Al-Habib"
@@ -130,12 +133,14 @@ def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.Data
 
     out = pd.DataFrame({
         'code_norm': df_sheet[code_col].apply(normalize_coupon),
-        'affiliate_ID': df_sheet[aff_col].fillna('').astype(str).str.strip(),
+        'affiliate_ID': df_sheet[aff_col].fillna('1').astype(str).str.strip(),
         'type_norm': type_norm,
         'pct_new': pd.to_numeric(pct_new, errors='coerce').fillna(DEFAULT_PCT_IF_MISSING),
         'pct_old': pd.to_numeric(pct_old, errors='coerce').fillna(DEFAULT_PCT_IF_MISSING),
         'fixed_new': pd.to_numeric(fixed_new, errors='coerce'),
         'fixed_old': pd.to_numeric(fixed_old, errors='coerce'),
+        'geo': df_sheet['Geo'],
+        'URL': df_sheet['link']
     }).dropna(subset=['code_norm'])
 
     return out.drop_duplicates(subset=['code_norm'], keep='last')
@@ -207,7 +212,7 @@ def fetch_coupon_data(url):
 
     return {
         "url": url,
-        "content": resp2.text   # Real data (HTML fragment)
+        "content": resp2.text   #Raw HTML Data
     }
 
 
@@ -402,4 +407,28 @@ refined = refined[~refined['Order ID'].isin(del_row)]
 
 refined.reset_index(inplace=True, drop=True)
 
+aff_sheet = load_affiliate_mapping_from_xlsx(affiliate_xlsx_path, SHEET_NAME)
+
+refined = refined.merge(aff_sheet, "left", "URL")
+
+print(refined)
+
+final_df = pd.DataFrame({
+    'offer': OFFER_ID,
+    'affiliate_id': refined['affiliate_ID'],
+    'date': pd.to_datetime(f'{month}/{day}/{year}'),
+    'status': 'pending',
+    'payout': refined['Revenue'] * refined['pct_new'],
+    'revenue': refined['Revenue'],
+    'sale amount': refined['Sale Amount'],
+    'coupon': refined['code_norm'],
+    'geo': refined['geo']
+})
+
+print(final_df)
+
 refined.to_csv(output_file)
+
+
+
+# print(aff_sheet)

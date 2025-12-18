@@ -32,8 +32,9 @@ AFFILIATE_XLSX = "Offers Coupons.xlsx"
 DEFAULT_PCT_IF_MISSING = 0.0
 DEFAULT_AFF_ID_IF_MISSING = '1'
 
-OUTPUT_CSV = f"habib_{month}_{day}_{year}.csv"
-REDUNDANCY_CSV = "Al-Habib"
+OUTPUT_CSV = f"habib_{month}_{day}_{year} Only.csv"
+REDUNDANCY_CSV = f"habib"
+INPUT_NEW = f"habib_{month}_{day}_{year}"
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 input_dir  = os.path.join(script_dir, '..', 'input data')
@@ -41,8 +42,9 @@ output_dir = os.path.join(script_dir, '..', 'output data')
 os.makedirs(output_dir, exist_ok=True)
 
 affiliate_xlsx_path = os.path.join(input_dir, AFFILIATE_XLSX)
-# redundancy_csv_path = os.path.join(input_dir, REDUNDANCY_CSV)
+redundancy_csv_path = os.path.join(input_dir, REDUNDANCY_CSV)
 output_file = os.path.join(output_dir, OUTPUT_CSV)
+redun_file = os.path.join(input_dir, INPUT_NEW)
 
 def normalize_coupon(x: str) -> str:
     """Uppercase, trim, and take the first token if multiple codes separated by ; , or whitespace."""
@@ -361,6 +363,22 @@ aff_sheet = load_affiliate_mapping_from_xlsx(affiliate_xlsx_path, SHEET_NAME)
 
 redundancy_df = pd.read_csv(find_latest_csv_by_prefix(input_dir, REDUNDANCY_CSV))
 
+redundancy_columns = ["Code", "Sale Amount", "Revenue", "Order ID"]
+redundancy_df = redundancy_df[redundancy_columns]
+
+print(aff_sheet)
+
+redundancy_df = pd.DataFrame({
+    'Code': pd.Series(redundancy_df['Code'], dtype=str),
+    'Sale Amount': redundancy_df['Sale Amount'],
+    'Revenue': redundancy_df['Revenue'],
+    'Order ID': pd.Series(redundancy_df['Order ID'], dtype=str).apply(lambda x: x.replace(".0",""))
+})
+
+redundancy_df.dropna(inplace=True)
+
+print(redundancy_df)
+
 data = process_urls(urls)
 
 for item in data:
@@ -381,9 +399,9 @@ def get_data(url, content) -> pd.DataFrame:
         revs = list(map(lambda x: x * 0.05, sales))
 
         return pd.DataFrame({
-        'Sale Amount': sales,
-        'Revenue': revs,
-        'Order ID': ids,
+        'Sale Amount': pd.Series(sales,dtype=float),
+        'Revenue': pd.Series(revs,dtype=float),
+        'Order ID': pd.Series(ids,dtype=str),
         'URL': url
         })
 
@@ -411,8 +429,6 @@ aff_sheet = load_affiliate_mapping_from_xlsx(affiliate_xlsx_path, SHEET_NAME)
 
 refined = refined.merge(aff_sheet, "left", "URL")
 
-print(refined)
-
 final_df = pd.DataFrame({
     'offer': OFFER_ID,
     'affiliate_id': refined['affiliate_ID'],
@@ -425,10 +441,19 @@ final_df = pd.DataFrame({
     'geo': refined['geo']
 })
 
-print(final_df)
+# print(final_df)
+# print(refined)
 
-refined.to_csv(output_file)
+final_df.to_csv(output_file, index=False)
 
+redundancy_df = redundancy_df.iloc[:,0:4]
 
+refined.columns = ['Sale Amount', 'Revenue', 'Order ID', 'URL', 'Code',
+       'affiliate_ID', 'type_norm', 'pct_new', 'pct_old', 'fixed_new',
+       'fixed_old', 'geo']
 
-# print(aff_sheet)
+redundancy_df = pd.concat([redundancy_df, refined[['Code', 'Sale Amount', 'Revenue', 'Order ID']]], axis = 0)
+
+# print(redundancy_df)
+
+redundancy_df.to_csv(redun_file, index=False)

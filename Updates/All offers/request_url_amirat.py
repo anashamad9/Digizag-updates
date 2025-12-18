@@ -34,6 +34,7 @@ DEFAULT_AFF_ID_IF_MISSING = '1'
 
 OUTPUT_CSV = f"Dar-AlAmirat_{month}_{day}_{year}.csv"
 REDUNDANCY_CSV = "Dar-AlAmirat"
+INPUT_CSV = F"Dar-AlAmirat_{month}_{day}_{year}.csv"
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 input_dir  = os.path.join(script_dir, '..', 'input data')
@@ -43,6 +44,7 @@ os.makedirs(output_dir, exist_ok=True)
 affiliate_xlsx_path = os.path.join(input_dir, AFFILIATE_XLSX)
 # redundancy_csv_path = os.path.join(input_dir, REDUNDANCY_CSV)
 output_file = os.path.join(output_dir, OUTPUT_CSV)
+redun_file = os.path.join(input_dir, INPUT_CSV)
 
 def normalize_coupon(x: str) -> str:
     """Uppercase, trim, and take the first token if multiple codes separated by ; , or whitespace."""
@@ -361,6 +363,13 @@ aff_sheet = load_affiliate_mapping_from_xlsx(affiliate_xlsx_path, SHEET_NAME)
 
 redundancy_df = pd.read_csv(find_latest_csv_by_prefix(input_dir, REDUNDANCY_CSV))
 
+redundancy_df = pd.DataFrame({
+    'Code': redundancy_df['Code'].apply(str),
+    'Sale Amount': redundancy_df['Sale Amount'],
+    'Revenue': redundancy_df['Revenue'],
+    'ID': redundancy_df['ID'].apply(str).apply(lambda x: x.replace('.0', ''))
+})
+
 data = process_urls(urls)
 
 for item in data:
@@ -427,8 +436,18 @@ final_df = pd.DataFrame({
 
 print(final_df)
 
-refined.to_csv(output_file)
+final_df.to_csv(output_file, index = False)
 
+redundancy_df = redundancy_df.iloc[:,0:4]
 
+refined.columns = ['Sale Amount', 'Revenue', 'ID', 'URL', 'Code',
+       'affiliate_ID', 'type_norm', 'pct_new', 'pct_old', 'fixed_new',
+       'fixed_old', 'geo']
+
+redundancy_df = pd.concat([redundancy_df, refined[['Code', 'Sale Amount', 'Revenue', 'Order ID']]], axis = 0)
+
+# print(redundancy_df)
+
+redundancy_df.to_csv(redun_file, index=False)
 
 # print(aff_sheet)

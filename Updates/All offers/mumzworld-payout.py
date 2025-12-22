@@ -19,7 +19,7 @@ FALLBACK_AFFILIATE_ID = "1"
 AFFILIATE_XLSX   = "Offers Coupons.xlsx"
 AFFILIATE_SHEET  = "Mumzworld"
 # Latest dashboard export lives under this prefix (suffix like " (1).csv" still OK)
-REPORT_PREFIX    = "Mumz Agency Dashboard - Marketing_Untitled Page_Table (1)"
+REPORT_PREFIX    = "Mumz Agency Dashboard - Marketing_Untitled Page_Table"
 OUTPUT_CSV       = "mumzworld.csv"
 
 # =======================

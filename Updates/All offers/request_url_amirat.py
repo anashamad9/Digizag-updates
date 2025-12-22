@@ -422,7 +422,8 @@ refined.reset_index(inplace=True, drop=True)
 
 refined = refined.merge(aff_sheet, "left", "URL")
 
-print(refined)
+refined['Revenue'] = refined['Revenue'] / 3.75
+refined['Sale Amount'] = refined['Sale Amount'] / 3.75
 
 final_df = pd.DataFrame({
     'offer': OFFER_ID,

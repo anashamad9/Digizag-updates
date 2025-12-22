@@ -21,7 +21,7 @@ DAYS_BACK = 30
 
 # Files
 REPORT_PREFIX = "Grasse x Digizag"
-REPORT_SHEET = "Report"
+REPORT_SHEET = "Report DEC"
 AFFILIATE_XLSX = "Offers Coupons.xlsx"
 AFFILIATE_SHEET = "GRASSE PERFUME"
 OUTPUT_CSV = "grasse.csv"

@@ -427,6 +427,9 @@ refined = refined[~refined['Order ID'].isin(del_row)]
 
 refined.reset_index(inplace=True, drop=True)
 
+refined['Revenue'] = refined['Revenue'] / 3.75
+refined['Sale Amount'] = refined['Sale Amount'] / 3.75
+
 aff_sheet = load_affiliate_mapping_from_xlsx(affiliate_xlsx_path, SHEET_NAME)
 
 refined = refined.merge(aff_sheet, "left", "URL")

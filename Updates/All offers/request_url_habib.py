@@ -439,9 +439,9 @@ final_df = pd.DataFrame({
     'affiliate_id': refined['affiliate_ID'],
     'date': pd.to_datetime(f'{month}/{day}/{year}'),
     'status': 'pending',
-    'payout': refined['Revenue'] * refined['pct_new'],
-    'revenue': refined['Revenue'],
-    'sale amount': refined['Sale Amount'],
+    'payout': (refined['Revenue'] * refined['pct_new'])/3.75,
+    'revenue': refined['Revenue']/3.75,
+    'sale amount': refined['Sale Amount']/3.75,
     'coupon': refined['code_norm'],
     'geo': refined['geo']
 })

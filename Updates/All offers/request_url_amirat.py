@@ -422,17 +422,17 @@ refined.reset_index(inplace=True, drop=True)
 
 refined = refined.merge(aff_sheet, "left", "URL")
 
-refined['Revenue'] = refined['Revenue'] / 3.75
-refined['Sale Amount'] = refined['Sale Amount'] / 3.75
+# refined['Revenue'] = refined['Revenue'] / 3.75
+# refined['Sale Amount'] = refined['Sale Amount'] / 3.75
 
 final_df = pd.DataFrame({
     'offer': OFFER_ID,
     'affiliate_id': refined['affiliate_ID'],
     'date': pd.to_datetime(f'{month}/{day}/{year}'),
     'status': 'pending',
-    'payout': refined['Revenue'] * refined['pct_new'],
-    'revenue': refined['Revenue'],
-    'sale amount': refined['Sale Amount'],
+    'payout': (refined['Revenue'] * refined['pct_new'])/3.75,
+    'revenue': refined['Revenue']/3.75,
+    'sale amount': refined['Sale Amount']/3.75,
     'coupon': refined['code_norm'],
     'geo': refined['geo']
 })
@@ -443,11 +443,11 @@ final_df.to_csv(output_file, index = False)
 
 redundancy_df = redundancy_df.iloc[:,0:4]
 
-refined.columns = ['Sale Amount', 'Revenue', 'Order ID', 'URL', 'Code',
+refined.columns = ['Sale Amount', 'Revenue', 'ID', 'URL', 'Code',
        'affiliate_ID', 'type_norm', 'pct_new', 'pct_old', 'fixed_new',
        'fixed_old', 'geo']
 
-redundancy_df = pd.concat([redundancy_df, refined[['Code', 'Sale Amount', 'Revenue', 'Order ID']]], axis = 0)
+redundancy_df = pd.concat([redundancy_df, refined[['Code', 'Sale Amount', 'Revenue', 'ID']]], axis = 0)
 
 # print(redundancy_df)
 

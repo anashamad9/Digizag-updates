@@ -226,6 +226,9 @@ final_df = pd.DataFrame({
     'geo': new_df['geo']
 })
 
+final_df['affiliate_id'] = final_df['affiliate_id'].fillna(FALLBACK_AFFILIATE_ID)
+final_df.loc[final_df['affiliate_id'] == 1, 'payout'] = 0
+
 print(final_df.head(100)) 
 
 final_df.to_csv(output_file, index = False)

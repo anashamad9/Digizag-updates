@@ -427,8 +427,8 @@ refined = refined[~refined['Order ID'].isin(del_row)]
 
 refined.reset_index(inplace=True, drop=True)
 
-refined['Revenue'] = refined['Revenue'] / 3.75
-refined['Sale Amount'] = refined['Sale Amount'] / 3.75
+# refined['Revenue'] = refined['Revenue'] / 3.75
+# refined['Sale Amount'] = refined['Sale Amount'] / 3.75
 
 aff_sheet = load_affiliate_mapping_from_xlsx(affiliate_xlsx_path, SHEET_NAME)
 
@@ -448,6 +448,8 @@ final_df = pd.DataFrame({
 
 # print(final_df)
 # print(refined)
+
+final_df.loc[final_df['affiliate_id'] == '1', 'payout'] = 0.0
 
 final_df.to_csv(output_file, index=False)
 

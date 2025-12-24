@@ -15,14 +15,14 @@ day = input('DAY: ')
 month = input('MONTH: ')
 year = input('YEAR: ')
 
-SHEET_NAME = "Dar Alamirat"
+SHEET_NAME = "ALHABIB Bedding"
 AFFILIATE_XLSX = "Offers Coupons.xlsx"
 DEFAULT_PCT_IF_MISSING = 0.0
 DEFAULT_AFF_ID_IF_MISSING = '1'
 
-OUTPUT_CSV = f"Dar-AlAmirat_{month}_{day}_{year}.csv"
-REDUNDANCY_CSV = "Dar-AlAmirat"
-INPUT_NEW = F"Dar-AlAmirat_{month}_{day}_{year}.csv"
+OUTPUT_CSV = f"habib_{month}_{day}_{year} Only.csv"
+REDUNDANCY_CSV = f"habib"
+INPUT_NEW = f"habib_{month}_{day}_{year}"
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 input_dir  = os.path.join(script_dir, '..', 'input data')
@@ -144,62 +144,44 @@ urls = aff_sheet['URL'].to_list()
 results = []
 
 with sync_playwright() as p:
-    browser = p.chromium.launch(
-        headless=True,
-        slow_mo=50
-    )
-
-    context = browser.new_context(
-        locale="ar-SA",
-        user_agent=(
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-            "AppleWebKit/537.36 (KHTML, like Gecko) "
-            "Chrome/120.0.0.0 Safari/537.36"
-        )
-    )
-
+    browser = p.chromium.launch(headless=True, slow_mo=50)
+    context = browser.new_context(locale="ar-SA")
     page = context.new_page()
 
     for i, url in enumerate(urls, start=1):
         print(f"[{i}/{len(urls)}] Visiting {url}")
 
-        xhr_data = {"content": None}
+        try:
+            # 👇 REGISTER RESPONSE LISTENER FIRST
+            with page.expect_response(
+                lambda r: (
+                    r.request.method == "POST"
+                    and "affiliate-coupon" in r.url
+                    and r.request.resource_type == "xhr"
+                    and r.status == 200
+                ),
+                timeout=15000
+            ) as resp_info:
+                
+                page.goto(url, wait_until="domcontentloaded")
 
-        def handle_response(response):
-            if (
-                response.request.method == "POST"
-                and "affiliate-coupon" in response.url
-                and response.request.resource_type == "xhr"
-            ):
-                try:
-                    xhr_data["content"] = response.text()
-                except:
-                    pass
+            response = resp_info.value
+            data = response.text()
 
-        page.on("response", handle_response)
-
-        page.goto(url, wait_until="networkidle")
-
-        # give JS time to finish XHR
-        page.wait_for_timeout(2000)
-
-        if xhr_data["content"]:
             results.append({
                 "url": url,
-                "data": xhr_data["content"]
+                "data": data
             })
-            print("  ✔ Data captured")
-        else:
+            print("  ✔ XHR captured")
+
+        except Exception as e:
             results.append({
                 "url": url,
-                "error": "XHR not captured"
+                "error": str(e)
             })
-            print(results)
-            print("  ✖ No data")
+            print("  ✖ Failed")
 
-        page.remove_listener("response", handle_response)
-
-        # cooldown (important)
+        # polite cooldown
         time.sleep(6)
 
     browser.close()

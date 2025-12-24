@@ -228,7 +228,7 @@ def process_urls(urls):
         results.append(result)
 
         # polite delay (prevents rate limits)
-        time.sleep(0.7 + random.random() * 0.4)
+        time.sleep(1.2 + random.random() * 1.2)
 
     return results
 

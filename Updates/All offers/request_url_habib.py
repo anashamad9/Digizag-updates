@@ -454,7 +454,7 @@ final_df = pd.DataFrame({
 # print(refined)
 
 final_df.loc[final_df['affiliate_id'] == '1', 'payout'] = 0.0
-final_df.loc[final_df['type'] == 'sale', 'payout'] = refined['sale amount'] * refined['pct_new']
+final_df.loc[final_df['type'] == 'sale', 'payout'] = final_df['sale amount'] * final_df['pct_new']
 final_df.drop(['type', 'pct_new'], axis=1, inplace=True)
 
 final_df.to_csv(output_file, index=False)
@@ -463,7 +463,7 @@ redundancy_df = redundancy_df.iloc[:,0:4]
 
 refined.columns = ['Sale Amount', 'Revenue', 'Order ID', 'URL', 'Code',
        'affiliate_ID', 'type_norm', 'pct_new', 'pct_old', 'fixed_new',
-       'fixed_old', 'geo']
+       'fixed_old', 'geo', 'type']
 
 redundancy_df = pd.concat([redundancy_df, refined[['Code', 'Sale Amount', 'Revenue', 'Order ID']]], axis = 0)
 

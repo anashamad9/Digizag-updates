@@ -142,7 +142,8 @@ def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.Data
         'fixed_new': pd.to_numeric(fixed_new, errors='coerce'),
         'fixed_old': pd.to_numeric(fixed_old, errors='coerce'),
         'geo': df_sheet['Geo'],
-        'URL': df_sheet['link']
+        'URL': df_sheet['link'],
+        'type': df_sheet['type']
     }).dropna(subset=['code_norm'])
 
     return out.drop_duplicates(subset=['code_norm'], keep='last')
@@ -443,13 +444,18 @@ final_df = pd.DataFrame({
     'revenue': refined['Revenue']/3.75,
     'sale amount': refined['Sale Amount']/3.75,
     'coupon': refined['code_norm'],
-    'geo': refined['geo']
+    'geo': refined['geo'],
+    'type': refined['type'],
+    'pct_new': refined['pct_new'],
+    'order id': refined['Order ID']
 })
 
 # print(final_df)
 # print(refined)
 
 final_df.loc[final_df['affiliate_id'] == '1', 'payout'] = 0.0
+final_df.loc[final_df['type'] == 'sale', 'payout'] = refined['sale amount'] * refined['pct_new']
+final_df.drop(['type', 'pct_new'], axis=1, inplace=True)
 
 final_df.to_csv(output_file, index=False)
 

@@ -434,7 +434,8 @@ final_df = pd.DataFrame({
     'revenue': refined['Revenue']/3.75,
     'sale amount': refined['Sale Amount']/3.75,
     'coupon': refined['code_norm'],
-    'geo': refined['geo']
+    'geo': refined['geo'],
+    'order id': refined['Order ID']
 })
 
 print(final_df)

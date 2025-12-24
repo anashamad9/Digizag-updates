@@ -10,7 +10,6 @@ STATUS_DEFAULT = "pending"
 DEFAULT_PCT_IF_MISSING = 0.0
 FALLBACK_AFFILIATE_ID = "1"
 CURRENCY_DIVISOR = 3.67
-REVENUE_RATE = 0.10
 DAYS_BACK = 10
 
 REPORT_PREFIX = "zzzzzzz"
@@ -77,7 +76,7 @@ def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.Data
 
     return pd.DataFrame({
         'code_norm': coupon.apply(normalize_coupon).apply(str),
-        'affiliate_id': id.apply(str),
+        'affiliate_id': id.fillna(FALLBACK_AFFILIATE_ID),
         'payout_perc': payout_perc.apply(float),
         'types': types.apply(str)
     }).dropna()
@@ -180,13 +179,12 @@ df_actual['Revenue'] = df_actual['Sales'] * choose_revenue_rate(sales_sum)
 
 df_actual['Payout'] = pd.Series(range(df_actual.__len__()))
 
-df_actual.loc[df_actual['types'] == 'revenue', 'Payout'] = (df_actual['Revenue'] * df_actual['payout_perc']).apply(float)
-df_actual.loc[df_actual['types'] == 'sale', 'Payout'] = (df_actual['Sales'] * df_actual['payout_perc']).apply(float)
-
+df_actual.loc[df_actual['types'] == 'revenue', 'Payout'] = (df_actual['Revenue'] * df_actual['payout_perc'])
+df_actual.loc[df_actual['types'] == 'sale', 'Payout'] = (df_actual['Sales'] * df_actual['payout_perc'])
 
 df_final = pd.DataFrame({
     'offer': OFFER_ID,
-    'affiliate_id': df_actual['affiliate_id'].fillna(FALLBACK_AFFILIATE_ID),
+    'affiliate_id': df_actual['affiliate_id'],
     'date': df_actual['Order Date'],
     'status': 'pending',
     'payout': df_actual['Payout'],
@@ -196,7 +194,6 @@ df_final = pd.DataFrame({
     'geo': df_actual['Country Name'] 
 })
 
-del df_actual
 
 df_final.loc[df_final['affiliate_id'] == '1', 'payout'] = 0.0
 

@@ -28,18 +28,18 @@ affiliate_xlsx_path = os.path.join(input_dir, AFFILIATE_XLSX)
 output_file = os.path.join(output_dir, OUTPUT_CSV)
 
 months = {
-    'January': 1,
-    'February': 2,
-    'March': 3,
-    'April': 4,
-    'May': 5,
-    'June': 6,
-    'July': 7,
-    'August': 8,
-    'September': 9,
-    'October': 10,
-    'November': 11,
-    'December': 12
+    'January': '1',
+    'February': '2',
+    'March': '3',
+    'April': '4',
+    'May': '5',
+    'June': '6',
+    'July': '7',
+    'August': '8',
+    'September': '9',
+    'October': '10',
+    'November': '11',
+    'December': '12'
 }
 
 countries = {
@@ -76,10 +76,10 @@ def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.Data
     types = df_sheet['type']
 
     return pd.DataFrame({
-        'code_norm': coupon.apply(normalize_coupon),
-        'affiliate_id': id,
+        'code_norm': coupon.apply(normalize_coupon).apply(str),
+        'affiliate_id': id.apply(str),
         'payout_perc': payout_perc.apply(float),
-        'types': types
+        'types': types.apply(str)
     }).dropna()
 
 
@@ -118,7 +118,7 @@ flag = False
 
 for i in range(len(df)):
     if list(df.iloc[i, :]) == actual_cols:
-        df.columns = actual_cols   # ← critical line
+        df.columns = actual_cols 
         flag = True
         continue
 
@@ -141,7 +141,7 @@ date = pd.DataFrame({
     'Year': year
 })
 
-date['Date'] = pd.Series(range(date.__len__()))
+date['Date'] = pd.Series( list(map(lambda x: str(x), range(date.__len__()))) )
 
 i = 0
 
@@ -180,10 +180,9 @@ df_actual['Revenue'] = df_actual['Sales'] * choose_revenue_rate(sales_sum)
 
 df_actual['Payout'] = pd.Series(range(df_actual.__len__()))
 
-df_actual.loc[df_actual['types'] == 'revenue', 'Payout'] = df_actual['Revenue'] * df_actual['payout_perc']
-df_actual.loc[df_actual['types'] == 'sale', 'Payout'] = df_actual['Sales'] * df_actual['payout_perc']
+df_actual.loc[df_actual['types'] == 'revenue', 'Payout'] = (df_actual['Revenue'] * df_actual['payout_perc']).apply(float)
+df_actual.loc[df_actual['types'] == 'sale', 'Payout'] = (df_actual['Sales'] * df_actual['payout_perc']).apply(float)
 
-print(df_actual)
 
 df_final = pd.DataFrame({
     'offer': OFFER_ID,
@@ -197,6 +196,8 @@ df_final = pd.DataFrame({
     'geo': df_actual['Country Name'] 
 })
 
-df_final.loc[df_final['affiliate_id'] == 1, 'payout'] = 0.0
+del df_actual
+
+df_final.loc[df_final['affiliate_id'] == '1', 'payout'] = 0.0
 
 df_final.to_csv(output_file, index=False)

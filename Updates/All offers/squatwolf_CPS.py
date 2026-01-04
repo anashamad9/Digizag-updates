@@ -181,8 +181,8 @@ df_actual['Revenue'] = df_actual['Sales'] * choose_revenue_rate(sales_sum)
 
 df_actual['Payout'] = pd.Series(range(df_actual.__len__())).apply(float)
 
-df_actual.loc[df_actual['types'] == 'revenue', 'Payout'] = (df_actual['Revenue'] * df_actual['payout_perc'])
-df_actual.loc[df_actual['types'] == 'sale', 'Payout'] = (df_actual['Sales'] * df_actual['payout_perc'])
+df_actual.loc[df_actual['types'] == 'revenue', 'Payout'] = (df_actual['Revenue'].apply(float) * df_actual['payout_perc'].apply(float))
+df_actual.loc[df_actual['types'] == 'sale', 'Payout'] = (df_actual['Sales'].apply(float) * df_actual['payout_perc'].apply(float))
 
 df_final = pd.DataFrame({
     'offer': OFFER_ID,

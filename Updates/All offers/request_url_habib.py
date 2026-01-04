@@ -34,7 +34,7 @@ DEFAULT_AFF_ID_IF_MISSING = '1'
 
 OUTPUT_CSV = f"habib_{month}_{day}_{year} Only.csv"
 REDUNDANCY_CSV = f"habib"
-INPUT_NEW = f"habib_{month}_{day}_{year}"
+INPUT_NEW = f"habib_{month}_{day}_{year}.csv"
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 input_dir  = os.path.join(script_dir, '..', 'input data')

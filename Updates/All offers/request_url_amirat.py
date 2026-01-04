@@ -438,6 +438,8 @@ final_df = pd.DataFrame({
     'order id': refined['Order ID']
 })
 
+final_df.loc[final_df['affiliate_id'] == '1', 'payout'] = 0.0
+
 print(final_df)
 
 final_df.to_csv(output_file, index = False)

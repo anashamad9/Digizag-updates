@@ -105,7 +105,7 @@ def find_latest_csv_by_prefix(directory: str, prefix: str) -> str:
 df = find_latest_csv_by_prefix(input_dir, REPORT_PREFIX)
 df = pd.read_excel(df)
 
-print(df.columns)
+# print(df.columns)
 
 df = df.iloc[:,0:5]
 # print(df)
@@ -175,9 +175,11 @@ def choose_revenue_rate(boundary: float) -> float:
     else:
         return 0.14
 
+print(f"Revenue (AED): {sales_sum}\nChoosing rate of {choose_revenue_rate(sales_sum)*100}%")
+
 df_actual['Revenue'] = df_actual['Sales'] * choose_revenue_rate(sales_sum)
 
-df_actual['Payout'] = pd.Series(range(df_actual.__len__()))
+df_actual['Payout'] = pd.Series(range(df_actual.__len__())).apply(float)
 
 df_actual.loc[df_actual['types'] == 'revenue', 'Payout'] = (df_actual['Revenue'] * df_actual['payout_perc'])
 df_actual.loc[df_actual['types'] == 'sale', 'Payout'] = (df_actual['Sales'] * df_actual['payout_perc'])

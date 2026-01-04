@@ -32,7 +32,7 @@ AFFILIATE_XLSX = "Offers Coupons.xlsx"
 DEFAULT_PCT_IF_MISSING = 0.0
 DEFAULT_AFF_ID_IF_MISSING = '1'
 
-OUTPUT_CSV = f"Dar-AlAmirat_{month}_{day}_{year}.csv"
+OUTPUT_CSV = f"Dar-AlAmirat_{month}_{day}_{year} Only.csv"
 REDUNDANCY_CSV = "Dar-AlAmirat"
 INPUT_CSV = F"Dar-AlAmirat_{month}_{day}_{year}.csv"
 

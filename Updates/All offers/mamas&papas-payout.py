@@ -6,7 +6,11 @@ import re
 # =======================
 # CONFIG
 # =======================
+<<<<<<< HEAD
 days_back = 14
+=======
+days_back = 3
+>>>>>>> 0d89299 (D)
 OFFER_ID = 1107
 STATUS_DEFAULT = "pending"          # always "pending"
 DEFAULT_PCT_IF_MISSING = 0.0        # fallback fraction for % values (0.30 == 30%)
@@ -278,17 +282,8 @@ print(f"Rows after filtering date range: {len(df_filtered)}")
 # sale_amount (AED -> USD)
 df_filtered['sale_amount'] = pd.to_numeric(df_filtered[aed_net_col], errors='coerce').fillna(0.0) / 3.67
 
-# revenue rate: 8% for MP, 10% for FP (defaults to 0 when missing)
-rate_map = {"MP": 0.08, "FP": 0.10}
-rate_series = (
-    df_filtered[fp_or_mp_col]
-    .astype(str)
-    .str.strip()
-    .str.upper()
-    .map(rate_map)
-    .fillna(0.0)
-)
-df_filtered['revenue'] = df_filtered['sale_amount'] * rate_series
+# revenue rate: flat 8%
+df_filtered['revenue'] = df_filtered['sale_amount'] * 0.08
 
 # coupon normalization
 df_filtered['coupon_norm'] = df_filtered[coupon_col].apply(normalize_coupon)

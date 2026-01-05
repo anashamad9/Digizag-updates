@@ -12,7 +12,7 @@ FALLBACK_AFFILIATE_ID = "1"
 DEFAULT_PCT_IF_MISSING = 0.0
 
 # How many days back to include (EXCLUDES today)
-DAYS_BACK = 60
+DAYS_BACK = 50
 
 # Currency: set divisor to 1.0 if sale amounts are already USD
 AED_TO_USD_DIVISOR = 3.67
@@ -286,7 +286,7 @@ def is_new(val) -> bool:
 df["publisher_id"] = df["publisher_id"].fillna("").astype(str).str.strip()
 
 # Revenue rule: 10% new, 5% old
-df["revenue"] = df.apply(lambda r: r["sale_amount"] * (0.10 if is_new(r["cust_type"]) else 0.05), axis=1)
+df["revenue"] = df.apply(lambda r: r["sale_amount"] * (0.07 if is_new(r["cust_type"]) else 0.05), axis=1)
 
 df["coupon_norm"] = df["coupon_raw"].apply(normalize_coupon)
 

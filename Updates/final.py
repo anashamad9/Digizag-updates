@@ -16,12 +16,21 @@ EXCEPTION_OFFERS = {
     1166,  # Noon (GCC)
     1183,  # Riva Fashion
     1189,  # Namshi
+<<<<<<< HEAD
     1256,  # Airalo
     1276,  # Farfetch
     1282,  # Noon Egypt
     1325,  # 6th Street
     1345,  # Whites Pharmacy
     1352,  # EZ Hire
+=======
+}
+
+# Offers that should include full data without date filtering or day removals
+FULL_DATA_OFFERS = {
+    1333341,  # Reef
+    133342,  # Osma
+>>>>>>> 0d89299 (D)
 }
 
 # ====== LOAD LAST UPDATE MAP ======

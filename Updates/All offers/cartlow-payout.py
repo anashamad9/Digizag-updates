@@ -17,7 +17,11 @@ AFFILIATE_XLSX  = "Offers Coupons.xlsx"    # multi-sheet Excel
 AFFILIATE_SHEET = "Cartlow"                # <-- change if your sheet is differently named
 
 # Dynamic prefix for input CSVs
+<<<<<<< HEAD
 REPORT_PREFIX = "digizag_"                 # any CSV starting with this will be considered
+=======
+REPORT_PREFIX = "Digizag Coupon Report-V2_2025-12-31T02_00_03.358781595+04_00.csv"
+>>>>>>> 0d89299 (D)
 
 # =======================
 # PATHS

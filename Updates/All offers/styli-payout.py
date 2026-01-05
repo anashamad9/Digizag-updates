@@ -4,10 +4,15 @@ import os
 import re
 from typing import Optional  # <-- for Optional[str] annotations
 
+<<<<<<< HEAD
 # =======================
 # CONFIG
 # =======================
 days_back = 3
+=======
+
+days_back = 55
+>>>>>>> 0d89299 (D)
 OFFER_ID = 1215
 STATUS_DEFAULT = "pending"
 DEFAULT_PCT_IF_MISSING = 0.0

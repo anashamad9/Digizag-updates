@@ -6,7 +6,7 @@ import re
 # =======================
 # CONFIG
 # =======================
-days_back = 50
+days_back = 56
 OFFER_ID = 1261
 STATUS_DEFAULT = "pending"
 DEFAULT_PCT_IF_MISSING = 0.0

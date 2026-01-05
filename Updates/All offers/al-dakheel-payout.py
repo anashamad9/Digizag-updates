@@ -4,6 +4,8 @@ import re
 from urllib import error as url_error
 from urllib import request as url_request
 
+from typing import Optional
+
 import pandas as pd
 
 # =======================
@@ -15,11 +17,18 @@ DEFAULT_PCT_IF_MISSING = 0.0
 FALLBACK_AFFILIATE_ID = "1"
 
 # Data sources
-SOURCE_RESOURCE_DEFAULT = "SMART ConverterV2 - Raw_Data.csv"
+SOURCE_RESOURCE_DEFAULT = "تقرير DigiZag تاريخ 29-12-2025.xlsx"
 SOURCE_RESOURCE = os.getenv("AL_DAKHEEL_SOURCE", SOURCE_RESOURCE_DEFAULT)
 AFFILIATE_XLSX_PRIMARY = "Offers Coupons.xlsx"
 AFFILIATE_SHEET = "Al Dakheel Oud"  # change if your tab name differs
 OUTPUT_CSV = "al_dakheel.csv"
+REPORT_SHEET = os.getenv("AL_DAKHEEL_REPORT_SHEET", "").strip() or None
+GEO_DEFAULT = "ksa"
+
+COL_DATE = "L"
+COL_COUPON = "M"
+COL_SALE = "O"
+COL_GEO = os.getenv("AL_DAKHEEL_GEO_COLUMN", "").strip().upper() or None
 
 # =======================
 # PATHS
@@ -46,6 +55,18 @@ def normalize_coupon(code: str) -> str:
     s = str(code).strip().upper()
     parts = re.split(r"[;,\s]+", s)
     return parts[0] if parts else s
+
+
+def xl_col_to_index(col_letters: str) -> int:
+    col_letters = str(col_letters).strip().upper()
+    if not col_letters:
+        raise ValueError("Excel column letters are empty.")
+    n = 0
+    for ch in col_letters:
+        if not ('A' <= ch <= 'Z'):
+            raise ValueError(f"Invalid Excel column letter: {col_letters}")
+        n = n * 26 + (ord(ch) - ord('A') + 1)
+    return n - 1
 
 
 def infer_is_new_customer(df: pd.DataFrame) -> pd.Series:
@@ -282,6 +303,54 @@ def normalize_csv(csv_path: str) -> pd.DataFrame:
     return df.reset_index(drop=True)
 
 
+def _infer_geo_column(df_raw: pd.DataFrame) -> Optional[str]:
+    targets = {'ksa', 'sa', 'saudi', 'saudiarabia', 'uae', 'ae', 'unitedarabemirates'}
+    for col in df_raw.columns:
+        series = df_raw[col].dropna()
+        if series.empty:
+            continue
+        sample = series.astype(str).str.strip().str.lower()
+        if sample.isin(targets).any():
+            return col
+    return None
+
+
+def normalize_xlsx(xlsx_path: str, sheet_name: Optional[str]) -> pd.DataFrame:
+    df_raw = pd.read_excel(xlsx_path, sheet_name=sheet_name or 0)
+    if df_raw.empty:
+        return pd.DataFrame(columns=['order_date', 'coupon_code', 'sale_amount', 'geo'])
+
+    date_idx = xl_col_to_index(COL_DATE)
+    coupon_idx = xl_col_to_index(COL_COUPON)
+    sale_idx = xl_col_to_index(COL_SALE)
+    geo_idx = xl_col_to_index(COL_GEO) if COL_GEO else None
+
+    max_needed = max([date_idx, coupon_idx, sale_idx] + ([geo_idx] if geo_idx is not None else []))
+    if df_raw.shape[1] <= max_needed:
+        raise IndexError(
+            f"XLSX has {df_raw.shape[1]} columns, need ≥ {max_needed + 1} for L/M/O."
+        )
+
+    data = {
+        'order_date': df_raw.iloc[:, date_idx],
+        'coupon_code': df_raw.iloc[:, coupon_idx],
+        'sale_amount': df_raw.iloc[:, sale_idx],
+    }
+
+    if geo_idx is not None:
+        data['geo'] = df_raw.iloc[:, geo_idx]
+    else:
+        geo_col = _infer_geo_column(df_raw)
+        if geo_col:
+            data['geo'] = df_raw[geo_col]
+        else:
+            data['geo'] = GEO_DEFAULT
+
+    df = pd.DataFrame(data)
+    df['sale_amount'] = pd.to_numeric(df['sale_amount'], errors='coerce')
+    return df.reset_index(drop=True)
+
+
 def load_source(resource: str) -> pd.DataFrame:
     if resource.lower().startswith(('http://', 'https://')):
         payload = fetch_json_resource(resource, timeout=60)
@@ -304,6 +373,9 @@ def load_source(resource: str) -> pd.DataFrame:
 
     if not os.path.exists(resource):
         raise FileNotFoundError(f"Al Dakheel data source not found: {resource}")
+
+    if resource.lower().endswith('.xlsx'):
+        return normalize_xlsx(resource, REPORT_SHEET)
 
     return normalize_csv(resource)
 
@@ -329,6 +401,8 @@ for col in ['revenue', 'sale_amount']:
 # =======================
 df['revenue'] = pd.to_numeric(df.get('revenue'), errors='coerce')
 df['sale_amount'] = pd.to_numeric(df.get('sale_amount'), errors='coerce')
+df['sale_amount'] = df['sale_amount'] / 3.75
+df['revenue'] = df['revenue'].fillna(df['sale_amount'] * 0.07)
 df['coupon_norm'] = df['coupon_code'].apply(normalize_coupon)
 
 

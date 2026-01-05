@@ -54,25 +54,37 @@ output_file = os.path.join(output_dir, OUTPUT_CSV)
 def _norm(s: str) -> str:
     return re.sub(r"\s+", " ", str(s).strip()).lower()
 
+<<<<<<< HEAD
 def find_matching_xlsx(directory: str, prefix: str) -> str:
     """
     Find an .xlsx in `directory` whose base filename starts with `prefix` (space/case-insensitive).
     Prefers exact '<prefix>.xlsx' (normalized), else newest by modified time.
     """
+=======
+def find_matching_report_file(directory: str, prefix: str) -> str:
+>>>>>>> 0d89299 (D)
     prefix_n = _norm(prefix)
     candidates = []
     for fname in os.listdir(directory):
         if fname.startswith("~$"):
             continue
-        if not fname.lower().endswith(".xlsx"):
+        if not fname.lower().endswith((".xlsx", ".xls", ".csv")):
             continue
         base = os.path.splitext(fname)[0]
         if _norm(base).startswith(prefix_n):
             candidates.append(os.path.join(directory, fname))
     if not candidates:
+<<<<<<< HEAD
         available = [f for f in os.listdir(directory) if f.lower().endswith(".xlsx")]
+=======
+        available = [
+            f for f in os.listdir(directory)
+            if f.lower().endswith(('.xlsx', '.xls', '.csv'))
+        ]
+>>>>>>> 0d89299 (D)
         raise FileNotFoundError(
-            f"No .xlsx starting with '{prefix}' in: {directory}\nAvailable: {available}"
+            f"No report file (.xlsx/.xls/.csv) starting with '{prefix}' in: {directory}\n"
+            f"Available: {available}"
         )
     exact = [p for p in candidates if _norm(os.path.splitext(os.path.basename(p))[0]) == prefix_n]
     if exact:
@@ -256,6 +268,7 @@ def try_parse_sheet_date(name: str):
     s = str(name).strip()
     if s.lower() in {"codes", "sheet", "sheet1", "sheet2"}:
         return None
+<<<<<<< HEAD
     cleaned = re.sub(r"[.\-_/\\\s]", "", s)
     if cleaned.isdigit():
         y = cleaned[-4:]
@@ -267,6 +280,33 @@ def try_parse_sheet_date(name: str):
         elif len(dm) == 2:
             return None
         else:
+=======
+    cleaned = _normalize_arabic_letters(token.lower())
+    cleaned = re.sub(r"[^a-zء-ي]+", '', cleaned)
+    return MONTH_ALIASES.get(cleaned)
+
+
+def parse_date_label(label, reference_date: date) -> Optional[date]:
+    if pd.isna(label):
+        return None
+    text = str(label).strip()
+    if not text:
+        return None
+    normalized = _normalize_arabic_letters(text)
+    normalized = normalized.translate(ARABIC_DIGITS)
+    tokens = normalized.split()
+    if len(tokens) >= 1 and tokens[0].isdigit():
+        day = int(tokens[0])
+        month = parse_month_token(tokens[1]) if len(tokens) >= 2 else None
+        if not month and reference_date:
+            month = reference_date.month
+        if month:
+            year = reference_date.year
+            if month - reference_date.month > 6:
+                year -= 1
+            elif reference_date.month - month > 6:
+                year += 1
+>>>>>>> 0d89299 (D)
             try:
                 dt = pd.to_datetime(s, errors="raise", dayfirst=True)
                 return dt.date()
@@ -287,11 +327,30 @@ start_date = today - timedelta(days=days_back)
 yesterday = today - timedelta(days=1)
 print(f"Running Grasse (Offer {OFFER_ID}) at {today} | days_back={days_back} | window: {start_date} to {yesterday}")
 
+<<<<<<< HEAD
 # Pick report file dynamically
 report_path = find_matching_xlsx(input_dir, REPORT_PREFIX)
 print(f"Using report file: {os.path.basename(report_path)}")
 
 xls = pd.ExcelFile(report_path)
+=======
+report_path = find_matching_report_file(input_dir, REPORT_PREFIX)
+report_mtime = datetime.fromtimestamp(os.path.getmtime(report_path)).date()
+report_ext = os.path.splitext(report_path)[1].lower()
+report_sheet = None
+if report_ext in {'.xlsx', '.xls'}:
+    report_sheet = REPORT_SHEET_OVERRIDE or select_report_sheet(report_path, REPORT_SHEET_BASE, report_mtime)
+    print(f"Using report file: {os.path.basename(report_path)} | sheet='{report_sheet}'")
+    report_df = pd.read_excel(report_path, sheet_name=report_sheet)
+elif report_ext == '.csv':
+    print(f"Using report file: {os.path.basename(report_path)} | sheet='(csv)'")
+    report_df = pd.read_csv(report_path)
+else:
+    raise ValueError(f"Unsupported report extension: {report_ext}")
+matrix_df = reshape_matrix(report_df)
+matrix_df['date_value'] = matrix_df['DATE'].apply(lambda v: parse_date_label(v, report_mtime))
+matrix_df = matrix_df.dropna(subset=['date_value'])
+>>>>>>> 0d89299 (D)
 
 # pick only sheets whose names parse to a date within [start_date, yesterday]
 eligible = []

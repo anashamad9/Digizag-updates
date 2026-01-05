@@ -6,7 +6,11 @@ import re
 # =======================
 # CONFIG
 # =======================
+<<<<<<< HEAD
 days_back = 50
+=======
+days_back = 28
+>>>>>>> 0d89299 (D)
 OFFER_ID = 1283
 GEO = "ksa"
 STATUS_DEFAULT = "pending"

@@ -6,7 +6,11 @@ import re
 # =======================
 # CONFIG
 # =======================
+<<<<<<< HEAD
 days_back = 30
+=======
+days_back = 4
+>>>>>>> 0d89299 (D)
 OFFER_ID = 1106
 STATUS_DEFAULT = "pending"          # always "pending"
 DEFAULT_PCT_IF_MISSING = 0.0        # fallback fraction when percent missing (0.30 == 30%)
@@ -19,7 +23,7 @@ REPORT_PREFIX    = "BLM _ DigiZag Report_Page 1_Table"  # dynamic CSV name start
 
 # Currency conversion & commission rates
 USD_PER_AED = 1 / 3.67
-FP_MP_RATE = {"MP": 0.08, "FP": 0.10}
+FLAT_REVENUE_RATE = 0.08
 
 # Country → geo mapping
 COUNTRY_TO_GEO = {"AE": "uae", "KW": "kwt"}
@@ -239,6 +243,7 @@ print(f"Rows after filtering date range: {len(df_filtered)}")
 # =======================
 # DERIVED FIELDS
 # =======================
+<<<<<<< HEAD
 df_filtered['sale_amount'] = (df_filtered['AED_net_amount'] * USD_PER_AED)
 rate_series = (
     df_filtered['FP_or_MP']
@@ -249,6 +254,10 @@ rate_series = (
     .fillna(0.0)
 )
 df_filtered['revenue'] = df_filtered['sale_amount'] * rate_series
+=======
+df_filtered['sale_amount'] = (df_filtered['AED_gross_amount'] * USD_PER_AED)
+df_filtered['revenue'] = df_filtered['sale_amount'] * FLAT_REVENUE_RATE
+>>>>>>> 0d89299 (D)
 
 # Country → geo
 COUNTRY_TO_GEO = {"AE": "uae", "KW": "kwt"}  # keep near usage

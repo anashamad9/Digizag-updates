@@ -7,11 +7,7 @@ import zipfile
 # =======================
 # CONFIG
 # =======================
-<<<<<<< HEAD
 days_back = 9                  # <-- CHOOSE how many days back, inclusive of TODAY (2 == yesterday+today)
-=======
-days_back = 60                # <-- CHOOSE how many days back, inclusive of TODAY (2 == yesterday+today)
->>>>>>> 0d89299 (D)
 OFFER_ID = 910
 STATUS_DEFAULT = "pending"
 DEFAULT_PCT_IF_MISSING = 0.0

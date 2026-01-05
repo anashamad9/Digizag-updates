@@ -16,11 +16,7 @@ FALLBACK_AFFILIATE_ID = "1"         # when coupon has no affiliate, use "1" and 
 AFFILIATE_XLSX  = "Offers Coupons.xlsx"    # multi-sheet Excel
 AFFILIATE_SHEET = "Dabdoob"                # <-- coupons sheet name for this offer
 # Main report file
-<<<<<<< HEAD
 REPORT_FILENAME = "DigiZag All Orders.xlsx"
-=======
-REPORT_FILENAME = "DigiZag All Orders (5).xlsx"
->>>>>>> 0d89299 (D)
 REPORT_SHEET    = "Sheet1"
 REPORT_SUBTOTAL_USD_COL = "Subtotal $"   # Column U in the report
 

@@ -6,7 +6,7 @@ import re
 # =======================
 # CONFIG
 # =======================
-days_back = 3
+days_back = 14
 OFFER_ID = 1264
 STATUS_DEFAULT = "pending"          # always "pending"
 DEFAULT_PCT_IF_MISSING = 0.0        # fallback fraction for % values (0.30 == 30%)
@@ -16,7 +16,7 @@ FALLBACK_AFFILIATE_ID = "1"         # when no affiliate match: set to "1" and pa
 AFFILIATE_XLSX  = "Offers Coupons.xlsx"
 AFFILIATE_SHEET = " Trendyol"     # coupons sheet name for this offer
 
-# Report filename prefix (any tail like '(4).csv' is OK)fisbfojsbohbf
+# Report filename prefix (any tail like '(4).csv' is OK)
 REPORT_PREFIX   = "TrendFam"
 OUTPUT_CSV      = "trendyol.csv"
 

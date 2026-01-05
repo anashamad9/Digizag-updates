@@ -1,0 +1,26 @@
+{
+    "1": {
+        "GEO": "10",
+        "REVENUE_RATE": 11.0,
+        "CURRENCY_DIVISOR": 12.0,
+        "DAYS_BACK": 13,
+        "STATUS_DEFAULT": "14",
+        "DEFAULT_AFFILIATE_ID": "15",
+        "INPUT_RESOURCE": "16",
+        "SHEET": "17",
+        "OUTPUT_FILENAME": "18",
+        "DATE_FORMAT": "19"
+    },
+    "2": {
+        "GEO": "1",
+        "REVENUE_RATE": 2.0,
+        "CURRENCY_DIVISOR": 3.0,
+        "DAYS_BACK": 4,
+        "STATUS_DEFAULT": "5",
+        "DEFAULT_AFFILIATE_ID": "6",
+        "INPUT_RESOURCE": "7",
+        "SHEET": "8",
+        "OUTPUT_FILENAME": "9",
+        "DATE_FORMAT": "10"
+    }
+}

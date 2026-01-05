@@ -228,8 +228,10 @@ print(f"Total rows before filtering: {before}")
 print(f"Rows with invalid dates dropped: {before - len(df)}")
 
 # Filter for 'No bidding' status
-df_filtered = df[df['Bidding Status'] == 'No bidding'].copy()
-print(f"Rows after removing bidding orders: {len(df_filtered)}")
+# df_filtered = df[df['Bidding Status'] == 'No bidding'].copy()
+df_filtered = df.copy()
+del df
+# print(f"Rows after removing bidding orders: {len(df_filtered)}")
 
 # Filter for date range (exclude 'today' to match your pattern)
 df_filtered = df_filtered[(df_filtered['Date'].dt.date >= start_date) &

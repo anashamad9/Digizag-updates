@@ -14,8 +14,8 @@ STATUS_DEFAULT = "pending"
 DEFAULT_PCT_IF_MISSING = 0.0
 FALLBACK_AFFILIATE_ID = "1"
 
-REPORT_PREFIX = "Reef& Osma Digizag update"
-REPORT_SHEET = "Reef"
+REPORT_PREFIX = "Reef"
+REPORT_SHEET = "Export"
 AFFILIATE_XLSX = "Offers Coupons.xlsx"
 AFFILIATE_SHEET = "Reef Perfumes"
 OUTPUT_CSV = "reef.csv"

@@ -25,6 +25,7 @@ OFFER_SHEET_BY_ID = {
 # =======================
 # PATHS
 # =======================
+
 script_dir = os.path.dirname(os.path.abspath(__file__))
 input_dir = os.path.join(script_dir, '..', 'input data')
 output_dir = os.path.join(script_dir, '..', 'output data')
@@ -36,13 +37,13 @@ output_file = os.path.join(output_dir, 'adidasssss_with_payout.csv')
 # =======================
 # HELPERS
 # =======================
-def normalize_coupon(x: str) -> str:
-    """Uppercase, trim, and take the first token if multiple codes separated by ; , or whitespace."""
-    if pd.isna(x):
-        return ""
-    s = str(x).strip().upper()
-    parts = re.split(r"[;,\s]+", s)
-    return parts[0] if parts else s
+
+def pick_payout_column(cols_lower_map):
+    """Priority for payout column: payout > new customer payout > old customer payout."""
+    for candidate in ["payout", "new customer payout", "old customer payout"]: # Prioritizes newer column.
+        if candidate in cols_lower_map:
+            return cols_lower_map[candidate]
+    return None
 
 def infer_is_new_customer(df: pd.DataFrame) -> pd.Series:
     """Infer a boolean new-customer flag from common columns; default False when no signal."""
@@ -109,15 +110,6 @@ def infer_is_new_customer(df: pd.DataFrame) -> pd.Series:
         if resolved.all():
             break
     return result
-
-
-def pick_payout_column(cols_lower_map):
-    """Priority for payout column: payout > new customer payout > old customer payout."""
-    for candidate in ["payout", "new customer payout", "old customer payout"]: # Prioritizes newer column.
-        if candidate in cols_lower_map:
-            return cols_lower_map[candidate]
-    return None
-
 
 def load_affiliate_mapping_from_xlsx(xlsx_path: str, offer_id: int) -> pd.DataFrame:
     """Return mapping with columns code_norm, affiliate_ID, type_norm, pct_new, pct_old, fixed_new, fixed_old."""
@@ -194,8 +186,8 @@ def load_affiliate_mapping_from_xlsx(xlsx_path: str, offer_id: int) -> pd.DataFr
 
     return out.drop_duplicates(subset=['code_norm'], keep='last')
 
-
 def find_matching_csv(directory: str, prefix: str) -> str:
+
     """
     Find a .csv in `directory` whose base filename starts with `prefix` (case-insensitive).
     - Ignores temporary files like '~$...'
@@ -228,6 +220,14 @@ def find_matching_csv(directory: str, prefix: str) -> str:
 
     # Otherwise, returns most recent file.
     return max(candidates, key=os.path.getmtime)
+
+def normalize_coupon(x: str) -> str:
+    """Uppercase, trim, and take the first token if multiple codes separated by ; , or whitespace."""
+    if pd.isna(x):
+        return ""
+    s = str(x).strip().upper()
+    parts = re.split(r"[;,\s]+", s)
+    return parts[0] if parts else s
 
 # Find the changing-named report file dynamically
 input_file = find_matching_csv(input_dir, REPORT_PREFIX)

@@ -168,16 +168,21 @@ sales_sum = np.sum(df_actual['Sales'])
 df_actual['Sales'] = df_actual['Sales'] / CURRENCY_DIVISOR
 
 def choose_revenue_rate(boundary: float) -> float:
+    rate = None
     if boundary <= 114_000:
-        return 0.1
+        rate = 0.1
     elif boundary > 114_000 and boundary <= 160_000:
-        return 0.12
+        rate = 0.12
     else:
-        return 0.14
+        rate = 0.14
 
-print(f"Revenue (AED): {sales_sum}\nChoosing rate of {choose_revenue_rate(sales_sum)*100}%")
+    return rate
 
-df_actual['Revenue'] = df_actual['Sales'] * choose_revenue_rate(sales_sum)
+rate = choose_revenue_rate(sales_sum)
+
+print(f"Revenue (AED): {sales_sum}\nChoosing rate of {round(rate*100,2)}%")
+
+df_actual['Revenue'] = df_actual['Sales'] * rate
 
 df_actual['Payout'] = pd.Series(range(df_actual.__len__())).apply(float)
 

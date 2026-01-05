@@ -6,11 +6,7 @@ import re
 # =======================
 # CONFIG (Al Matar)
 # =======================
-<<<<<<< HEAD
-days_back = 33
-=======
-days_back = 89
->>>>>>> 0d89299 (D)
+days_back = 1000
 OFFER_ID = 1349
 GEO = "KSA"
 STATUS_DEFAULT = "pending"

@@ -14,15 +14,8 @@ STATUS_DEFAULT = "pending"
 DEFAULT_PCT_IF_MISSING = 0.0
 FALLBACK_AFFILIATE_ID = "1"
 
-<<<<<<< HEAD
 REPORT_PREFIX = "Reef& Osma Digizag update"
 REPORT_SHEET = "Osma"
-=======
-# Look for latest "osma.xlsx" or "osma (1).xlsx" etc.
-REPORT_PREFIX = "Osma99"
-# Current export sheet name inside osma (n).xlsx
-REPORT_SHEET = "Export"
->>>>>>> 0d89299 (D)
 AFFILIATE_XLSX = "Offers Coupons.xlsx"
 AFFILIATE_SHEET = "Osma"
 OUTPUT_CSV = "osma.csv"

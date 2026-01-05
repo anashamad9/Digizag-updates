@@ -12,11 +12,7 @@ output_dir = os.path.join(updates_dir, 'output data')
 os.makedirs(output_dir, exist_ok=True)
 
 # Load the input CSV file
-<<<<<<< HEAD
 input_file = os.path.join(input_dir, 'farfetch.csv')
-=======
-input_file = os.path.join(input_dir, 'farfetch99.csv')
->>>>>>> 0d89299 (D)
 df = pd.read_csv(input_file)
 
 def safe_number(value, default=0.0):

@@ -13,7 +13,7 @@ CURRENCY_DIVISOR = 3.67
 DAYS_BACK = 10
 
 REPORT_PREFIX = "zzzzzzz"
-REPORT_SHEET = "Export1"
+REPORT_SHEET = "Export"
 AFFILIATE_XLSX = "Offers Coupons.xlsx"
 AFFILIATE_SHEET = "SquatWolf-CPS"
 OUTPUT_CSV = "squatwolf.csv"
@@ -50,7 +50,9 @@ countries = {
     'Netherlands': 'nl',
     'France': 'fr',
     'Germany': 'ger',
-    'Qatar': 'qtr'
+    'Qatar': 'qtr',
+    'Jordan': 'jor',
+    'Bahrain': 'bhr'
 }
 
 def _norm_name(s: str) -> str:
@@ -128,32 +130,35 @@ for i in range(len(df)):
 
 df_actual.reset_index(drop=True, inplace=True)
 
-date = df_actual['Order Date'].apply(lambda x: str(x).split(" "))
+date = df_actual['Order Date']
 
-day = date.apply(lambda x: x[1])
-month = date.apply(lambda x: x[2]).apply(lambda x: months[x])
-year = date.apply(lambda x: x[3])
+# date = df_actual['Order Date'].apply(lambda x: str(x).split("/"))
 
-date = pd.DataFrame({
-    'Day': day,
-    'Month': month,
-    'Year': year
-})
+# day = date.apply(lambda x: x[1])
+# month = date.apply(lambda x: x[0]).apply(lambda x: months[x])
+# year = date.apply(lambda x: x[2])
 
-date['Date'] = pd.Series( list(map(lambda x: str(x), range(date.__len__()))) )
+# date = pd.DataFrame({
+#     'Day': day,
+#     'Month': month,
+#     'Year': year
+# })
 
-i = 0
+# date['Date'] = pd.Series( list(map(lambda x: str(x), range(date.__len__()))) )
 
-for row in date.iterrows():
-    # print(row)
-    day = row[1]['Day']
-    month = row[1]['Month']
-    year = row[1]['Year']
+# i = 0
 
-    date.loc[i,'Date'] = f"{month}/{day}/{year}"
-    i+=1
+# for row in date.iterrows():
+#     # print(row)
+#     day = row[1]['Day']
+#     month = row[1]['Month']
+#     year = row[1]['Year']
 
-df_actual['Order Date'] = date['Date']
+#     date.loc[i,'Date'] = f"{month}/{day}/{year}"
+#     i+=1
+
+# df_actual['Order Date'] = date['Date']
+df_actual['Order Date'] = date
 del date
 
 # print(df_actual)

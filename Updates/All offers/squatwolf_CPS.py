@@ -178,8 +178,14 @@ def choose_revenue_rate(boundary: float) -> float:
         rate = 0.1
     elif boundary > 114_000 and boundary <= 160_000:
         rate = 0.12
-    else:
+    elif boundary > 160_001 and boundary <= 223_000:
         rate = 0.14
+    elif boundary > 223_001 and boundary <= 314_000:
+        rate = 0.16
+    elif boundary > 314_001 and boundary <= 439_000:
+        rate = 0.18
+    else:
+        rate = 0.2
 
     return rate
 

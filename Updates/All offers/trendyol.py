@@ -70,68 +70,6 @@ def normalize_coupon(x: str) -> str:
     parts = re.split(r"[;,\s]+", s)
     return parts[0] if parts else s
 
-def infer_is_new_customer(df: pd.DataFrame) -> pd.Series:
-    """Infer a boolean new-customer flag from common columns; default False when no signal."""
-    if df.empty:
-        return pd.Series(False, index=df.index, dtype=bool)
-
-    candidates = [
-        'customer_type',
-        'customer type',
-        'customer_type',
-        'customer type',
-        'customer segment',
-        'customersegment',
-        'new_vs_old',
-        'new vs old',
-        'new/old',
-        'new old',
-        'new_vs_existing',
-        'new vs existing',
-        'user_type',
-        'user type',
-        'usertype',
-        'type_customer',
-        'type customer',
-        'audience',
-    ]
-
-    new_tokens = {
-        'new', 'newuser', 'newusers', 'newcustomer', 'newcustomers',
-        'ftu', 'first', 'firstorder', 'firsttime', 'acquisition', 'prospect'
-    }
-    old_tokens = {
-        'old', 'olduser', 'oldcustomer', 'existing', 'existinguser', 'existingcustomer',
-        'return', 'returning', 'repeat', 'rtu', 'retention', 'loyal', 'existingusers'
-    }
-
-    columns_map = {str(c).strip().lower(): c for c in df.columns}
-    result = pd.Series(False, index=df.index, dtype=bool)
-    resolved = pd.Series(False, index=df.index, dtype=bool)
-
-    def tokenize(value) -> set:
-        if pd.isna(value):
-            return set()
-        text = ''.join(ch if ch.isalnum() else ' ' for ch in str(value).lower())
-        return {tok for tok in text.split() if tok}
-
-    for key in candidates:
-        actual = columns_map.get(key)
-        if not actual:
-            continue
-        tokens_series = df[actual].apply(tokenize)
-        is_new = tokens_series.apply(lambda toks: bool(toks & new_tokens))
-        is_old = tokens_series.apply(lambda toks: bool(toks & old_tokens))
-        recognized = (is_new | is_old) & ~resolved
-        if recognized.any():
-            result.loc[recognized] = is_new.loc[recognized]
-            resolved.loc[recognized] = True
-        if resolved.all():
-            break
-    return result
-
-
-
 def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.DataFrame:
     """Return mapping with columns code_norm, affiliate_ID, type_norm, pct_new, pct_old, fixed_new, fixed_old."""
     df_sheet = pd.read_excel(xlsx_path, sheet_name=sheet_name, dtype=str)

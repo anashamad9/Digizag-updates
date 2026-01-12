@@ -182,8 +182,6 @@ aff_file = load_affiliate_mapping_from_xlsx(affiliate_xlsx_path, AFFILIATE_SHEET
 
 df_raw = pd.read_csv(input_file)
 
-revenue = 0.0
-
 df_raw['order_date'] = pd.to_datetime(df_raw['order_date'])
 
 

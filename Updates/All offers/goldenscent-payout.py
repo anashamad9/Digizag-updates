@@ -218,7 +218,7 @@ final_df = pd.DataFrame({
     'offer': OFFER_ID,
     'affiliate_id': new_df['affiliate_ID'],
     'date': date,
-    'status': "Pending",
+    'status': "pending",
     'payout': new_df['Payout'],
     'revenue': new_df['Revenue'],
     'sale_amount': 0.0,

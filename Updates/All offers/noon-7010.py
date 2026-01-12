@@ -2,11 +2,12 @@ import pandas as pd
 from datetime import datetime, timedelta
 import os
 import re
+from numpy import mean
 
 # =======================
 # CONFIG
 # =======================
-days_back = 30
+days_back = 50
 OFFER_ID = 1166
 STATUS_DEFAULT = "pending"
 DEFAULT_PCT_IF_MISSING = 0.0
@@ -181,14 +182,25 @@ aff_file = load_affiliate_mapping_from_xlsx(affiliate_xlsx_path, AFFILIATE_SHEET
 
 df_raw = pd.read_csv(input_file)
 
-# Resolve columns (robust to small header changes)
+revenue = 0.0
 
 df_raw['order_date'] = pd.to_datetime(df_raw['order_date'])
 
-df_raw['revenue'] = 0.0
 
-df_raw.loc[df_raw['order_tag'] == 'ftu', 'revenue'] = 4.08
-df_raw.loc[df_raw['order_tag'] != 'ftu', 'revenue'] = 2.72
+def determine_rev(sale_aed: float) -> float:
+    if sale_aed <= 100.0:
+        return 3.0
+    elif sale_aed > 100 and sale_aed <= 200.0:
+        return 6.0
+    else:
+        return 12.0
+
+# Resolve columns (robust to small header changes)
+
+# df_raw['revenue'] = revenue
+
+# df_raw.loc[df_raw['order_tag'] == 'ftu', 'revenue'] = 4.08
+# df_raw.loc[df_raw['order_tag'] != 'ftu', 'revenue'] = 2.72
 
 df_interm = df_raw.merge(aff_file, "left", left_on="coupon_code", right_on="code_norm")
 
@@ -199,17 +211,18 @@ df_interm['payout'] = 0.0
 rev_mask = df_interm['type_norm'] == 'revenue'
 fixed_mask = df_interm['type_norm'] == 'fixed'
 
+df_interm['revenue'] = df_interm['gmv'].apply(lambda x: determine_rev(x))
+
 df_interm.loc[rev_mask, 'payout'] = df_interm.loc[rev_mask, 'revenue'] * df_interm.loc[rev_mask, 'pct_new']
 df_interm.loc[fixed_mask, 'payout'] = df_interm.loc[fixed_mask, 'fixed_new']
 
-print(df_interm.columns)
+# print(df_interm.columns)
 
 countries = {
     'om': 'omn',
     'kw': 'kwt',
     'bh': 'bhr',
-    'qa': 'qtr',
-    'ae': 'uae'
+    'qa': 'qtr'
 }
 
 df_final = pd.DataFrame({

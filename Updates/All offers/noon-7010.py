@@ -225,7 +225,7 @@ countries = {
 
 df_final = pd.DataFrame({
     'offer': OFFER_ID,
-    'affiliate_id': df_interm['affiliate_ID'],
+    'affiliate_id': df_interm['affiliate_ID'].fillna('1'),
     'date': df_interm['order_date'],
     'status': 'pending',
     'payout': df_interm['payout'],
@@ -235,5 +235,7 @@ df_final = pd.DataFrame({
     'geo': df_interm['main_country'].apply(lambda x: countries[x])
     # 'type': df_interm['type_norm']
 })
+
+df_final.loc[df_final['affiliate_id'] == '1', 'payout'] = 0.0
 
 df_final.to_csv(output_file, index=False)

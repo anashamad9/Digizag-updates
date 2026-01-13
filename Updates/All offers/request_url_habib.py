@@ -35,16 +35,19 @@ DEFAULT_AFF_ID_IF_MISSING = '1'
 OUTPUT_CSV = f"habib_{month}_{day}_{year} Only.csv"
 REDUNDANCY_CSV = f"habib"
 INPUT_NEW = f"habib_{month}_{day}_{year}.csv"
+CUMULATIVE_STORE = "habib cumulative"
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 input_dir  = os.path.join(script_dir, '..', 'input data')
 output_dir = os.path.join(script_dir, '..', 'output data')
+cumulative_dir = os.path.join(script_dir, '..', CUMULATIVE_STORE)
 os.makedirs(output_dir, exist_ok=True)
 
 affiliate_xlsx_path = os.path.join(input_dir, AFFILIATE_XLSX)
 redundancy_csv_path = os.path.join(input_dir, REDUNDANCY_CSV)
 output_file = os.path.join(output_dir, OUTPUT_CSV)
 redun_file = os.path.join(input_dir, INPUT_NEW)
+redun_file_1 = os.path.join(cumulative_dir, INPUT_NEW)
 
 def normalize_coupon(x: str) -> str:
     """Uppercase, trim, and take the first token if multiple codes separated by ; , or whitespace."""
@@ -470,3 +473,4 @@ redundancy_df = pd.concat([redundancy_df, refined[['Code', 'Sale Amount', 'Reven
 # print(redundancy_df)
 
 redundancy_df.to_csv(redun_file, index=False)
+redundancy_df.to_csv(redun_file_1, index=False)

@@ -40,7 +40,8 @@ CUMULATIVE_STORE = "daramirat cumulative"
 script_dir = os.path.dirname(os.path.abspath(__file__))
 input_dir  = os.path.join(script_dir, '..', 'input data')
 output_dir = os.path.join(script_dir, '..', 'output data')
-cumulative_dir = os.path.join(script_dir, '..', CUMULATIVE_STORE)
+cumulative_dir = os.path.join(input_dir, CUMULATIVE_STORE)
+os.makedirs(output_dir, exist_ok=True)
 os.makedirs(output_dir, exist_ok=True)
 
 affiliate_xlsx_path = os.path.join(input_dir, AFFILIATE_XLSX)

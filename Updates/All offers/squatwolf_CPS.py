@@ -52,7 +52,8 @@ countries = {
     'Germany': 'ger',
     'Qatar': 'qtr',
     'Jordan': 'jor',
-    'Bahrain': 'bhr'
+    'Bahrain': 'bhr',
+    'Singapore': 'sgp'
 }
 
 def _norm_name(s: str) -> str:

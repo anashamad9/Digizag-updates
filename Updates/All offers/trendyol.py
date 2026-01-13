@@ -149,7 +149,7 @@ df['Country'] = df['Country'].apply(lambda x: COUNTRY_GEO[x])
 final_df = pd.DataFrame({
     'offer': OFFER_ID,
     'affiliate_id': df['affiliate_ID'],
-    'date': df['Date'],
+    'date': pd.to_datetime(df['Date']).dt.strftime('%m-%d-%Y'),
     'status': 'pending',
     'payout': df['Total Earnings'] * df['Payout_Perc'].apply(float),
     'revenue': df['Total Earnings'],

@@ -432,7 +432,7 @@ refined = refined.merge(aff_sheet, "left", "URL")
 final_df = pd.DataFrame({
     'offer': OFFER_ID,
     'affiliate_id': refined['affiliate_ID'],
-    'date': pd.to_datetime(f'{month}/{day}/{year}'),
+    'date': pd.to_datetime(f'{month}/{day}/{year}').dt.strftime('%m-%d-%Y'),
     'status': 'pending',
     'payout': (refined['Revenue'] * refined['pct_new'])/3.75,
     'revenue': refined['Revenue']/3.75,

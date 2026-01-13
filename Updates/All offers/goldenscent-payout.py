@@ -217,7 +217,7 @@ new_df['Payout'] = new_df['Revenue'] * new_df['pct_new'] #Always use new payout 
 final_df = pd.DataFrame({
     'offer': OFFER_ID,
     'affiliate_id': new_df['affiliate_ID'],
-    'date': date,
+    'date': pd.to_datetime(date).dt.strftime('%m-%d-%Y'),
     'status': "pending",
     'payout': new_df['Payout'],
     'revenue': new_df['Revenue'],

@@ -204,7 +204,7 @@ df_actual.loc[df_actual['types'] == 'sale', 'Payout'] = (df_actual['Sales'].appl
 df_final = pd.DataFrame({
     'offer': OFFER_ID,
     'affiliate_id': df_actual['affiliate_id'],
-    'date': df_actual['Order Date'],
+    'date': pd.to_datetime(df_actual['Order Date']).dt.strftime('%m-%d-%Y'),
     'status': 'pending',
     'payout': df_actual['Payout'],
     'revenue': df_actual['Revenue'],

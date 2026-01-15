@@ -210,7 +210,7 @@ del df #Saving memory
 
 new_df = new_df.merge(aff_file, how="left", left_on="Code", right_on = "code_norm")
 
-print(new_df.columns)
+# print(new_df.columns)
 
 new_df['Payout'] = new_df['Revenue'] * new_df['pct_new'] #Always use new payout percentage (right?)
 

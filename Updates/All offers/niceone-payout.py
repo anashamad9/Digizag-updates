@@ -1,7 +1,3 @@
-import requests
-from bs4 import BeautifulSoup
-import time
-import random
 import re
 import pandas as pd
 import os

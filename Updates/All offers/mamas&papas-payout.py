@@ -278,8 +278,17 @@ print(f"Rows after filtering date range: {len(df_filtered)}")
 # sale_amount (AED -> USD)
 df_filtered['sale_amount'] = pd.to_numeric(df_filtered[aed_net_col], errors='coerce').fillna(0.0) / 3.67
 
-# revenue rate: flat 8%
-df_filtered['revenue'] = df_filtered['sale_amount'] * 0.08
+# revenue rate: flat 8% (defaults to 0 when missing)
+rate_map = {"MP": 0.08, "FP": 0.08}
+rate_series = (
+    df_filtered[fp_or_mp_col]
+    .astype(str)
+    .str.strip()
+    .str.upper()
+    .map(rate_map)
+    .fillna(0.0)
+)
+df_filtered['revenue'] = df_filtered['sale_amount'] * rate_series
 
 # coupon normalization
 df_filtered['coupon_norm'] = df_filtered[coupon_col].apply(normalize_coupon)

@@ -14,8 +14,8 @@ STATUS_DEFAULT = "pending"
 DEFAULT_PCT_IF_MISSING = 0.0
 FALLBACK_AFFILIATE_ID = "1"
 
-REPORT_PREFIX = "Osma"
-REPORT_SHEET = "Export"
+REPORT_PREFIX = "osma"
+REPORT_SHEET = "Osma"
 AFFILIATE_XLSX = "Offers Coupons.xlsx"
 AFFILIATE_SHEET = "Osma"
 OUTPUT_CSV = "osma.csv"
@@ -40,8 +40,9 @@ os.makedirs(output_dir, exist_ok=True)
 
 def resolve_report_path(prefix: str, directory: str, extension: str = ".xlsx") -> str:
     candidates = []
+    prefix_lower = prefix.lower()
     for name in os.listdir(directory):
-        if not name.startswith(prefix):
+        if not name.lower().startswith(prefix_lower):
             continue
         if not name.lower().endswith(extension.lower()):
             continue
@@ -284,7 +285,9 @@ def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.Data
 if not os.path.exists(affiliate_xlsx_path):
     raise FileNotFoundError(f"Coupons mapping not found: {affiliate_xlsx_path}")
 
-df_raw = pd.read_excel(report_path, sheet_name=REPORT_SHEET)
+xl = pd.ExcelFile(report_path)
+sheet_to_use = REPORT_SHEET if REPORT_SHEET in xl.sheet_names else xl.sheet_names[0]
+df_raw = pd.read_excel(report_path, sheet_name=sheet_to_use)
 df_raw.columns = [str(c).strip() for c in df_raw.columns]
 
 required_cols = {YEAR_COL, MONTH_COL, DAY_COL, COUPON_COL, SALE_COL}

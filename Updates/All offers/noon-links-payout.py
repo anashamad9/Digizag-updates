@@ -5,14 +5,14 @@ from datetime import datetime, timedelta
 # =======================
 # CONFIG (Noon Links)
 # =======================
-days_back = 80
+days_back = 40
 OFFER_ID = 1355
 STATUS_DEFAULT = "pending"
 FALLBACK_AFFILIATE_ID = "1"
 
 REPORT_PREFIX   = "Digizag UTM DASHBOARD_ORDERS_Table"
 AFFILIATE_XLSX  = "Offers Coupons.xlsx"
-AFFILIATE_SHEETS = ["Noon Gcc Links", "Noon GCC"]
+AFFILIATE_SHEETS = ["Noon Gcc Links"]
 OUTPUT_CSV      = "noon_links.csv"
 AED_TO_USD_DIVISOR = 3.75
 HISTORY_FILE = "noon_links_history.csv"

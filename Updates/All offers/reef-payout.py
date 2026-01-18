@@ -13,9 +13,11 @@ GEO = "ksa"
 STATUS_DEFAULT = "pending"
 DEFAULT_PCT_IF_MISSING = 0.0
 FALLBACK_AFFILIATE_ID = "1"
+REVENUE_PCT_NEW = 0.07  # Effective from the 1st.
+REVENUE_PCT_OLD = 0.04  # Effective from the 1st.
 
 REPORT_PREFIX = "Reef"
-REPORT_SHEET = "Export"
+REPORT_SHEET = "Reef"
 AFFILIATE_XLSX = "Offers Coupons.xlsx"
 AFFILIATE_SHEET = "Reef Perfumes"
 OUTPUT_CSV = "reef.csv"
@@ -40,8 +42,9 @@ os.makedirs(output_dir, exist_ok=True)
 
 def resolve_report_path(prefix: str, directory: str, extension: str = ".xlsx") -> str:
     candidates = []
+    prefix_lower = prefix.lower()
     for name in os.listdir(directory):
-        if not name.startswith(prefix):
+        if not name.lower().startswith(prefix_lower):
             continue
         if not name.lower().endswith(extension.lower()):
             continue
@@ -286,7 +289,9 @@ if not os.path.exists(report_path):
 if not os.path.exists(affiliate_xlsx_path):
     raise FileNotFoundError(f"Coupons mapping not found: {affiliate_xlsx_path}")
 
-df_raw = pd.read_excel(report_path, sheet_name=REPORT_SHEET)
+xl = pd.ExcelFile(report_path)
+sheet_to_use = REPORT_SHEET if REPORT_SHEET in xl.sheet_names else xl.sheet_names[0]
+df_raw = pd.read_excel(report_path, sheet_name=sheet_to_use)
 df_raw.columns = [str(c).strip() for c in df_raw.columns]
 
 required_cols = {YEAR_COL, MONTH_COL, DAY_COL, COUPON_COL, SALE_COL}
@@ -307,7 +312,7 @@ df = df_raw.dropna(subset=["order_date"]).copy()
 
 today = datetime.now().date()
 start_date = today - timedelta(days=days_back)
-df = df[(df["order_date"].dt.date >= start_date) & (df["order_date"].dt.date < today)]
+df = df[(df["order_date"].dt.date >= start_date) & (df["order_date"].dt.date <= today)]
 
 if STATUS_COL in df.columns and STATUS_ALLOWLIST:
     df = df[df[STATUS_COL].astype(str).str.strip().isin(STATUS_ALLOWLIST)]
@@ -319,8 +324,6 @@ if GEO_COL in df.columns:
     df["geo_norm"] = df[GEO_COL].apply(map_geo)
 else:
     df["geo_norm"] = GEO
-
-df["revenue"] = df["sale_amount"] * 0.05
 
 if df.empty:
     raise ValueError("No rows found after filtering window/status and sale amount processing.")
@@ -339,6 +342,9 @@ for col in ["fixed_new", "fixed_old"]:
     df_joined[col] = pd.to_numeric(df_joined.get(col), errors="coerce")
 
 is_new_customer = infer_is_new_customer(df_joined)
+pct_revenue = pd.Series(REVENUE_PCT_OLD, index=df_joined.index)
+pct_revenue.loc[is_new_customer] = REVENUE_PCT_NEW
+df_joined["revenue"] = df_joined["sale_amount"] * pct_revenue
 pct_effective = df_joined["pct_new"].where(is_new_customer, df_joined["pct_old"])
 df_joined["pct_fraction"] = pd.to_numeric(pct_effective, errors="coerce").fillna(DEFAULT_PCT_IF_MISSING)
 fixed_effective = df_joined["fixed_new"].where(is_new_customer, df_joined["fixed_old"])

@@ -19,7 +19,7 @@ REPORT_PREFIX    = "BLM _ DigiZag Report_Page 1_Table"  # dynamic CSV name start
 
 # Currency conversion & commission rates
 USD_PER_AED = 1 / 3.67
-FLAT_REVENUE_RATE = 0.08
+FP_MP_RATE = {"MP": 0.08, "FP": 0.08}
 
 # Country → geo mapping
 COUNTRY_TO_GEO = {"AE": "uae", "KW": "kwt"}

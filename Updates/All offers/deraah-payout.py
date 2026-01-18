@@ -227,15 +227,12 @@ df = df.dropna(subset=['Order Date'])
 print(f"Total rows before filtering: {before}")
 print(f"Rows with invalid dates dropped: {before - len(df)}")
 
-# Keep only completed orders, then date range (inclusive of end_date)
-# df_filtered = df[df['Status'].apply(is_completed_status)].copy()
-df_filtered = df.copy()
-del df
-df_filtered = df_filtered[
-    (df_filtered['Order Date'].dt.date >= start_date) &
-    (df_filtered['Order Date'].dt.date <= end_date)
+# Date range (inclusive of end_date)
+df_filtered = df[
+    (df['Order Date'].dt.date >= start_date) &
+    (df['Order Date'].dt.date <= end_date)
 ].copy()
-print(f"Rows after filtering completed and date range: {len(df_filtered)}")
+print(f"Rows after filtering date range: {len(df_filtered)}")
 
 # =======================
 # DERIVED FIELDS

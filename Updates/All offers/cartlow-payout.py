@@ -1,7 +1,8 @@
 import pandas as pd
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import os
 import re
+from typing import Optional
 
 # =======================
 # CONFIG
@@ -17,7 +18,7 @@ AFFILIATE_XLSX  = "Offers Coupons.xlsx"    # multi-sheet Excel
 AFFILIATE_SHEET = "Cartlow"                # <-- change if your sheet is differently named
 
 # Dynamic prefix for input CSVs
-REPORT_PREFIX = "digizag_"                 # any CSV starting with this will be considered
+REPORT_PREFIX = "Digizag Coupon Report-V2_"  # any CSV starting with this will be considered
 
 # =======================
 # PATHS
@@ -100,19 +101,19 @@ def infer_is_new_customer(df: pd.DataFrame) -> pd.Series:
 
 
 _TS_RE = re.compile(
-    r'(?i)^'                      # start, case-insensitive
-    r'digizag_'                   # prefix
-    r'(?P<date>\d{4}-\d{2}-\d{2})'          # YYYY-MM-DD
+    rf'(?i)^{re.escape(REPORT_PREFIX)}'            # prefix, case-insensitive
+    r'(?P<date>\d{4}-\d{2}-\d{2})'                 # YYYY-MM-DD
     r'T'
-    r'(?P<h>\d{2})_(?P<m>\d{2})_(?P<s>\d{2})'  # HH_MM_SS
-    r'(?:\.(?P<us>\d+))?'                      # optional .microseconds
-    r'Z'
+    r'(?P<h>\d{2})_(?P<m>\d{2})_(?P<s>\d{2})'       # HH_MM_SS
+    r'(?:\.(?P<us>\d+))?'                          # optional .microseconds
+    r'(?:(?P<tzsign>[+-])(?P<tzh>\d{2})_(?P<tzm>\d{2}))?'  # optional timezone +04_00
+    r'$'
 )
 
-def extract_timestamp_from_name(fname: str) -> datetime | None:
+def extract_timestamp_from_name(fname: str) -> Optional[datetime]:
     """
     Parse timestamps like:
-    digizag_2025-09-14T11_22_33.123456Z.csv  or  digizag_2025-09-14T11_22_33Z.csv
+    Digizag Coupon Report-V2_2026-01-08T08_00_03.210927375+04_00.csv
     Return a datetime, or None if not parseable.
     """
     base = os.path.splitext(os.path.basename(fname))[0]
@@ -120,11 +121,22 @@ def extract_timestamp_from_name(fname: str) -> datetime | None:
     if not m:
         return None
     us = m.group('us') or "0"
+    us = (us + "000000")[:6]
     try:
-        return datetime.strptime(
+        dt = datetime.strptime(
             f"{m.group('date')} {m.group('h')}:{m.group('m')}:{m.group('s')}.{us}",
             "%Y-%m-%d %H:%M:%S.%f"
         )
+        tzsign = m.group('tzsign')
+        if tzsign:
+            tzh = int(m.group('tzh'))
+            tzm = int(m.group('tzm'))
+            delta = timedelta(hours=tzh, minutes=tzm)
+            if tzsign == '-':
+                delta = -delta
+            tzinfo = timezone(delta)
+            return dt.replace(tzinfo=tzinfo).astimezone(timezone.utc).replace(tzinfo=None)
+        return dt
     except Exception:
         return None
 
@@ -137,7 +149,7 @@ def find_latest_csv_by_prefix(directory: str, prefix: str) -> str:
     candidates = [
         os.path.join(directory, f)
         for f in os.listdir(directory)
-        if f.lower().endswith(".csv") and f.startswith(prefix)
+        if f.lower().endswith(".csv") and f.lower().startswith(prefix.lower())
     ]
     if not candidates:
         available = [f for f in os.listdir(directory) if f.lower().endswith(".csv")]
@@ -243,7 +255,10 @@ start_date = end_date - timedelta(days=days_back)
 today = datetime.now().date()
 print(f"Current date: {today}, Start date (days_back={days_back}): {start_date}")
 
-digizag_files = [f for f in os.listdir(input_dir) if f.startswith(REPORT_PREFIX) and f.lower().endswith('.csv')]
+digizag_files = [
+    f for f in os.listdir(input_dir)
+    if f.lower().startswith(REPORT_PREFIX.lower()) and f.lower().endswith('.csv')
+]
 if not digizag_files:
     raise FileNotFoundError(f"No files starting with '{REPORT_PREFIX}' found in the input directory.")
 

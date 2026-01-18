@@ -14,10 +14,11 @@ FALLBACK_AFFILIATE_ID = "1"
 SAR_TO_USD = 3.75
 REVENUE_RATE = 0.10  # 10% of sale amount
 
-INPUT_XLSX = "28 Dec. order report Digizag.xlsx"
+INPUT_XLSX = "6-12 Jan sales Digizag.xlsx"
 OLD_SHEET = "old system"
 NEW_SHEET = "new system"
-DIGIZAG_SHEET = "Digizag"
+DIGIZAG_SHEET = "Digi"
+SHEET1 = "Sheet1"
 SHEET_RENAMES = {
     OLD_SHEET: {"Order Date": "order_date", "NetAmount": "final_amount", "Coupon": "coupon_code"},
     NEW_SHEET: {"Date": "order_date", "amount": "final_amount", "Coupon": "coupon_code"},
@@ -27,6 +28,7 @@ SHEET_RENAMES = {
         "Sum of total_amount_without_tax": "final_amount",
         "voucher_code": "coupon_code",
     },
+    SHEET1: {"date": "order_date", "sales without VAT": "final_amount", "voucher_code": "coupon_code"},
 }
 
 AFFILIATE_XLSX = "Offers Coupons.xlsx"

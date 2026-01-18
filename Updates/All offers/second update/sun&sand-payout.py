@@ -278,11 +278,6 @@ df["Date"] = pd.to_datetime(df["Date"], errors="coerce")
 df = df.dropna(subset=["Date"])
 print(f"Unique dates in dataset: {sorted(pd.Series(df['Date'].dt.date.unique()).astype(str))}")
 
-# Remove Returned/Cancelled (case-insensitive, substring-safe)
-# status_low = df["final_status"].astype(str).str.lower()
-# keep_mask = (~status_low.str.contains("returned", na=False)) & (~status_low.str.contains("cancelled", na=False))
-# df = df[keep_mask]
-
 df = df[(df["Date"].dt.date >= start_date) & (df["Date"].dt.date < end_date)].copy()
 print(f"Filtered rows: {len(df)}")
 if not df.empty:

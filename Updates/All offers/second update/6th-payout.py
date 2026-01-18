@@ -6,7 +6,7 @@ import re
 # =======================
 # CONFIG
 # =======================
-days_back = 4
+days_back = 11
 OFFER_ID = 1325
 STATUS_DEFAULT = "pending"
 DEFAULT_PCT_IF_MISSING = 0.0
@@ -229,8 +229,7 @@ df = df.dropna(subset=['order_date'])
 
 df_filtered = df[
     (df['order_date'].dt.date >= start_date) &
-    (df['order_date'].dt.date <= end_date) &
-    (df['status'].astype(str).str.lower() != 'canceled')
+    (df['order_date'].dt.date <= end_date)
 ].copy()
 
 # =======================

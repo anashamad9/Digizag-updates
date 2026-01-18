@@ -6,7 +6,7 @@ import re
 # =======================
 # CONFIG
 # =======================
-days_back = 3
+days_back = 30
 OFFER_ID = 1264
 STATUS_DEFAULT = "pending"          # always "pending"
 DEFAULT_PCT_IF_MISSING = 0.0        # fallback fraction for % values (0.30 == 30%)
@@ -206,7 +206,8 @@ df['Code Name'] = df['Code Name'].apply(normalize_coupon)
 
 df = df.merge(aff_sheet, "left", "Code Name")
 
-df['Country'] = df['Country'].apply(lambda x: COUNTRY_GEO[x])
+df['Country'] = df['Country'].map(COUNTRY_GEO)
+df = df[df['Country'].notna()]
 
 final_df = pd.DataFrame({
     'offer': OFFER_ID,

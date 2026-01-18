@@ -2,6 +2,8 @@ import pandas as pd
 import os
 from datetime import datetime
 
+AED_TO_USD_DIVISOR = 3.67
+
 # Define directory paths relative to the script location
 script_dir = os.path.dirname(os.path.abspath(__file__))
 updates_dir = os.path.dirname(os.path.dirname(script_dir))
@@ -12,7 +14,7 @@ output_dir = os.path.join(updates_dir, 'output data')
 os.makedirs(output_dir, exist_ok=True)
 
 # Load the input CSV file
-input_file = os.path.join(input_dir, 'farfetch.csv')
+input_file = os.path.join(input_dir, 'farfetch99.csv')
 df = pd.read_csv(input_file)
 
 def safe_number(value, default=0.0):
@@ -42,6 +44,8 @@ def remap_publisher_id(publisher_id):
     """Map legacy IDs to their current equivalents."""
     if publisher_id == '14796':
         return '2345'
+    if publisher_id == '14869':
+        return '12941'
     return publisher_id
 
 
@@ -67,16 +71,22 @@ for _, row in df.iterrows():
     formatted_date = dt.strftime('%m-%d-%Y')
 
     publisher_id_raw = normalize_publisher_id(row.get('publisher_reference', ''))
+    is_special_14869 = publisher_id_raw == '14869'
     publisher_id_clean = remap_publisher_id(publisher_id_raw)
-    revenue = safe_number(row.get('item_publisher_commission', 0))
-    sale_value = safe_number(row.get('item_value', 0))
+    revenue = safe_number(row.get('item_publisher_commission', 0)) / AED_TO_USD_DIVISOR
+    sale_value = safe_number(row.get('item_value', 0)) / AED_TO_USD_DIVISOR
     payout = calculate_payout(publisher_id_clean, revenue, sale_value)
-    coupon_value = '14796' if publisher_id_clean == '2345' else 'link'
+    if is_special_14869:
+        coupon_value = '14869'
+    elif publisher_id_clean == '2345':
+        coupon_value = '14796'
+    else:
+        coupon_value = 'link'
 
     output_data.append({
-        'offer id': 1276,
-        'affiliate id': publisher_id_clean,
-        'datetime': formatted_date,
+        'offer': 1276,
+        'affiliate_id': publisher_id_clean,
+        'date': formatted_date,
         'status': 'pending',
         'payout': payout,
         'revenue': revenue,  # Match column AC

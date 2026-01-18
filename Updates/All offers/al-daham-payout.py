@@ -38,9 +38,9 @@ start_date = end_date - timedelta(days=days_back)
 print(f"Current date: {end_date}, Start date (days_back={days_back}): {start_date}")
 
 # =======================
-# HELPERS
+# HELPERS (RECURRING FUNCTIONS)
 # =======================
-def find_matching_csv(directory: str, prefix: str) -> str:
+def find_matching_csv(directory: str, prefix: str) -> str: # This is a recurring function.
     """Return the newest CSV whose base filename starts with `prefix` (case-insensitive)."""
     prefix_lower = prefix.lower()
     candidates = []
@@ -118,7 +118,7 @@ input_file = find_matching_csv(input_dir, REPORT_PREFIX)
 print(f"Using report file: {input_file}")
 
 df = pd.read_csv(input_file)
-if df.empty:
+if df.empty: # Why process an empty dataframe? There's no data.
     df = pd.DataFrame(columns=['Date', 'Coupon Code', 'sale_amount', 'coupon_norm'])
 else:
     df.columns = [str(c).strip() for c in df.columns]

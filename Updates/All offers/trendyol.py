@@ -85,36 +85,6 @@ def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.Data
     return df_sheet
 
 
-def resolve_required_columns(df: pd.DataFrame):
-    """
-    Accept exact names used in your file; add light fallbacks for minor variants.
-    """
-    cols = {str(c).strip().lower(): c for c in df.columns}
-
-    def get(*cands):
-        for c in cands:
-            if c in cols:
-                return cols[c]
-        return None
-
-    created_date = get("created_date", "created date", "created")
-    aed_net      = get("aed_gross_amount", "aed gross amount", "aed_gross")
-    country      = get("country")
-    coupon       = get("aff_coupon", "coupon", "coupon code", "affiliate coupon")
-    fp_or_mp     = get("fp_or_mp", "fp or mp")
-
-    missing = [nm for nm, col in {
-        "created_date": created_date,
-        "AED_net_amount": aed_net,
-        "aff_coupon": coupon,
-        "FP_or_MP": fp_or_mp,
-    }.items() if not col]
-
-    if missing:
-        raise KeyError(f"Missing required columns: {missing}. Found: {list(df.columns)}")
-
-    return created_date, aed_net, country, coupon, fp_or_mp
-
 # =======================
 # DATE WINDOW
 # =======================

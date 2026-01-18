@@ -275,13 +275,12 @@ df = df_raw.dropna(subset=['__date_parsed']).copy()
 print(f"Total rows before filtering: {before}")
 print(f"Rows with invalid dates dropped: {before - len(df)}")
 
-# Filter out cancelled + date range (exclude today to match common pattern)
-df = df[df[status_col].astype(str).str.strip().str.lower() != 'cancelled']
+# Filter date range (exclude today to match common pattern)
 df_filtered = df[
     (df['__date_parsed'].dt.date >= start_date) &
     (df['__date_parsed'].dt.date < today)
 ].copy()
-print(f"Rows after filtering cancelled and date range: {len(df_filtered)}")
+print(f"Rows after filtering date range: {len(df_filtered)}")
 
 # =======================
 # DERIVED FIELDS

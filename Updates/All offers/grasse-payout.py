@@ -1,48 +1,37 @@
-import pandas as pd
-from datetime import datetime, timedelta
+
 import os
 import re
+from datetime import date, datetime, timedelta
+from typing import Optional
+
+import pandas as pd
 
 # =======================
-# CONFIG (Grasse)
+# CONFIG (Grasse Matrix)
 # =======================
 OFFER_ID = 1346
 GEO = "no-geo"
 STATUS_DEFAULT = "pending"
 DEFAULT_PCT_IF_MISSING = 0.0
 FALLBACK_AFFILIATE_ID = "1"
+CURRENCY_DIVISOR = 3.75
 
 # Choose how many days back to include
-days_back = 30
+DAYS_BACK = 30
 
-# Files (match your tree)
-REPORT_PREFIX   = "مبيعات المسوقين بالعمولة"  # dynamic: any .xlsx whose name starts with this
-AFFILIATE_XLSX  = "Offers Coupons.xlsx"
+# Files
+REPORT_PREFIX = "Grasse x Digizag"
+REPORT_SHEET = "Report"
+AFFILIATE_XLSX = "Offers Coupons.xlsx"
 AFFILIATE_SHEET = "GRASSE PERFUME"
-OUTPUT_CSV      = "grasse.csv"
-
-# Column letters (primary intent)
-CODE_LETTER   = 'A'  # coupon code
-ORDERS_LETTER = 'D'  # number of orders
-SALE_LETTER   = 'E'  # sale amount (to be /3.75)
-DATE_LETTER   = None # optional; e.g. 'B' to force a date column
-
-# Fallback column name candidates (EN + AR)
-CODE_NAME_CANDIDATES   = ["code", "coupon", "coupon code", "promo code", "voucher", "voucher code",
-                          "رمز", "كود", "كوبون", "كود القسيمة"]
-ORDERS_NAME_CANDIDATES = ["orders", "number of orders", "order count", "qty", "quantity", "count",
-                          "عدد الطلبات", "الطلبات", "كمية", "عدد"]
-SALE_NAME_CANDIDATES   = ["sale amount", "sales", "amount", "total", "revenue", "gmv", "net sales",
-                          "المبيعات", "قيمة الطلبات", "المبلغ", "إجمالي", "الإجمالي"]
-DATE_NAME_CANDIDATES   = ["date", "order date", "action date", "created", "created at",
-                          "التاريخ", "تاريخ الطلب", "تاريخ", "انشاء", "تاريخ الانشاء"]
+OUTPUT_CSV = "grasse.csv"
 
 # =======================
 # PATHS
 # =======================
 script_dir = os.path.dirname(os.path.abspath(__file__))
-input_dir = os.path.join(script_dir, '..', 'input data')
-output_dir = os.path.join(script_dir, '..', 'output data')
+input_dir = os.path.join(script_dir, "..", "input data")
+output_dir = os.path.join(script_dir, "..", "output data")
 os.makedirs(output_dir, exist_ok=True)
 
 affiliate_xlsx_path = os.path.join(input_dir, AFFILIATE_XLSX)
@@ -51,40 +40,52 @@ output_file = os.path.join(output_dir, OUTPUT_CSV)
 # =======================
 # HELPERS
 # =======================
-def _norm(s: str) -> str:
-    return re.sub(r"\s+", " ", str(s).strip()).lower()
+def _norm(value: str) -> str:
+    return re.sub(r"\s+", " ", str(value).strip()).lower()
+
 
 def find_matching_xlsx(directory: str, prefix: str) -> str:
-    """
-    Find an .xlsx in `directory` whose base filename starts with `prefix` (space/case-insensitive).
-    Prefers exact '<prefix>.xlsx' (normalized), else newest by modified time.
-    """
     prefix_n = _norm(prefix)
     candidates = []
     for fname in os.listdir(directory):
         if fname.startswith("~$"):
             continue
-        if not fname.lower().endswith((".xlsx", ".xls", ".csv")):
+        if not fname.lower().endswith(".xlsx"):
             continue
         base = os.path.splitext(fname)[0]
-        if _norm(base).startswith(prefix_n):
-            candidates.append(os.path.join(directory, fname))
+        if prefix_n in _norm(base):
+            full_path = os.path.join(directory, fname)
+            if os.path.isfile(full_path):
+                candidates.append(full_path)
     if not candidates:
-        available = [f for f in os.listdir(directory) if f.lower().endswith(".xlsx")]
+        available = [f for f in os.listdir(directory) if f.lower().endswith('.xlsx')]
         raise FileNotFoundError(
-            f"No report file (.xlsx/.xls/.csv) starting with '{prefix}' in: {directory}\n"
-            f"Available: {available}"
+            f"No .xlsx starting with '{prefix}' in: {directory}\nAvailable: {available}"
         )
-    exact = [p for p in candidates if _norm(os.path.splitext(os.path.basename(p))[0]) == prefix_n]
-    if exact:
-        return exact[0]
     return max(candidates, key=os.path.getmtime)
 
-def normalize_coupon(x: str) -> str:
-    if pd.isna(x): return ""
-    s = str(x).strip().upper()
+
+def select_report_sheets(xlsx_path: str, preferred: str) -> list[str]:
+    """Pick usable sheet names, preferring the configured one when present."""
+    xl = pd.ExcelFile(xlsx_path)
+    sheets = xl.sheet_names
+    if preferred in sheets:
+        return [preferred]
+    pref_norm = _norm(preferred)
+    for name in sheets:
+        if _norm(name) == pref_norm:
+            return [name]
+    report_sheets = [name for name in sheets if 'report' in _norm(name)]
+    return report_sheets or [sheets[0]]
+
+
+def normalize_coupon(value: str) -> str:
+    if pd.isna(value):
+        return ""
+    s = str(value).strip().upper()
     parts = re.split(r"[;,\s]+", s)
     return parts[0] if parts else s
+
 
 def infer_is_new_customer(df: pd.DataFrame) -> pd.Series:
     """Infer a boolean new-customer flag from common columns; default False when no signal."""
@@ -92,8 +93,6 @@ def infer_is_new_customer(df: pd.DataFrame) -> pd.Series:
         return pd.Series(False, index=df.index, dtype=bool)
 
     candidates = [
-        'customer_type',
-        'customer type',
         'customer_type',
         'customer type',
         'customer segment',
@@ -145,22 +144,6 @@ def infer_is_new_customer(df: pd.DataFrame) -> pd.Series:
         if resolved.all():
             break
     return result
-
-
-def col_by_letter(df: pd.DataFrame, letter: str):
-    idx = ord(letter.upper()) - ord('A')
-    return df.columns[idx] if letter and 0 <= idx < len(df.columns) else None
-
-def resolve_by_name(df: pd.DataFrame, candidates):
-    low = {str(c).lower().strip(): c for c in df.columns}
-    for cand in candidates:
-        k = cand.lower().strip()
-        if k in low: return low[k]
-    for actual_lower, actual in low.items():
-        for cand in candidates:
-            if actual_lower.startswith(cand.lower().strip()):
-                return actual
-    return None
 
 
 def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.DataFrame:
@@ -235,138 +218,232 @@ def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.Data
     return out.drop_duplicates(subset=['code_norm'], keep='last')
 
 
-def find_needed_columns(df: pd.DataFrame):
-    code_col   = col_by_letter(df, CODE_LETTER) or resolve_by_name(df, CODE_NAME_CANDIDATES)
-    orders_col = col_by_letter(df, ORDERS_LETTER) or resolve_by_name(df, ORDERS_NAME_CANDIDATES)
-    sale_col   = col_by_letter(df, SALE_LETTER) or resolve_by_name(df, SALE_NAME_CANDIDATES)
-    date_col = None
-    if DATE_LETTER:
-        date_col = col_by_letter(df, DATE_LETTER)
-    if date_col is None:
-        date_col = resolve_by_name(df, DATE_NAME_CANDIDATES)
-    return code_col, orders_col, sale_col, date_col
+ARABIC_DIGITS = str.maketrans("٠١٢٣٤٥٦٧٨٩", "0123456789")
+MONTH_ALIASES = {
+    'يناير': 1,
+    'كانون الثاني': 1,
+    'فبراير': 2,
+    'شباط': 2,
+    'مارس': 3,
+    'آذار': 3,
+    'ابريل': 4,
+    'أبريل': 4,
+    'نيسان': 4,
+    'مايو': 5,
+    'أيار': 5,
+    'يونيو': 6,
+    'حزيران': 6,
+    'يوليو': 7,
+    'تموز': 7,
+    'اغسطس': 8,
+    'أغسطس': 8,
+    'آب': 8,
+    'سبتمبر': 9,
+    'اكتوبر': 10,
+    'أكتوبر': 10,
+    'تشرين الاول': 10,
+    'نوفمبر': 11,
+    'تشرين الثاني': 11,
+    'ديسمبر': 12,
+    'كانون الاول': 12,
+    'jan': 1,
+    'january': 1,
+    'feb': 2,
+    'february': 2,
+    'mar': 3,
+    'march': 3,
+    'apr': 4,
+    'april': 4,
+    'may': 5,
+    'jun': 6,
+    'june': 6,
+    'jul': 7,
+    'july': 7,
+    'aug': 8,
+    'august': 8,
+    'sep': 9,
+    'sept': 9,
+    'september': 9,
+    'oct': 10,
+    'october': 10,
+    'nov': 11,
+    'november': 11,
+    'dec': 12,
+    'december': 12,
+}
 
-def try_parse_sheet_date(name: str):
-    """
-    Parse sheet names like:
-      - '01092025'  -> 01-09-2025 (DDMMYYYY)
-      - '1882025'   -> 18-08-2025 (DDMYYYY; single-digit month)
-      - '14-09-2025', '14/09/2025', '14.09.2025' (delimited)
-    Returns a date or None.
-    """
-    s = str(name).strip()
-    if s.lower() in {"codes", "sheet", "sheet1", "sheet2"}:
+
+def _normalize_arabic_letters(text: str) -> str:
+    replacements = {
+        'إ': 'ا',
+        'أ': 'ا',
+        'آ': 'ا',
+        'ى': 'ي',
+        'ؤ': 'و',
+        'ئ': 'ي',
+        'ة': 'ه',
+    }
+    for src, dst in replacements.items():
+        text = text.replace(src, dst)
+    return text
+
+
+def parse_month_token(token: str) -> Optional[int]:
+    if not token:
         return None
-    cleaned = re.sub(r"[.\-_/\\\s]", "", s)
-    if cleaned.isdigit():
-        y = cleaned[-4:]
-        dm = cleaned[:-4]
-        if len(dm) == 4:
-            d, m = dm[:2], dm[2:]
-        elif len(dm) == 3:
-            d, m = dm[:2], dm[2:]
-        elif len(dm) == 2:
-            return None
-        else:
+    cleaned = _normalize_arabic_letters(token.lower())
+    cleaned = re.sub(r"[^a-zء-ي]+", '', cleaned)
+    return MONTH_ALIASES.get(cleaned)
+
+
+def parse_date_label(label, reference_date: date) -> Optional[date]:
+    if pd.isna(label):
+        return None
+    text = str(label).strip()
+    if not text:
+        return None
+    normalized = _normalize_arabic_letters(text)
+    normalized = normalized.translate(ARABIC_DIGITS)
+    tokens = normalized.split()
+    if len(tokens) >= 2 and tokens[0].isdigit():
+        day = int(tokens[0])
+        month = parse_month_token(tokens[1])
+        if month:
+            year = reference_date.year
+            if month - reference_date.month > 6:
+                year -= 1
+            elif reference_date.month - month > 6:
+                year += 1
             try:
-                dt = pd.to_datetime(s, errors="raise", dayfirst=True)
-                return dt.date()
-            except Exception:
+                return date(year, month, day)
+            except ValueError:
                 return None
-        try:
-            return datetime(int(y), int(m), int(d)).date()
-        except Exception:
-            return None
-    dt = pd.to_datetime(s, errors='coerce', dayfirst=True)
+    dt = pd.to_datetime(normalized, errors='coerce', dayfirst=True)
     return None if pd.isna(dt) else dt.date()
 
+
+def reshape_matrix(df: pd.DataFrame) -> pd.DataFrame:
+    df = df.copy()
+    if 'DATE' not in df.columns or 'CODE' not in df.columns:
+        raise KeyError("Expected columns 'DATE' and 'CODE' in report sheet")
+    df['DATE'] = df['DATE'].ffill()
+    df = df[df['CODE'].notna()]
+    df['row_type'] = df['CODE'].astype(str).str.strip().str.lower()
+    df = df[df['row_type'].isin({'order', 'order value', 'commission'})]
+
+    coupon_columns = [c for c in df.columns if str(c).strip().lower() not in {'date', 'code', 'row_type'}]
+    if not coupon_columns:
+        raise ValueError('No coupon columns detected in report sheet')
+
+    melted = df.melt(
+        id_vars=['DATE', 'row_type'],
+        value_vars=coupon_columns,
+        var_name='coupon_raw',
+        value_name='raw_value'
+    )
+    melted['coupon_raw'] = melted['coupon_raw'].astype(str).str.strip()
+    melted = melted[melted['coupon_raw'] != '']
+    melted['value'] = pd.to_numeric(melted['raw_value'], errors='coerce').fillna(0.0)
+
+    pivot = (
+        melted.pivot_table(
+            index=['DATE', 'coupon_raw'],
+            columns='row_type',
+            values='value',
+            aggfunc='sum',
+            fill_value=0.0
+        )
+        .reset_index()
+    )
+    pivot.columns.name = None
+    pivot = pivot.rename(columns={
+        'order': 'orders',
+        'order value': 'sale_total',
+        'commission': 'revenue_total',
+    })
+    for col in ['orders', 'sale_total', 'revenue_total']:
+        if col not in pivot:
+            pivot[col] = 0.0
+    return pivot
+
+
 # =======================
-# LOAD REPORT (SCAN DATE-NAMED SHEETS)
+# LOAD REPORT
 # =======================
 today = datetime.now().date()
-start_date = today - timedelta(days=days_back)
+start_date = today - timedelta(days=DAYS_BACK)
 yesterday = today - timedelta(days=1)
-print(f"Running Grasse (Offer {OFFER_ID}) at {today} | days_back={days_back} | window: {start_date} to {yesterday}")
+print(f"Running Grasse Matrix (Offer {OFFER_ID}) at {today} | window: {start_date} to {yesterday}")
 
-# Pick report file dynamically
 report_path = find_matching_xlsx(input_dir, REPORT_PREFIX)
-print(f"Using report file: {os.path.basename(report_path)}")
+report_mtime = datetime.fromtimestamp(os.path.getmtime(report_path)).date()
+report_sheets = select_report_sheets(report_path, REPORT_SHEET)
+print(f"Using report file: {os.path.basename(report_path)} | sheets={report_sheets}")
 
-xls = pd.ExcelFile(report_path)
+matrix_frames = []
+for sheet in report_sheets:
+    try:
+        report_df = pd.read_excel(report_path, sheet_name=sheet)
+        matrix_frames.append(reshape_matrix(report_df))
+    except Exception as exc:
+        print(f"Warning: skipped sheet '{sheet}': {exc}")
 
-# pick only sheets whose names parse to a date within [start_date, yesterday]
-eligible = []
-for sh in xls.sheet_names:
-    d = try_parse_sheet_date(sh)
-    if d and (start_date <= d <= yesterday):
-        eligible.append((d, sh))
+matrix_df = pd.concat(matrix_frames, ignore_index=True) if matrix_frames else pd.DataFrame()
+if matrix_df.empty:
+    output_df = pd.DataFrame(columns=['offer','affiliate_id','date','status','payout','revenue','sale amount','coupon','geo'])
+    output_df.to_csv(output_file, index=False)
+    print("No usable report data found; saved empty output.")
+    raise SystemExit(0)
+matrix_df['date_value'] = matrix_df['DATE'].apply(lambda v: parse_date_label(v, report_mtime))
+matrix_df = matrix_df.dropna(subset=['date_value'])
 
-if not eligible:
-    raise KeyError(f"No date-named sheets in range. Sheets={xls.sheet_names}, window={start_date}..{yesterday}")
+mask_window = (matrix_df['date_value'] >= start_date) & (matrix_df['date_value'] <= yesterday)
+matrix_df = matrix_df[mask_window]
+print(f"Coupons/date combinations within window: {len(matrix_df)}")
 
-eligible.sort()  # by date
+if not matrix_df.empty:
+    matrix_df['orders'] = pd.to_numeric(matrix_df['orders'], errors='coerce').fillna(0.0)
+    matrix_df['sale_total'] = pd.to_numeric(matrix_df['sale_total'], errors='coerce').fillna(0.0)
+    matrix_df['revenue_total'] = pd.to_numeric(matrix_df['revenue_total'], errors='coerce').fillna(0.0)
 
-# Load mapping once
-map_df = load_affiliate_mapping_from_xlsx(affiliate_xlsx_path, AFFILIATE_SHEET)
+    matrix_df['orders_int'] = matrix_df['orders'].round().astype(int).clip(lower=0)
+    matrix_df = matrix_df[matrix_df['orders_int'] > 0]
 
-all_outputs = []
+    matrix_df['sale_converted'] = matrix_df['sale_total'] / CURRENCY_DIVISOR
+    matrix_df = matrix_df[matrix_df['sale_converted'] > 0]
 
-for sheet_date, sheet_name in eligible:
-    df0 = pd.read_excel(xls, sheet_name=sheet_name)
-    df0.columns = [str(c).strip() for c in df0.columns]
+    matrix_df['revenue_converted'] = matrix_df['revenue_total'] / CURRENCY_DIVISOR
+    matrix_df['sale_per_order'] = matrix_df['sale_converted'] / matrix_df['orders_int']
+    matrix_df['revenue_per_order'] = matrix_df['revenue_converted'] / matrix_df['orders_int']
+    matrix_df['coupon_norm'] = matrix_df['coupon_raw'].apply(normalize_coupon)
 
-    code_col, orders_col, sale_col, date_col = find_needed_columns(df0)
-    if not all([code_col, orders_col, sale_col]):
-        print(f"Skipping sheet '{sheet_name}' (missing columns). Columns: {list(df0.columns)}")
-        continue
+    expanded = matrix_df.loc[matrix_df.index.repeat(matrix_df['orders_int'])].copy()
+    expanded['sale_amount'] = matrix_df['sale_per_order'].reindex(expanded.index).values
+    expanded['revenue'] = matrix_df['revenue_per_order'].reindex(expanded.index).values
+    expanded['coupon_norm'] = matrix_df['coupon_norm'].reindex(expanded.index).values
+    expanded['date_value'] = matrix_df['date_value'].reindex(expanded.index).values
+else:
+    expanded = pd.DataFrame(columns=['coupon_norm', 'sale_amount', 'revenue', 'date_value'])
 
-    # numerics
-    df0[orders_col] = pd.to_numeric(df0[orders_col], errors='coerce').fillna(0.0)
-    df0[sale_col]   = pd.to_numeric(df0[sale_col], errors='coerce').fillna(0.0)
+if expanded.empty:
+    output_df = pd.DataFrame(columns=['offer','affiliate_id','date','status','payout','revenue','sale amount','coupon','geo'])
+else:
+    map_df = load_affiliate_mapping_from_xlsx(affiliate_xlsx_path, AFFILIATE_SHEET)
+    dfj = expanded.merge(map_df, how='left', left_on='coupon_norm', right_on='code_norm')
 
-    # optional in-sheet date filter. If a real date column exists, rely on it entirely.
-    if date_col:
-        df0[date_col] = pd.to_datetime(df0[date_col], errors='coerce')
-        df0 = df0.dropna(subset=[date_col])
-        df0 = df0[(df0[date_col].dt.date >= start_date) & (df0[date_col].dt.date <= yesterday)]
-
-    # your rule: skip zero/empty orders or sale
-    df = df0[(df0[orders_col] > 0) & (df0[sale_col] > 0)].copy()
-    if df.empty:
-        continue
-
-    # currency conversion + per-order split
-    df['sale_total_converted'] = df[sale_col] / 3.75
-
-    orders_int = df[orders_col].round().astype(int).clip(lower=1)
-    df_expanded = df.loc[df.index.repeat(orders_int)].copy()
-
-    df_expanded['__orders_orig'] = orders_int.loc[df_expanded.index].values
-    df_expanded['sale_amount'] = (df_expanded['sale_total_converted'] / df_expanded['__orders_orig']).astype(float)
-
-    # 12% revenue (matches code)
-    df_expanded['revenue'] = df_expanded['sale_amount'] * 0.12
-
-    # coupon
-    df_expanded['coupon_norm'] = df_expanded[code_col].apply(normalize_coupon)
-
-    # join mapping
-    dfj = df_expanded.merge(map_df, how="left", left_on="coupon_norm", right_on="code_norm")
-
-    # normalize mapping fields
-    dfj['affiliate_ID'] = dfj['affiliate_ID'].fillna("").astype(str).str.strip()
-    dfj['type_norm'] = dfj['type_norm'].fillna("revenue")
+    dfj['affiliate_ID'] = dfj['affiliate_ID'].fillna('').astype(str).str.strip()
+    dfj['type_norm'] = dfj['type_norm'].fillna('revenue')
     for col in ['pct_new', 'pct_old']:
         dfj[col] = pd.to_numeric(dfj.get(col), errors='coerce').fillna(DEFAULT_PCT_IF_MISSING)
     for col in ['fixed_new', 'fixed_old']:
         dfj[col] = pd.to_numeric(dfj.get(col), errors='coerce')
+
     is_new_customer = infer_is_new_customer(dfj)
     pct_effective = dfj['pct_new'].where(is_new_customer, dfj['pct_old'])
     dfj['pct_fraction'] = pd.to_numeric(pct_effective, errors='coerce').fillna(DEFAULT_PCT_IF_MISSING)
     fixed_effective = dfj['fixed_new'].where(is_new_customer, dfj['fixed_old'])
     dfj['fixed_amount'] = pd.to_numeric(fixed_effective, errors='coerce')
 
-    # payout
     payout = pd.Series(0.0, index=dfj.index)
     mask_rev = dfj['type_norm'].str.lower().eq('revenue')
     payout.loc[mask_rev] = dfj.loc[mask_rev, 'revenue'] * dfj.loc[mask_rev, 'pct_fraction']
@@ -375,41 +452,30 @@ for sheet_date, sheet_name in eligible:
     mask_fixed = dfj['type_norm'].str.lower().eq('fixed')
     payout.loc[mask_fixed] = dfj.loc[mask_fixed, 'fixed_amount'].fillna(0.0)
 
-    mask_no_aff = dfj['affiliate_ID'].astype(str).str.strip().eq("")
+    mask_no_aff = dfj['affiliate_ID'].astype(str).str.strip().eq('')
     payout.loc[mask_no_aff] = 0.0
     dfj.loc[mask_no_aff, 'affiliate_ID'] = FALLBACK_AFFILIATE_ID
 
     dfj['payout'] = payout.round(2)
+    dfj['revenue'] = dfj['revenue'].round(2)
+    dfj['sale_amount'] = dfj['sale_amount'].round(2)
 
-    # dates: prefer in-sheet date col; else sheet date
-    if date_col and date_col in dfj.columns and pd.api.types.is_datetime64_any_dtype(dfj[date_col]):
-        date_series = dfj[date_col].dt.strftime('%m-%d-%Y')
-    else:
-        date_series = pd.Series(sheet_date.strftime('%m-%d-%Y'), index=dfj.index)
+    date_series = pd.to_datetime(dfj['date_value'], errors='coerce')
+    dfj['date_str'] = date_series.dt.strftime('%m-%d-%Y')
 
-    out = pd.DataFrame({
+    output_df = pd.DataFrame({
         'offer': OFFER_ID,
         'affiliate_id': dfj['affiliate_ID'],
-        'date': date_series,
+        'date': dfj['date_str'],
         'status': STATUS_DEFAULT,
         'payout': dfj['payout'],
-        'revenue': dfj['revenue'].round(2),
-        'sale amount': dfj['sale_amount'].round(2),
+        'revenue': dfj['revenue'],
+        'sale amount': dfj['sale_amount'],
         'coupon': dfj['coupon_norm'],
         'geo': GEO,
     })
 
-    all_outputs.append(out)
-
-# =======================
-# SAVE
-# =======================
-if all_outputs:
-    output_df = pd.concat(all_outputs, ignore_index=True)
-else:
-    output_df = pd.DataFrame(columns=['offer','affiliate_id','date','status','payout','revenue','sale amount','coupon','geo'])
-
 output_df.to_csv(output_file, index=False)
 
 print(f"Saved: {output_file}")
-print(f"Sheets processed: {len(all_outputs)} | Rows: {len(output_df)}")
+print(f"Expanded orders: {len(expanded)} | Output rows: {len(output_df)}")

@@ -229,8 +229,7 @@ df = df.dropna(subset=['order_date'])
 
 df_filtered = df[
     (df['order_date'].dt.date >= start_date) &
-    (df['order_date'].dt.date <= end_date) &
-    (df['status'].astype(str).str.lower() != 'canceled')
+    (df['order_date'].dt.date <= end_date)
 ].copy()
 
 # =======================

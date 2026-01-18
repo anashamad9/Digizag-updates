@@ -6,7 +6,7 @@ import re
 # =======================
 # CONFIG
 # =======================
-days_back = 14
+days_back = 19
 OFFER_ID = 1277
 STATUS_DEFAULT = "pending"          # always "pending"
 DEFAULT_PCT_IF_MISSING = 0.0        # fallback fraction for % values
@@ -153,6 +153,10 @@ def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.Data
         raise ValueError(f"[{sheet_name}] must contain an 'ID' (or 'affiliate_ID') column.")
     if not (payout_col or new_col or old_col):
         raise ValueError(f"[{sheet_name}] must contain at least one payout column (e.g., 'payout').")
+    if not (new_col and old_col):
+        raise ValueError(
+            f"[{sheet_name}] must contain both 'new customer payout' and 'old customer payout' columns."
+        )
 
     def extract_numeric(col_name: str) -> pd.Series:
         if not col_name:
@@ -223,6 +227,7 @@ OrderCountCol   = colmap.get("order count", "Order Count")
 NetSalesCol     = colmap.get("net sales", "Net Sales")
 DiscountCodeCol = colmap.get("discount code", "Discount Code")
 OrderNameCol    = colmap.get("order name", "Order Name")
+CustomerTypeCol = colmap.get("customer type", "Customer Type")
 
 # Parse Date
 df[DateCol] = pd.to_datetime(df[DateCol], errors='coerce')
@@ -251,7 +256,8 @@ for _, row in df_filtered.iterrows():
             'Order Name': row.get(OrderNameCol, ""),
             'Date': row[DateCol],
             'Order Count': 1,
-            'Net Sales': per_order_net
+            'Net Sales': per_order_net,
+            'Customer Type': row.get(CustomerTypeCol, "")
         })
 
 df_split = pd.DataFrame(split_rows)
@@ -260,7 +266,6 @@ df_split = pd.DataFrame(split_rows)
 # DERIVED FIELDS
 # =======================
 df_split['sale_amount'] = pd.to_numeric(df_split['Net Sales'], errors='coerce').fillna(0.0) / 3.75
-df_split['revenue'] = df_split['sale_amount'] * 0.10
 df_split['coupon_norm'] = df_split['Discount Code'].apply(normalize_coupon)
 
 # =======================
@@ -278,6 +283,9 @@ for col in ['pct_new', 'pct_old']:
 for col in ['fixed_new', 'fixed_old']:
     df_joined[col] = pd.to_numeric(df_joined.get(col), errors='coerce')
 is_new_customer = infer_is_new_customer(df_joined)
+revenue_pct = pd.Series(0.15, index=df_joined.index)
+revenue_pct.loc[is_new_customer] = 0.20
+df_joined['revenue'] = df_joined['sale_amount'] * revenue_pct
 pct_effective = df_joined['pct_new'].where(is_new_customer, df_joined['pct_old'])
 df_joined['pct_fraction'] = pd.to_numeric(pct_effective, errors='coerce').fillna(DEFAULT_PCT_IF_MISSING)
 fixed_effective = df_joined['fixed_new'].where(is_new_customer, df_joined['fixed_old'])

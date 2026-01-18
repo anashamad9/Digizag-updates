@@ -17,7 +17,7 @@ FALLBACK_AFFILIATE_ID = "1"
 CURRENCY_DIVISOR = 3.75
 NET_SALE_MULTIPLIER = 0.87
 REVENUE_RATE = 0.13
-DAYS_BACK = 10
+DAYS_BACK = 100
 
 REPORT_PREFIX = "Degi Zag - Daily Sales Report"
 REPORT_SHEET = "Rasees"
@@ -44,6 +44,9 @@ if not os.path.exists(affiliate_xlsx_path):
 # =======================
 def _norm(value: str) -> str:
     return re.sub(r"\s+", " ", str(value).strip()).lower()
+
+def _norm_col(value: str) -> str:
+    return re.sub(r"\s+", "", str(value).strip()).lower()
 
 
 def find_matching_xlsx(directory: str, prefix: str) -> str:
@@ -191,14 +194,45 @@ def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.Data
 
 
 def resolve_secondary_column(df: pd.DataFrame, base_name: str) -> str:
-    preferred = f"{base_name}.1"
-    if preferred in df.columns:
-        return preferred
     base_low = base_name.strip().lower()
     matches = [col for col in df.columns if str(col).strip().lower().startswith(base_low)]
     if not matches:
         raise KeyError(f"Could not find column for '{base_name}' in sheet: {df.columns.tolist()}")
     return matches[-1]
+
+def collect_order_columns(df: pd.DataFrame) -> pd.DataFrame:
+    base_names = {
+        'coupon': 'Coupon',
+        'created_at': 'Created_at',
+        'amount': 'Amount',
+    }
+    base_norms = {key: _norm_col(name) for key, name in base_names.items()}
+    col_map = {_norm_col(c): c for c in df.columns}
+
+    suffixes = []
+    for col in df.columns:
+        norm = _norm_col(col)
+        if norm.startswith(base_norms['created_at']):
+            suffix = norm[len(base_norms['created_at']):]
+            if suffix not in suffixes:
+                suffixes.append(suffix)
+
+    parts = []
+    for suffix in suffixes:
+        created_key = base_norms['created_at'] + suffix
+        coupon_key = base_norms['coupon'] + suffix
+        amount_key = base_norms['amount'] + suffix
+        if created_key not in col_map or coupon_key not in col_map or amount_key not in col_map:
+            continue
+        subset = df[[col_map[coupon_key], col_map[created_key], col_map[amount_key]]].copy()
+        subset.columns = ['coupon_raw', 'created_at', 'amount']
+        if subset[['coupon_raw', 'created_at', 'amount']].isna().all().all():
+            continue
+        parts.append(subset)
+
+    if not parts:
+        return pd.DataFrame(columns=['coupon_raw', 'created_at', 'amount'])
+    return pd.concat(parts, ignore_index=True)
 
 
 def parse_created_at(series: pd.Series) -> pd.Series:
@@ -219,12 +253,7 @@ def parse_created_at(series: pd.Series) -> pd.Series:
 
 
 def prepare_orders(df: pd.DataFrame) -> pd.DataFrame:
-    coupon_col = resolve_secondary_column(df, 'Coupon')
-    date_col = resolve_secondary_column(df, 'Created_at')
-    amount_col = resolve_secondary_column(df, 'Amount')
-
-    subset = df[[coupon_col, date_col, amount_col]].copy()
-    subset.columns = ['coupon_raw', 'created_at', 'amount']
+    subset = collect_order_columns(df)
 
     subset['coupon_raw'] = subset['coupon_raw'].astype(str).str.strip()
     subset['amount'] = pd.to_numeric(subset['amount'], errors='coerce').fillna(0.0)

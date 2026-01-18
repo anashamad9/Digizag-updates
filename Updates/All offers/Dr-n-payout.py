@@ -318,8 +318,9 @@ df = df.dropna(subset=[created_col])
 print(f"[INFO] Total rows before filtering: {before}")
 print(f"[INFO] Rows with invalid dates dropped: {before - len(df)}")
 
-# Campaign filter (DigiZag)
+# Campaign filter (DigiZag) and not canceled
 df_offer = df[df[campaign_col].astype(str) == 'DigiZag'].copy()
+# df_offer = df_offer[df_offer[status_col].astype(str).str.lower() != 'canceled'].copy()
 
 # Date window (exclude 'today')
 df_filtered = df_offer[

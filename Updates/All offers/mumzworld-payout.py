@@ -8,7 +8,7 @@ import unicodedata
 # CONFIG
 # =======================
 # Choose how many days back to include (rows from [today - days_back, today), i.e., exclude today)
-days_back = 90
+days_back = 30
 
 OFFER_ID = 1192
 STATUS_DEFAULT = "pending"
@@ -18,8 +18,7 @@ FALLBACK_AFFILIATE_ID = "1"
 # Local files
 AFFILIATE_XLSX   = "Offers Coupons.xlsx"
 AFFILIATE_SHEET  = "Mumzworld"
-# Prefer this specific dashboard export file, but allow suffix changes
-REPORT_FILE      = "Mumz Agency Dashboard - Marketing_Untitled Page_Table (2).csv"
+# Latest dashboard export lives under this prefix (suffix like " (1).csv" still OK)
 REPORT_PREFIX    = "Mumz Agency Dashboard - Marketing_Untitled Page_Table"
 OUTPUT_CSV       = "mumzworld.csv"
 
@@ -77,6 +76,8 @@ def infer_is_new_customer(df: pd.DataFrame) -> pd.Series:
         'type_customer',
         'type customer',
         'audience',
+        'new_vs_ret',
+        'new vs ret'
     ]
 
     new_tokens = {
@@ -111,6 +112,7 @@ def infer_is_new_customer(df: pd.DataFrame) -> pd.Series:
             resolved.loc[recognized] = True
         if resolved.all():
             break
+
     return result
 
 
@@ -141,6 +143,8 @@ def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.Data
     new_col = cols_lower.get('new customer payout')
     old_col = cols_lower.get('old customer payout')
 
+    # rev_col = cols_lower.get('total revenue')
+
     if not aff_col:
         raise ValueError(f"[{sheet_name}] must contain an 'ID' (or 'affiliate_ID') column.")
     if not (payout_col or new_col or old_col):
@@ -155,6 +159,7 @@ def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.Data
     payout_any = extract_numeric(payout_col)
     payout_new_raw = extract_numeric(new_col).fillna(payout_any)
     payout_old_raw = extract_numeric(old_col).fillna(payout_any)
+    # payout_raw = extract_numeric(rev_col).fillna(payout_any)
 
     type_norm = (
         df_sheet[type_col]
@@ -174,6 +179,7 @@ def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.Data
 
     pct_new = pct_from(payout_new_raw)
     pct_old = pct_from(payout_old_raw)
+    # pct_old = pct_from(payout_raw)
     pct_new = pct_new.fillna(pct_old)
     pct_old = pct_old.fillna(pct_new)
 
@@ -181,6 +187,8 @@ def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.Data
     fixed_old = fixed_from(payout_old_raw)
     fixed_new = fixed_new.fillna(fixed_old)
     fixed_old = fixed_old.fillna(fixed_new)
+
+    # fixed = fixed_from(payout_raw)
 
     out = pd.DataFrame({
         'code_norm': df_sheet[code_col].apply(normalize_coupon),
@@ -190,6 +198,7 @@ def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.Data
         'pct_old': pd.to_numeric(pct_old, errors='coerce').fillna(DEFAULT_PCT_IF_MISSING),
         'fixed_new': pd.to_numeric(fixed_new, errors='coerce'),
         'fixed_old': pd.to_numeric(fixed_old, errors='coerce'),
+        # 'fixed': pd.to_numeric(fixed, errors='coerce')
     }).dropna(subset=['code_norm'])
 
     return out.drop_duplicates(subset=['code_norm'], keep='last')
@@ -215,57 +224,6 @@ def find_latest_csv_by_prefix(directory: str, prefix: str) -> str:
         )
     return max(candidates, key=os.path.getmtime)
 
-def resolve_report_schema(df: pd.DataFrame) -> dict:
-    """
-    Detect the report schema and return column mappings.
-    Supports legacy dashboard and the newer summarized export.
-    """
-    cols = {str(c).strip().lower(): c for c in df.columns}
-
-    def get(*cands):
-        for c in cands:
-            if c in cols:
-                return cols[c]
-        return None
-
-    date_col = get("date_ordered", "date ordered", "date")
-    country_col = get("country")
-    coupon_col = get("follower_code", "coupon code", "coupon", "coupon_code")
-
-    # New summarized schema
-    new_vs_ret_col = get("new_vs_ret", "new vs ret", "new vs returning", "new vs return")
-    total_orders_col = get("total orders", "total_orders", "orders")
-    total_revenue_col = get("total revenue", "total_revenue", "revenue")
-    if date_col and new_vs_ret_col and total_orders_col and total_revenue_col:
-        return {
-            "schema": "summary",
-            "date": date_col,
-            "country": country_col,
-            "coupon": coupon_col,
-            "new_vs_ret": new_vs_ret_col,
-            "total_orders": total_orders_col,
-            "total_revenue": total_revenue_col,
-        }
-
-    # Legacy schema
-    new_orders_col = get("# orders new customers", "orders new customers", "new orders")
-    repeat_orders_col = get("# orders repeat customers", "orders repeat customers", "repeat orders")
-    new_rev_col = get("new cust revenue", "new customer revenue")
-    repeat_rev_col = get("repeat cust revenue", "repeat customer revenue")
-    if date_col and new_orders_col and repeat_orders_col and new_rev_col and repeat_rev_col:
-        return {
-            "schema": "legacy",
-            "date": date_col,
-            "country": country_col,
-            "coupon": coupon_col,
-            "new_orders": new_orders_col,
-            "repeat_orders": repeat_orders_col,
-            "new_revenue": new_rev_col,
-            "repeat_revenue": repeat_rev_col,
-        }
-
-    raise KeyError(f"Unrecognized report schema. Columns found: {list(df.columns)}")
-
 # =======================
 # LOAD & PREP REPORT
 # =======================
@@ -273,91 +231,75 @@ end_date = datetime.now().date()             # exclusive upper bound (we exclude
 start_date = end_date - timedelta(days=days_back)
 print(f"Window: {start_date} ≤ date < {end_date} (exclude today)")
 
-preferred_file = os.path.join(input_dir, REPORT_FILE)
-input_file = preferred_file if os.path.exists(preferred_file) else find_latest_csv_by_prefix(input_dir, REPORT_PREFIX)
+input_file = find_latest_csv_by_prefix(input_dir, REPORT_PREFIX)
 print(f"Using input file: {os.path.basename(input_file)}")
 
 df = pd.read_csv(input_file)
 
-schema = resolve_report_schema(df)
-
-# Ensure date is datetime & within the window (exclude today)
-date_col = schema["date"]
-df[date_col] = pd.to_datetime(df[date_col], format='%b %d, %Y', errors='coerce')
-df = df.dropna(subset=[date_col])
-df = df[(df[date_col].dt.date >= start_date) & (df[date_col].dt.date < end_date)]
+# Ensure Date ordered is datetime & within the window (exclude today)
+df['Date ordered'] = pd.to_datetime(df['Date ordered'], format='%b %d, %Y', errors='coerce')
+df = df.dropna(subset=['Date ordered'])
+df = df[(df['Date ordered'].dt.date >= start_date) & (df['Date ordered'].dt.date < end_date)]
 
 # Expand rows by # Orders New/Repeat and compute per-order sale_amount + platform revenue
 expanded = []
 for _, row in df.iterrows():
-    order_date = row[date_col]
-    coupon_raw = row.get(schema.get("coupon"))
-    country = row.get(schema.get("country"))
+    # new_orders    = int(row.get('# Orders New Customers', 0) or 0)
+    # repeat_orders = int(row.get('# Orders Repeat Customers', 0) or 0)
+    orders = int(row.get('Total Orders', 0) or 0)
+    order_date    = row['Date ordered']  # keep datetime
+    coupon_raw    = row.get('Coupon code')
 
-    if schema["schema"] == "summary":
-        try:
-            total_orders = int(row.get(schema["total_orders"], 0) or 0)
-        except Exception:
-            total_orders = 0
-        try:
-            total_revenue = float(row.get(schema["total_revenue"], 0) or 0.0)
-        except Exception:
-            total_revenue = 0.0
+    # # New
+    # if new_orders > 0 and pd.notnull(row.get('New Cust Revenue')):
+    #     try:
+    #         total_new_rev = float(row['New Cust Revenue'])
+    #     except Exception:
+    #         total_new_rev = 0.0
+    #     sale_per = (total_new_rev / new_orders) if new_orders else 0.0
+    #     for _ in range(new_orders):
+    #         expanded.append({
+    #             'order_date': order_date,
+    #             'country': row.get('Country'),
+    #             'user_type': 'New',
+    #             'sale_amount': sale_per,
+    #             'coupon_code': coupon_raw,
+    #             # platform revenue (per your earlier logic)
+    #             'revenue': sale_per * 0.08
+    #         })
 
-        sale_per = (total_revenue / total_orders) if total_orders else 0.0
-        user_type_raw = str(row.get(schema["new_vs_ret"], "")).strip().lower()
-        is_new = "new" in user_type_raw
-        rate = 0.08 if is_new else 0.03
-        user_type = "New" if is_new else "Repeat"
-
-        for _ in range(total_orders):
-            expanded.append({
-                'order_date': order_date,
-                'country': country,
-                'user_type': user_type,
-                'sale_amount': sale_per,
-                'coupon_code': coupon_raw,
-                'revenue': sale_per * rate
-            })
-
-    if schema["schema"] == "legacy":
-        new_orders = int(row.get(schema["new_orders"], 0) or 0)
-        repeat_orders = int(row.get(schema["repeat_orders"], 0) or 0)
-
-        # New
-        if new_orders > 0 and pd.notnull(row.get(schema["new_revenue"])):
-            try:
-                total_new_rev = float(row[schema["new_revenue"]])
-            except Exception:
-                total_new_rev = 0.0
-            sale_per = (total_new_rev / new_orders) if new_orders else 0.0
-            for _ in range(new_orders):
-                expanded.append({
-                    'order_date': order_date,
-                    'country': country,
-                    'user_type': 'New',
-                    'sale_amount': sale_per,
-                    'coupon_code': coupon_raw,
-                    # platform revenue (per your earlier logic)
-                    'revenue': sale_per * 0.08
-                })
-
-        # Repeat
-        if repeat_orders > 0 and pd.notnull(row.get(schema["repeat_revenue"])):
-            try:
-                total_rep_rev = float(row[schema["repeat_revenue"]])
-            except Exception:
-                total_rep_rev = 0.0
-            sale_per = (total_rep_rev / repeat_orders) if repeat_orders else 0.0
-            for _ in range(repeat_orders):
-                expanded.append({
-                    'order_date': order_date,
-                    'country': country,
-                    'user_type': 'Repeat',
-                    'sale_amount': sale_per,
-                    'coupon_code': coupon_raw,
-                    'revenue': sale_per * 0.03
-                })
+    # # Repeat
+    # if repeat_orders > 0 and pd.notnull(row.get('Repeat Cust Revenue')):
+    #     try:
+    #         total_rep_rev = float(row['Repeat Cust Revenue'])
+    #     except Exception:
+    #         total_rep_rev = 0.0
+    #     sale_per = (total_rep_rev / repeat_orders) if repeat_orders else 0.0
+    #     for _ in range(repeat_orders):
+    #         expanded.append({
+    #             'order_date': order_date,
+    #             'country': row.get('Country'),
+    #             'user_type': 'Repeat',
+    #             'sale_amount': sale_per,
+    #             'coupon_code': coupon_raw,
+    #             'revenue': sale_per * 0.03
+    #         })
+    
+    try:
+        total_rev = float(row['Total Revenue'])
+    except Exception:
+        total_rev = 0.0
+    sale_per = (total_rev / orders) if orders else 0.0
+    for _ in range(orders):
+        expanded.append({
+            'order_date': order_date,
+            'country': row.get('Country'),
+            'user_type': row.get('new_vs_ret'),
+            'sale_amount': sale_per,
+            'coupon_code': coupon_raw,
+            # platform revenue (per your earlier logic)
+            'revenue': sale_per * (0.08 if row['new_vs_ret'] == 'New' else 0.03)
+        })
 
 df_expanded = pd.DataFrame(expanded)
 if df_expanded.empty:

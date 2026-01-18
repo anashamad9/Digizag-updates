@@ -240,8 +240,8 @@ def calculate_revenue(row):
     if adv1 == '3P':
         return sale_amount * 0.05
     elif adv1 == 'HB Frames':
-        return sale_amount * 0.25
-    elif adv1 in ('HB Lense', 'HB Lenses'):
+        return sale_amount * 0.15
+    elif adv1 == 'HB Lense':
         return sale_amount * 0.10
     return 0.0
 

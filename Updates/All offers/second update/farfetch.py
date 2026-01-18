@@ -14,7 +14,7 @@ output_dir = os.path.join(updates_dir, 'output data')
 os.makedirs(output_dir, exist_ok=True)
 
 # Load the input CSV file
-input_file = os.path.join(input_dir, 'farfetch99.csv')
+input_file = os.path.join(input_dir, 'farfetch.csv')
 df = pd.read_csv(input_file)
 
 def safe_number(value, default=0.0):
@@ -44,8 +44,6 @@ def remap_publisher_id(publisher_id):
     """Map legacy IDs to their current equivalents."""
     if publisher_id == '14796':
         return '2345'
-    if publisher_id == '14869':
-        return '12941'
     return publisher_id
 
 
@@ -71,17 +69,11 @@ for _, row in df.iterrows():
     formatted_date = dt.strftime('%m-%d-%Y')
 
     publisher_id_raw = normalize_publisher_id(row.get('publisher_reference', ''))
-    is_special_14869 = publisher_id_raw == '14869'
     publisher_id_clean = remap_publisher_id(publisher_id_raw)
     revenue = safe_number(row.get('item_publisher_commission', 0)) / AED_TO_USD_DIVISOR
     sale_value = safe_number(row.get('item_value', 0)) / AED_TO_USD_DIVISOR
     payout = calculate_payout(publisher_id_clean, revenue, sale_value)
-    if is_special_14869:
-        coupon_value = '14869'
-    elif publisher_id_clean == '2345':
-        coupon_value = '14796'
-    else:
-        coupon_value = 'link'
+    coupon_value = '14796' if publisher_id_clean == '2345' else 'link'
 
     output_data.append({
         'offer': 1276,

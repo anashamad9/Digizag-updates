@@ -179,32 +179,12 @@ def load_affiliate_mapping_from_xlsx(xlsx_path: str, sheet_name: str) -> pd.Data
 # =======================
 # LOAD REPORT
 # =======================
-def find_report_file(input_dir: str, base_name: str) -> str:
-    """Find exact or closest-matching report file in input_dir."""
-    exact_path = os.path.join(input_dir, base_name)
-    if os.path.exists(exact_path):
-        return exact_path
-
-    base_no_ext = os.path.splitext(base_name)[0].strip().lower()
-    candidates = [
-        f for f in os.listdir(input_dir)
-        if f.lower().endswith(".xlsx") and base_no_ext in f.lower()
-    ]
-    if not candidates:
-        return exact_path
-
-    def _mtime(name: str) -> float:
-        return os.path.getmtime(os.path.join(input_dir, name))
-
-    newest = max(candidates, key=_mtime)
-    return os.path.join(input_dir, newest)
-
 today = datetime.now().date()
 end_date = today
 start_date = end_date - timedelta(days=days_back)
 print(f"Current date: {today}, Start date (days_back={days_back}): {start_date}")
 
-input_file = find_report_file(input_dir, REPORT_FILENAME)
+input_file = os.path.join(input_dir, REPORT_FILENAME)
 if not os.path.exists(input_file):
     available = [f for f in os.listdir(input_dir) if f.lower().endswith(".xlsx")]
     raise FileNotFoundError(
@@ -216,19 +196,14 @@ print(f"Using report file: {input_file}")
 
 df = pd.read_excel(input_file, sheet_name=REPORT_SHEET)
 
-# Parse order datetime (force Column A as the date source)
-order_date_col = df.columns[0]
-df['order_datetime'] = pd.to_datetime(
-    df[order_date_col],
-    format='%d %b, %Y %H:%M:%S',
-    errors='coerce'
-)
-df = df.dropna(subset=['order_datetime'])
+# Parse order datetime
+df['Order Date (Full date)'] = pd.to_datetime(df['Order Date (Full date)'], format='%d %b, %Y %H:%M:%S', errors='coerce')
+df = df.dropna(subset=['Order Date (Full date)'])
 
 # Filter by date only (include cancelled / partially cancelled as requested), still drop today's orders
 df_filtered = df[
-    (df['order_datetime'].dt.date >= start_date) &
-    (df['order_datetime'].dt.date < today)
+    (df['Order Date (Full date)'].dt.date >= start_date) &
+    (df['Order Date (Full date)'].dt.date < today)
 ].copy()
 
 # =======================
@@ -323,7 +298,7 @@ df_joined['payout'] = payout.round(2)
 output_df = pd.DataFrame({
     'offer': OFFER_ID,
     'affiliate_id': df_joined['affiliate_ID'],
-    'date': df_joined['order_datetime'].dt.strftime('%m-%d-%Y'),
+    'date': df_joined['Order Date (Full date)'].dt.strftime('%m-%d-%Y'),
     'status': STATUS_DEFAULT,
     'payout': df_joined['payout'],
     'revenue': df_joined['revenue'].round(2),

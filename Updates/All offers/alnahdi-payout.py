@@ -11,7 +11,7 @@ DEFAULT_GEO = "ksa"
 CURRENCY_RATE_SAR_TO_USD = 3.75
 REVENUE_PCT_OF_SALE = 0.05  # reported revenue is 5% of sale amount
 
-DATA_XLSX = "Affiliate Digizag X Nahdi from 6 to 10 January .xlsx"
+DATA_XLSX = "Affiliate Digizag X Nahdi from 20 to 27 December.xlsx"
 DATA_SHEET = "DIGIZAG"
 COUPON_BOOK = "Offers Coupons.xlsx"
 COUPON_SHEET = "ALNAHDI PHARMACY"

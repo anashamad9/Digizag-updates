@@ -3,16 +3,26 @@ import os
 from datetime import datetime, timedelta
 
 # ====== CONFIG ======
-folder_path = "/Users/digizagoperation/Desktop/Digizag/Updates/Output Data"
-ADMIN_CSV   = "Partnership Teams View_Performance Overview_Table (40).csv"
+folder_path = "/Users/lenovo/Documents/GitHub/Digizag-updates/Updates/Output Data"
+ADMIN_CSV   = "Partnership Teams View_Performance Overview_Table (31).csv"
 FINAL_CSV   = "finaaaaaaaaaaaaaaaaal.csv"
 FINAL_XLSX  = "finaaaaaaaaaaaaaaaaal.xlsx"   # NEW: styled Excel with red alerts
 
-# Offers that include the last-update day (still capped at yesterday)
-EXCEPTION_OFFERS = {
-    1166,  # Noon (GCC)
-    1189,  # Namshi
-}
+# Offers allowed to include up to current_date (exceptions from your old logic)
+# EXCEPTION_OFFERS = {
+#     910,   # Vogacloset
+#     1101,  # Sun & Sand
+#     1159,  # Level Shoes
+#     1166,  # Noon (GCC)
+#     1183,  # Riva Fashion
+#     1189,  # Namshi
+#     1256,  # Airalo
+#     1276,  # Farfetch
+#     1282,  # Noon Egypt
+#     1325,  # 6th Street
+#     1345,  # Whites Pharmacy
+#     1352,  # EZ Hire
+# }
 
 # ====== LOAD LAST UPDATE MAP ======
 admin_path = os.path.join(folder_path, ADMIN_CSV)
@@ -20,7 +30,7 @@ update_df = pd.read_csv(admin_path)
 update_dict = dict(zip(update_df["Offer id"], update_df["Last Update"]))
 
 # ====== DATES ======
-current_date = datetime.now().date()
+current_date = datetime.now()
 prev_day = current_date - timedelta(days=1)
 
 # ====== HELPERS ======
@@ -82,31 +92,23 @@ def standardize_columns(df):
 
     return df
 
-def should_keep_row(row_date, offer_id):
+def should_keep_row(row_date, offer_id, revenue):
     """
     Apply date filtering based on Last Update.
     - Default: keep rows where (last_update + 1 day) <= row_date <= prev_day
-    - Exceptions: offers in EXCEPTION_OFFERS include the last_update day.
+    - Exceptions: offers in EXCEPTION_OFFERS use <= current_date instead of <= prev_day.
     """
     last_update_raw = update_dict.get(offer_id, '01-01-2025')
     last_update_dt = pd.to_datetime(last_update_raw, format='%b %d, %Y', errors='coerce')
+    # last_revenue = update_dict.get('revenue')
 
-    if pd.isna(row_date) or pd.isna(last_update_dt) or offer_id is None:
+    if pd.isna(row_date) or pd.isna(last_update_dt) or offer_id is None or (revenue == 0) or pd.isna(revenue):
         return False
 
-    if isinstance(row_date, pd.Timestamp):
-        row_day = row_date.date()
-    elif isinstance(row_date, datetime):
-        row_day = row_date.date()
-    else:
-        row_day = row_date
-
-    last_day = last_update_dt.date()
-
-    if offer_id in EXCEPTION_OFFERS:
-        return (row_day >= last_day) and (row_day <= prev_day)
-    else:
-        return (row_day >= (last_day + timedelta(days=1))) and (row_day <= prev_day)
+    # if offer_id in EXCEPTION_OFFERS:
+    #     return (row_date >= (last_update_dt)) and (row_date <= current_date)
+    # else:
+    return (row_date >= (last_update_dt + pd.Timedelta(days=1))) and (row_date <= prev_day)
 
 # ====== GATHER FILES ======
 all_dataframes = []
@@ -132,15 +134,9 @@ for filename in os.listdir(folder_path):
 
     # Filter by last update logic
     df_filtered = df[df.apply(
-        lambda r: should_keep_row(r['date'], int(r['offer']) if pd.notna(r['offer']) else None),
+        lambda r: should_keep_row(r['date'], int(r['offer']) if pd.notna(r['offer']) else None, r.get("revenue")),
         axis=1
     )].copy()
-
-    # Drop rows with zero revenue
-    if 'revenue' not in df_filtered.columns:
-        df_filtered['revenue'] = 0.0
-    df_filtered['revenue'] = pd.to_numeric(df_filtered['revenue'], errors='coerce').fillna(0.0)
-    df_filtered = df_filtered[df_filtered['revenue'] != 0].copy()
 
     if df_filtered.empty:
         continue

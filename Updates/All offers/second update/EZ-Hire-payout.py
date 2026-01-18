@@ -287,6 +287,16 @@ booking_type_cands = ["booking type", "type", "booking_type"]
 # =======================
 df = df_raw.copy()
 
+status_col = pick_col(df, *status_cands)
+# if status_col:
+#     cancelled_mask = df[status_col].astype(str).str.contains('cancel', case=False, na=False)
+#     cancelled_count = int(cancelled_mask.sum())
+#     if cancelled_count:
+#         print(f"Dropped {cancelled_count} cancelled rows based on '{status_col}'.")
+#     df = df.loc[~cancelled_mask].copy()
+# else:
+#     print("WARNING: No booking status column found; cancellation filter skipped.")
+
 date_col = pick_col(df, *date_cands)
 if not date_col:
     raise KeyError(f"Missing date column. Tried: {date_cands}. Found: {list(df.columns)}")
@@ -297,7 +307,7 @@ df = df[(df["Order Date"].dt.date >= start_date) & (df["Order Date"].dt.date < e
 print(f"Rows after date filter: {len(df)}")
 
 if df.empty:
-    print("No rows to process after date filter.")
+    print("No rows to process after date/cancellation filters.")
 
 # =======================
 # SALE AMOUNT (USD) & REVENUE

@@ -4,6 +4,8 @@ import re
 from urllib import error as url_error
 from urllib import request as url_request
 
+from typing import Optional
+
 import pandas as pd
 
 # =======================
@@ -13,14 +15,20 @@ OFFER_ID = 1348  # <<< IMPORTANT: Only 1348
 STATUS_DEFAULT = "pending"
 DEFAULT_PCT_IF_MISSING = 0.0
 FALLBACK_AFFILIATE_ID = "1"
-SAR_TO_USD = 3.75
 
 # Data sources
-SOURCE_RESOURCE_DEFAULT ="تقرير DigiZag تاريخ 13-01-2026.xlsx"
+SOURCE_RESOURCE_DEFAULT = "تقرير DigiZag تاريخ 29-12-2025.xlsx"
 SOURCE_RESOURCE = os.getenv("AL_DAKHEEL_SOURCE", SOURCE_RESOURCE_DEFAULT)
 AFFILIATE_XLSX_PRIMARY = "Offers Coupons.xlsx"
 AFFILIATE_SHEET = "Al Dakheel Oud"  # change if your tab name differs
 OUTPUT_CSV = "al_dakheel.csv"
+REPORT_SHEET = os.getenv("AL_DAKHEEL_REPORT_SHEET", "").strip() or None
+GEO_DEFAULT = "ksa"
+
+COL_DATE = "L"
+COL_COUPON = "M"
+COL_SALE = "O"
+COL_GEO = os.getenv("AL_DAKHEEL_GEO_COLUMN", "").strip().upper() or None
 
 # =======================
 # PATHS
@@ -47,6 +55,18 @@ def normalize_coupon(code: str) -> str:
     s = str(code).strip().upper()
     parts = re.split(r"[;,\s]+", s)
     return parts[0] if parts else s
+
+
+def xl_col_to_index(col_letters: str) -> int:
+    col_letters = str(col_letters).strip().upper()
+    if not col_letters:
+        raise ValueError("Excel column letters are empty.")
+    n = 0
+    for ch in col_letters:
+        if not ('A' <= ch <= 'Z'):
+            raise ValueError(f"Invalid Excel column letter: {col_letters}")
+        n = n * 26 + (ord(ch) - ord('A') + 1)
+    return n - 1
 
 
 def infer_is_new_customer(df: pd.DataFrame) -> pd.Series:
@@ -166,12 +186,6 @@ def _canonical_csv_column(name: str) -> str:
     clean = str(name).strip().lower()
     compact = re.sub(r'[^a-z0-9]+', '', clean)
 
-    if compact in {'saleamount', 'netamount', 'finalamount'} or clean in {'sale_amount', 'sale amount'}:
-        return 'sale_amount'
-    if compact in {'grossamount', 'ordertotal', 'grossordertotal'} or clean in {'gross_amount', 'gross amount'}:
-        return 'gross_amount'
-    if compact in {'revenue', 'netrevenue'} or clean == 'revenue':
-        return 'revenue'
     if 'offerid' in compact:
         return 'offer_id'
     if any(token in compact for token in ['datetime', 'orderdate', 'processdate', 'transactiondate', 'createdat', 'date']):
@@ -185,45 +199,6 @@ def _canonical_csv_column(name: str) -> str:
     if 'geo' in compact or 'country' in compact or 'market' in compact:
         return 'geo'
     return None
-
-
-ARABIC_COLUMN_MAP = {
-    'تاريخ الطلب': 'order_date',
-    'رمز الكوبون': 'coupon_code',
-    'الإجمالي الصافي': 'sale_amount',
-    'اجمالي الطلب': 'gross_amount',
-    'إجمالي الطلب': 'gross_amount',
-    'الدولة': 'geo',
-}
-
-
-def normalize_tabular(df_raw: pd.DataFrame) -> pd.DataFrame:
-    if df_raw.empty:
-        return pd.DataFrame(columns=['offer_id', 'order_date', 'coupon_code', 'revenue', 'sale_amount', 'geo'])
-
-    df_raw.columns = [str(c).strip() for c in df_raw.columns]
-    rename_map = {c: ARABIC_COLUMN_MAP.get(str(c).strip(), c) for c in df_raw.columns}
-    df_raw = df_raw.rename(columns=rename_map)
-
-    canonical_columns = [_canonical_csv_column(col) or col for col in df_raw.columns]
-    df = df_raw.copy()
-    df.columns = canonical_columns
-
-    if df.columns.duplicated().any():
-        df = df.T.groupby(level=0).first().T
-
-    df = df.loc[:, [c for c in df.columns if not str(c).startswith('Unnamed')]]
-
-    for optional in ['revenue', 'sale_amount', 'offer_id', 'geo']:
-        if optional not in df.columns:
-            df[optional] = pd.NA
-
-    required_basic = {'order_date', 'coupon_code'}
-    missing_basic = [c for c in required_basic if c not in df.columns]
-    if missing_basic:
-        raise ValueError(f"Source missing required columns after normalization: {missing_basic}")
-
-    return df.reset_index(drop=True)
 
 
 def fetch_json_resource(resource: str, timeout: int = 60):
@@ -303,12 +278,77 @@ def normalize_json_to_df(payload_json) -> pd.DataFrame:
 
 def normalize_csv(csv_path: str) -> pd.DataFrame:
     df_raw = pd.read_csv(csv_path)
-    return normalize_tabular(df_raw)
+    if df_raw.empty:
+        return pd.DataFrame(columns=['offer_id', 'order_date', 'coupon_code', 'revenue', 'sale_amount', 'geo'])
+
+    df_raw.columns = [str(c).strip() for c in df_raw.columns]
+    canonical_columns = [_canonical_csv_column(col) or col for col in df_raw.columns]
+    df = df_raw.copy()
+    df.columns = canonical_columns
+
+    if df.columns.duplicated().any():
+        df = df.T.groupby(level=0).first().T
+
+    df = df.loc[:, [c for c in df.columns if not str(c).startswith('Unnamed')]]
+
+    for optional in ['revenue', 'sale_amount', 'offer_id', 'geo']:
+        if optional not in df.columns:
+            df[optional] = pd.NA
+
+    required_basic = {'order_date', 'coupon_code'}
+    missing_basic = [c for c in required_basic if c not in df.columns]
+    if missing_basic:
+        raise ValueError(f"CSV source missing required columns after normalization: {missing_basic}")
+
+    return df.reset_index(drop=True)
 
 
-def normalize_excel(xlsx_path: str) -> pd.DataFrame:
-    df_raw = pd.read_excel(xlsx_path)
-    return normalize_tabular(df_raw)
+def _infer_geo_column(df_raw: pd.DataFrame) -> Optional[str]:
+    targets = {'ksa', 'sa', 'saudi', 'saudiarabia', 'uae', 'ae', 'unitedarabemirates'}
+    for col in df_raw.columns:
+        series = df_raw[col].dropna()
+        if series.empty:
+            continue
+        sample = series.astype(str).str.strip().str.lower()
+        if sample.isin(targets).any():
+            return col
+    return None
+
+
+def normalize_xlsx(xlsx_path: str, sheet_name: Optional[str]) -> pd.DataFrame:
+    df_raw = pd.read_excel(xlsx_path, sheet_name=sheet_name or 0)
+    if df_raw.empty:
+        return pd.DataFrame(columns=['order_date', 'coupon_code', 'sale_amount', 'geo'])
+
+    date_idx = xl_col_to_index(COL_DATE)
+    coupon_idx = xl_col_to_index(COL_COUPON)
+    sale_idx = xl_col_to_index(COL_SALE)
+    geo_idx = xl_col_to_index(COL_GEO) if COL_GEO else None
+
+    max_needed = max([date_idx, coupon_idx, sale_idx] + ([geo_idx] if geo_idx is not None else []))
+    if df_raw.shape[1] <= max_needed:
+        raise IndexError(
+            f"XLSX has {df_raw.shape[1]} columns, need ≥ {max_needed + 1} for L/M/O."
+        )
+
+    data = {
+        'order_date': df_raw.iloc[:, date_idx],
+        'coupon_code': df_raw.iloc[:, coupon_idx],
+        'sale_amount': df_raw.iloc[:, sale_idx],
+    }
+
+    if geo_idx is not None:
+        data['geo'] = df_raw.iloc[:, geo_idx]
+    else:
+        geo_col = _infer_geo_column(df_raw)
+        if geo_col:
+            data['geo'] = df_raw[geo_col]
+        else:
+            data['geo'] = GEO_DEFAULT
+
+    df = pd.DataFrame(data)
+    df['sale_amount'] = pd.to_numeric(df['sale_amount'], errors='coerce')
+    return df.reset_index(drop=True)
 
 
 def load_source(resource: str) -> pd.DataFrame:
@@ -334,8 +374,9 @@ def load_source(resource: str) -> pd.DataFrame:
     if not os.path.exists(resource):
         raise FileNotFoundError(f"Al Dakheel data source not found: {resource}")
 
-    if resource.lower().endswith(('.xlsx', '.xls')):
-        return normalize_excel(resource)
+    if resource.lower().endswith('.xlsx'):
+        return normalize_xlsx(resource, REPORT_SHEET)
+
     return normalize_csv(resource)
 
 
@@ -346,9 +387,7 @@ source_resource = SOURCE_RESOURCE or SOURCE_RESOURCE_DEFAULT
 df = load_source(source_resource if SOURCE_RESOURCE else source_path_default)
 
 if 'offer_id' in df.columns:
-    offer_series = df['offer_id'].astype('string').fillna('').str.strip()
-    if offer_series.ne('').any():
-        df = df[offer_series == str(OFFER_ID)]
+    df = df[df['offer_id'].astype(str).str.strip() == str(OFFER_ID)]
 
 df = df.copy().reset_index(drop=True)
 
@@ -362,14 +401,9 @@ for col in ['revenue', 'sale_amount']:
 # =======================
 df['revenue'] = pd.to_numeric(df.get('revenue'), errors='coerce')
 df['sale_amount'] = pd.to_numeric(df.get('sale_amount'), errors='coerce')
+df['sale_amount'] = df['sale_amount'] / 3.75
+df['revenue'] = df['revenue'].fillna(df['sale_amount'] * 0.07)
 df['coupon_norm'] = df['coupon_code'].apply(normalize_coupon)
-
-if 'O' in df.columns:
-    sale_from_o = pd.to_numeric(df['O'], errors='coerce') / SAR_TO_USD
-    df['sale_amount'] = sale_from_o
-else:
-    df['sale_amount'] = df['sale_amount'] / SAR_TO_USD
-df['revenue'] = df['sale_amount'] * 0.07
 
 
 # =======================

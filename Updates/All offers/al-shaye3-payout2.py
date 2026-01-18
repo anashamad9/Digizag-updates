@@ -29,9 +29,6 @@ brand_to_offer = {
     'wes': 1131   # WestELM
 }
 
-# Force affiliate_id=1 for these brands (no payout)
-FORCE_FALLBACK_BRANDS = {'wes', 'pb', 'pk'}
-
 # Offer -> Sheet name in Offers Coupons.xlsx
 offer_to_sheet = {
     1208: "Victoria Secret",
@@ -239,19 +236,11 @@ def calculate_brand_revenue(row: pd.Series) -> float:
 
 df_joined['revenue_calc'] = df_joined.apply(calculate_brand_revenue, axis=1)
 
-# Drop only rows where both new and old customer counts are zero (AND relation)
-drop_zero_customers = (df_joined['new_customers'] == 0) & (df_joined['old_customers'] == 0)
-df_joined = df_joined[~drop_zero_customers].copy()
+# Drop zero-revenue rows
+df_joined = df_joined[df_joined['revenue_calc'] > 0].copy()
 
 # Payout = revenue * coupon percent (new customer payout)
 df_joined['pct_fraction'] = pd.to_numeric(df_joined['pct_fraction'], errors='coerce').fillna(DEFAULT_PCT_IF_MISSING)
-# Force fallback for New Balance in UAE
-nb_uae_mask = (df_joined['brand_norm'] == 'nb') & (
-    df_joined['market_norm'].isin({'uae', 'ae', 'united arab emirates'})
-)
-force_fallback_mask = df_joined['brand_norm'].isin(FORCE_FALLBACK_BRANDS) | nb_uae_mask
-df_joined.loc[force_fallback_mask, 'affiliate_ID'] = FALLBACK_AFFILIATE_ID
-df_joined.loc[force_fallback_mask, 'pct_fraction'] = DEFAULT_PCT_IF_MISSING
 df_joined.loc[missing_aff_mask, 'pct_fraction'] = DEFAULT_PCT_IF_MISSING
 df_joined.loc[missing_aff_mask, 'affiliate_ID'] = FALLBACK_AFFILIATE_ID
 df_joined['payout'] = (df_joined['revenue_calc'] * df_joined['pct_fraction']).round(2)
@@ -275,3 +264,4 @@ if not output_df.empty:
     print(f"Date range processed: {output_df['date'].min()} to {output_df['date'].max()}")
 else:
     print("No rows after processing.")
+

@@ -12,7 +12,7 @@ FALLBACK_AFFILIATE_ID = "1"
 DEFAULT_PCT_IF_MISSING = 0.0
 
 # How many days back to include (EXCLUDES today)
-DAYS_BACK = 60
+DAYS_BACK = 50
 
 # Currency: set divisor to 1.0 if sale amounts are already USD
 AED_TO_USD_DIVISOR = 3.67
@@ -260,19 +260,12 @@ if df_raw.shape[1] <= max_needed:
         f"CSV has {df_raw.shape[1]} columns, need ≥ {max_needed+1} to access B/E/W/X/AJ."
     )
 
-publisher_ref_col = None
-for c in df_raw.columns:
-    if str(c).strip().lower() == "publisher_reference":
-        publisher_ref_col = c
-        break
-
 df = pd.DataFrame({
     "date_raw":   df_raw.iloc[:, col_date_idx],
     "sale_raw":   df_raw.iloc[:, col_sale_idx],
     "cust_type":  df_raw.iloc[:, col_type_idx],
     "coupon_raw": df_raw.iloc[:, col_coupon_idx],
     "publisher_id": df_raw.iloc[:, col_publisher_idx],
-    "publisher_reference": df_raw[publisher_ref_col] if publisher_ref_col else "",
 })
 
 # =======================
@@ -291,20 +284,11 @@ def is_new(val) -> bool:
     return "new" in str(val).strip().lower()
 
 df["publisher_id"] = df["publisher_id"].fillna("").astype(str).str.strip()
-df["publisher_reference"] = df["publisher_reference"].fillna("").astype(str).str.strip()
 
-# Normalize coupon and infer attribution type
+# Revenue rule: 10% new, 5% old
+df["revenue"] = df.apply(lambda r: r["sale_amount"] * (0.07 if is_new(r["cust_type"]) else 0.05), axis=1)
+
 df["coupon_norm"] = df["coupon_raw"].apply(normalize_coupon)
-is_coupon = df["coupon_norm"].ne("")
-is_new_customer_flag = df["cust_type"].apply(is_new)
-
-# Revenue rule:
-# - Coupon attribution: 7% new, 5% existing
-# - Link attribution: 10% new, 5% existing
-rate = pd.Series(0.05, index=df.index, dtype=float)
-rate.loc[is_new_customer_flag & is_coupon] = 0.07
-rate.loc[is_new_customer_flag & ~is_coupon] = 0.10
-df["revenue"] = df["sale_amount"] * rate
 
 # =======================
 # JOIN AFFILIATE MAPPING (type-aware)
@@ -325,13 +309,6 @@ fixed_effective = df_joined['fixed_new'].where(is_new_customer, df_joined['fixed
 df_joined['fixed_amount'] = pd.to_numeric(fixed_effective, errors='coerce')
 
 df_joined['publisher_id'] = df_joined['publisher_id'].fillna("").astype(str).str.strip()
-df_joined['publisher_reference'] = df_joined['publisher_reference'].fillna("").astype(str).str.strip()
-
-# Link attribution: use publisher_reference as affiliate ID when no coupon code.
-is_link = df_joined["coupon_norm"].eq("")
-df_joined.loc[is_link & df_joined["publisher_reference"].ne(""), "affiliate_ID"] = (
-    df_joined.loc[is_link & df_joined["publisher_reference"].ne(""), "publisher_reference"]
-)
 blank_publishers = int(df_joined['publisher_id'].eq("").sum())
 if blank_publishers:
     print(f"Rows missing publisher_id (relying on voucher mapping): {blank_publishers}")
